@@ -39,6 +39,14 @@ export class AIInsightService {
     journalEntryId: string,
     insight: AIInsight
   ): Promise<{ error: any }> {
+    console.log(`💾 Saving insight to database for user ${userId}, entry ${journalEntryId}`);
+    console.log(`💾 Insight data:`, {
+      insightLength: insight.insight.length,
+      followUpLength: insight.followUpQuestion.length,
+      confidence: insight.confidence,
+      isPremium: insight.isPremium
+    });
+
     try {
       const { error } = await supabase
         .from('ai_insights')
@@ -53,13 +61,14 @@ export class AIInsightService {
         });
 
       if (error) {
-        console.error('Error saving AI insight to database:', error);
+        console.error('❌ Error saving AI insight to database:', error);
         return { error };
       }
 
+      console.log(`✅ Successfully saved insight to database`);
       return { error: null };
     } catch (error) {
-      console.error('Unexpected error saving AI insight:', error);
+      console.error('❌ Unexpected error saving AI insight:', error);
       return { error };
     }
   }
@@ -208,7 +217,7 @@ export class AIInsightService {
         const totalDuration = Date.now() - startTime;
         console.log(`📱 [${requestId}] Claude success! Duration: ${totalDuration}ms`);
 
-        return {
+        const insight = {
           id: `claude_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           insight: result.insight,
           followUpQuestion: result.followUpQuestion,
@@ -216,6 +225,14 @@ export class AIInsightService {
           createdAt: new Date().toISOString(),
           isPremium: userContext.subscriptionStatus === 'premium'
         };
+
+        console.log(`📱 [${requestId}] Generated insight:`, {
+          insightLength: insight.insight.length,
+          followUpLength: insight.followUpQuestion.length,
+          confidence: insight.confidence
+        });
+
+        return insight;
       }
 
       console.log(`📱 [${requestId}] Claude/Anthropic not available, using mock insights`);
