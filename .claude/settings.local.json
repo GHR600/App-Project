@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Read(//c/ai-journaling-mobile/**)",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(rm:*)",
+      "Bash(node:*)",
+      "Bash(echo $REACT_APP_SUPABASE_URL)",
+      "Bash(npm run test-db:*)",
+      "Bash(cmd /c \"rmdir /s /q node_modules\")",
+      "Bash(cmd /c:*)",
+      "Bash(npx expo:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm start)",
+      "Bash(vercel:*)",
+      "Bash(git checkout:*)",
+      "Bash(git filter-branch --tree-filter 'if [ -f VERCEL_DEPLOYMENT.md ]; then sed -i \"\"s/sk-ant-api03-[a-zA-Z0-9_-]*/your-actual-anthropic-api-key/g\"\" VERCEL_DEPLOYMENT.md; fi' -- --all)",
+      "Bash(git --version)",
+      "Bash(pip install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

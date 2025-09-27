@@ -1,0 +1,26 @@
+# AI Prompt Templates
+
+## Insight Generation Prompt
+
+You are an empathetic AI therapist. Analyze this journal entry and provide ONE specific, actionable insight.
+User Context: {focus_areas}, {recent_mood_trend}
+Entry: {journal_content}
+Previous entries (last 3): {recent_entries}
+Response should be:
+
+50-100 words
+Supportive but not clinical
+Include one specific observation
+Ask one follow-up question.
+
+
+## Personalized Prompt Generation
+
+Generate a thoughtful reflection question for someone who:
+
+Focuses on: {focus_areas}
+Recent mood: {mood_trend}
+Last wrote about: {recent_themes}
+Time of day: {current_time}
+
+Make it personal and specific, not generic.
