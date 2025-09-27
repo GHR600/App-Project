@@ -182,26 +182,27 @@ export class AIInsightService {
     });
 
     try {
-      // Try OpenAI integration first
-      const { openAIService } = await import('./openaiService');
+      // Try Claude/Anthropic integration first
+      const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
 
-      if (openAIService.isAvailable()) {
-        console.log(`📱 [${requestId}] Using OpenAI integration`);
+      if (anthropicApiKey) {
+        console.log(`📱 [${requestId}] Using Claude/Anthropic integration`);
 
-        const result = await openAIService.generateInsight({
+        const result = await this.generateClaudeInsight({
           journalContent: entry.content,
           mood: entry.moodRating,
           userPreferences: {
             focusAreas: userContext.focusAreas,
-            personality: 'supportive' // Default personality
-          }
+            personality: 'supportive'
+          },
+          apiKey: anthropicApiKey
         });
 
         const totalDuration = Date.now() - startTime;
-        console.log(`📱 [${requestId}] OpenAI success! Duration: ${totalDuration}ms`);
+        console.log(`📱 [${requestId}] Claude success! Duration: ${totalDuration}ms`);
 
         return {
-          id: `openai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `claude_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           insight: result.insight,
           followUpQuestion: result.followUpQuestion,
           confidence: result.confidence,
@@ -210,7 +211,7 @@ export class AIInsightService {
         };
       }
 
-      console.log(`📱 [${requestId}] OpenAI not available, using mock insights`);
+      console.log(`📱 [${requestId}] Claude/Anthropic not available, using mock insights`);
       return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
 
     } catch (error) {
@@ -344,6 +345,110 @@ export class AIInsightService {
       await AsyncStorage.setItem('freeInsightsUsed', '0');
     } catch {
       // Silently fail if AsyncStorage is not available
+    }
+  }
+
+  /**
+   * Generate insight using Claude/Anthropic API
+   */
+  private static async generateClaudeInsight({
+    journalContent,
+    mood,
+    userPreferences,
+    apiKey
+  }: {
+    journalContent: string;
+    mood?: number;
+    userPreferences?: {
+      focusAreas: string[];
+      personality: string;
+    };
+    apiKey: string;
+  }): Promise<{
+    insight: string;
+    followUpQuestion: string;
+    confidence: number;
+  }> {
+    const systemPrompt = `You are an empathetic AI journal companion. Your role is to:
+1. Provide thoughtful, personalized insights about the user's journal entry
+2. Ask meaningful follow-up questions that encourage deeper reflection
+3. Be supportive and non-judgmental
+4. Focus on emotional patterns, growth opportunities, and positive reinforcement
+
+Response format (JSON):
+{
+  "insight": "Your main insight about their entry",
+  "followUpQuestion": "A thoughtful question to encourage reflection",
+  "confidence": 0.85
+}${userPreferences?.focusAreas?.length ? `\n\nUser's focus areas: ${userPreferences.focusAreas.join(', ')}` : ''}`;
+
+    let userPrompt = `Journal entry: "${journalContent}"`;
+    if (mood) {
+      userPrompt += `\nMood rating: ${mood}/5`;
+    }
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 300,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: userPrompt
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const content = data.content[0]?.text;
+
+      if (!content) {
+        throw new Error('No response from Claude');
+      }
+
+      return this.parseInsightResponse(content);
+    } catch (error) {
+      console.error('Claude insight generation error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Parse Claude's response into structured insight format
+   */
+  private static parseInsightResponse(content: string): {
+    insight: string;
+    followUpQuestion: string;
+    confidence: number;
+  } {
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        insight: parsed.insight || content,
+        followUpQuestion: parsed.followUpQuestion || "How does this make you feel?",
+        confidence: parsed.confidence || 0.8,
+      };
+    } catch {
+      // If JSON parsing fails, treat as plain text
+      const lines = content.split('\n').filter(line => line.trim());
+      return {
+        insight: lines[0] || content,
+        followUpQuestion: lines[1] || "What would you like to explore further about this?",
+        confidence: 0.7,
+      };
     }
   }
 

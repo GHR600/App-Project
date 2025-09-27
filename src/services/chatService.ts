@@ -1,4 +1,3 @@
-import { openAIService } from './openaiService';
 import { supabase } from '../config/supabase';
 
 export interface ChatMessage {
@@ -83,17 +82,23 @@ export class ChatService {
         content: message,
       });
 
-      // Get AI response
+      // Get AI response using Claude
       let aiResponseText: string;
 
-      if (openAIService.isAvailable()) {
-        aiResponseText = await openAIService.chatWithAI({
-          messages: conversationHistory,
-          journalContext,
-          maxTokens: 150,
-        });
+      const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+      if (anthropicApiKey) {
+        try {
+          aiResponseText = await this.generateClaudeResponse({
+            messages: conversationHistory,
+            journalContext,
+            apiKey: anthropicApiKey,
+          });
+        } catch (error) {
+          console.error('Claude chat error:', error);
+          aiResponseText = this.generateMockChatResponse(message, journalContext);
+        }
       } else {
-        // Fallback to mock response
+        console.warn('Claude/Anthropic API key not configured. Using mock responses.');
         aiResponseText = this.generateMockChatResponse(message, journalContext);
       }
 
@@ -208,6 +213,59 @@ export class ChatService {
     } catch (error) {
       console.error('Unexpected error deleting chat history:', error);
       return { error };
+    }
+  }
+
+  private static async generateClaudeResponse({
+    messages,
+    journalContext,
+    apiKey,
+  }: {
+    messages: { role: 'user' | 'assistant'; content: string }[];
+    journalContext?: string;
+    apiKey: string;
+  }): Promise<string> {
+    let systemPrompt = `You are a supportive AI companion helping someone with their journaling and self-reflection.
+Be empathetic, ask thoughtful questions, and provide gentle guidance. Keep responses concise (1-2 sentences).`;
+
+    if (journalContext) {
+      systemPrompt += `\n\nContext from their recent journal entry: "${journalContext}"`;
+    }
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 150,
+          system: systemPrompt,
+          messages: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const content = data.content[0]?.text;
+
+      if (!content) {
+        throw new Error('No response from Claude');
+      }
+
+      return content.trim();
+    } catch (error) {
+      console.error('Claude chat generation error:', error);
+      throw error;
     }
   }
 
