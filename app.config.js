@@ -32,7 +32,8 @@ export default {
     extra: {
       supabaseUrl: process.env.REACT_APP_SUPABASE_URL,
       supabaseAnonKey: process.env.REACT_APP_SUPABASE_ANON_KEY,
-      apiBaseUrl: process.env.REACT_APP_API_BASE_URL
+      apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
+      anthropicApiKey: process.env.REACT_APP_ANTHROPIC_API_KEY
     }
   }
 };

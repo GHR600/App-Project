@@ -26,6 +26,7 @@ export interface AIInsight {
 
 import { API_CONFIG } from '../utils/env';
 import { supabase } from '../config/supabase';
+import Constants from 'expo-constants';
 
 export class AIInsightService {
   private static readonly API_BASE_URL = API_CONFIG.baseUrl;
@@ -182,8 +183,14 @@ export class AIInsightService {
     });
 
     try {
-      // Try Claude/Anthropic integration first
-      const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+      // Try Claude/Anthropic integration first - use Expo Constants for proper access
+      const anthropicApiKey = Constants.expoConfig?.extra?.anthropicApiKey ||
+                             process.env.REACT_APP_ANTHROPIC_API_KEY ||
+                             process.env.ANTHROPIC_API_KEY;
+
+      console.log(`📱 [${requestId}] Debug - Expo Constants key:`, Constants.expoConfig?.extra?.anthropicApiKey ? 'SET' : 'NOT SET');
+      console.log(`📱 [${requestId}] Debug - REACT_APP_ANTHROPIC_API_KEY:`, process.env.REACT_APP_ANTHROPIC_API_KEY ? 'SET' : 'NOT SET');
+      console.log(`📱 [${requestId}] Debug - Final key:`, anthropicApiKey ? 'AVAILABLE' : 'NOT AVAILABLE');
 
       if (anthropicApiKey) {
         console.log(`📱 [${requestId}] Using Claude/Anthropic integration`);

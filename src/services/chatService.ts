@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import Constants from 'expo-constants';
 
 export interface ChatMessage {
   id: string;
@@ -85,7 +86,9 @@ export class ChatService {
       // Get AI response using Claude
       let aiResponseText: string;
 
-      const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+      const anthropicApiKey = Constants.expoConfig?.extra?.anthropicApiKey ||
+                             process.env.REACT_APP_ANTHROPIC_API_KEY ||
+                             process.env.ANTHROPIC_API_KEY;
       if (anthropicApiKey) {
         try {
           aiResponseText = await this.generateClaudeResponse({
