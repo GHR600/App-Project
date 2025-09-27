@@ -31,32 +31,33 @@ export class ChatService {
     error?: any;
   }> {
     try {
-      // Create user message
-      const userMessage: ChatMessage = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        role: 'user',
-        content: message,
-        timestamp: new Date().toISOString(),
-        journalEntryId,
-        userId,
-      };
-
-      // Save user message to database
-      const { error: userMsgError } = await supabase
+      // Save user message to database first to get the UUID
+      const { data: insertedUserMsg, error: userMsgError } = await supabase
         .from('chat_messages')
         .insert({
-          id: userMessage.id,
-          role: userMessage.role,
-          content: userMessage.content,
-          timestamp: userMessage.timestamp,
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
           journal_entry_id: journalEntryId,
           user_id: userId,
-        });
+        })
+        .select()
+        .single();
 
-      if (userMsgError) {
+      if (userMsgError || !insertedUserMsg) {
         console.error('Error saving user message:', userMsgError);
         throw new Error('Failed to save message');
       }
+
+      // Create user message object with the database-generated ID
+      const userMessage: ChatMessage = {
+        id: insertedUserMsg.id,
+        role: 'user',
+        content: message,
+        timestamp: insertedUserMsg.timestamp,
+        journalEntryId,
+        userId,
+      };
 
       // Get conversation history for context
       const { data: previousMessages, error: historyError } = await supabase
@@ -105,32 +106,33 @@ export class ChatService {
         aiResponseText = this.generateMockChatResponse(message, journalContext);
       }
 
-      // Create AI response message
-      const aiResponse: ChatMessage = {
-        id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        role: 'assistant',
-        content: aiResponseText,
-        timestamp: new Date().toISOString(),
-        journalEntryId,
-        userId,
-      };
-
-      // Save AI response to database
-      const { error: aiMsgError } = await supabase
+      // Save AI response to database first to get the UUID
+      const { data: insertedAiMsg, error: aiMsgError } = await supabase
         .from('chat_messages')
         .insert({
-          id: aiResponse.id,
-          role: aiResponse.role,
-          content: aiResponse.content,
-          timestamp: aiResponse.timestamp,
+          role: 'assistant',
+          content: aiResponseText,
+          timestamp: new Date().toISOString(),
           journal_entry_id: journalEntryId,
           user_id: userId,
-        });
+        })
+        .select()
+        .single();
 
-      if (aiMsgError) {
+      if (aiMsgError || !insertedAiMsg) {
         console.error('Error saving AI message:', aiMsgError);
         throw new Error('Failed to save AI response');
       }
+
+      // Create AI response message object with the database-generated ID
+      const aiResponse: ChatMessage = {
+        id: insertedAiMsg.id,
+        role: 'assistant',
+        content: aiResponseText,
+        timestamp: insertedAiMsg.timestamp,
+        journalEntryId,
+        userId,
+      };
 
       return {
         userMessage,
@@ -138,9 +140,13 @@ export class ChatService {
       };
     } catch (error) {
       console.error('Chat service error:', error);
+      // Generate temporary UUIDs for error messages (these won't be saved to DB)
+      const tempUserUuid = 'temp-user-' + Date.now();
+      const tempAiUuid = 'temp-ai-' + Date.now();
+
       return {
         userMessage: {
-          id: `error_${Date.now()}`,
+          id: tempUserUuid,
           role: 'user',
           content: message,
           timestamp: new Date().toISOString(),
@@ -148,7 +154,7 @@ export class ChatService {
           userId,
         },
         aiResponse: {
-          id: `error_ai_${Date.now()}`,
+          id: tempAiUuid,
           role: 'assistant',
           content: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
           timestamp: new Date().toISOString(),

@@ -25,7 +25,9 @@
       "Bash(git filter-branch --tree-filter 'if [ -f VERCEL_DEPLOYMENT.md ]; then sed -i \"\"s/sk-ant-api03-[a-zA-Z0-9_-]*/your-actual-anthropic-api-key/g\"\" VERCEL_DEPLOYMENT.md; fi' -- --all)",
       "Bash(git --version)",
       "Bash(pip install:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(npm run lint)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -47,6 +47,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentChatMessage, setCurrentChatMessage] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatScrollViewRef = useRef<ScrollView>(null);
   const [initialInsight, setInitialInsight] = useState<string | null>(null);
   const [hasGeneratedInitialInsight, setHasGeneratedInitialInsight] = useState(false);
 
@@ -68,6 +69,33 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     };
     return moodMap[emoji] || 3;
   };
+
+  // Load chat history when saved entry changes
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (savedEntry) {
+        try {
+          const { messages, error } = await ChatService.getChatHistory(userId, savedEntry.id);
+          if (error) {
+            console.error('Error loading chat history:', error);
+          } else {
+            setChatMessages(messages);
+          }
+        } catch (error) {
+          console.error('Error loading chat history:', error);
+        }
+      }
+    };
+
+    loadChatHistory();
+  }, [savedEntry, userId]);
+
+  // Auto-scroll chat to bottom when messages change
+  useEffect(() => {
+    setTimeout(() => {
+      chatScrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }, [chatMessages]);
 
   const handleSaveEntry = async () => {
     if (!entryText.trim()) {
@@ -156,6 +184,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       if (error) {
         console.error('Chat error:', error);
         Alert.alert('Error', 'Failed to send message. Please try again.');
+        // Restore the message text so user doesn't lose it
+        setCurrentChatMessage(messageToSend);
         return;
       }
 
@@ -164,6 +194,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     } catch (error) {
       console.error('Unexpected chat error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
+      // Restore the message text so user doesn't lose it
+      setCurrentChatMessage(messageToSend);
     } finally {
       setIsChatLoading(false);
     }
@@ -315,7 +347,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         )}
 
         {/* Chat History */}
-        <ScrollView style={styles.chatHistory} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          ref={chatScrollViewRef}
+          style={styles.chatHistory}
+          showsVerticalScrollIndicator={false}
+        >
           {chatMessages.map((message) => (
             <View
               key={message.id}
