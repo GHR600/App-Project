@@ -46,7 +46,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build": "expo build",
-    "build:web": "npx expo export:web",
+    "build:web": "npx expo export --platform web",
     "build:ios": "eas build --platform ios",
     "build:android": "eas build --platform android",
     "test": "jest",
