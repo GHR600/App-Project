@@ -85,7 +85,7 @@ export class ChatService {
       // Get AI response using Claude
       let aiResponseText: string;
 
-      const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+      const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
       if (anthropicApiKey) {
         try {
           aiResponseText = await this.generateClaudeResponse({

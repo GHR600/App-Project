@@ -183,7 +183,7 @@ export class AIInsightService {
 
     try {
       // Try Claude/Anthropic integration first
-      const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+      const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
 
       if (anthropicApiKey) {
         console.log(`📱 [${requestId}] Using Claude/Anthropic integration`);

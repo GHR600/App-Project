@@ -1,12 +1,17 @@
 {
   "version": 2,
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "dist",
   "build": {
     "env": {
       "NODE_ENV": "production"
     }
   },
   "functions": {
-    "app.js": {
+    "api/health.js": {
+      "memory": 128
+    },
+    "api/ai/insights.js": {
       "memory": 128
     }
   }
