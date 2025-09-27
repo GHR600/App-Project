@@ -89,7 +89,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onPress }) => {
       <View style={styles.entryCardHeader}>
         <Text style={styles.entryDate}>{formatDate(entry.created_at)}</Text>
         <View style={styles.moodContainer}>
-          <Text style={styles.moodEmoji}>{getMoodEmoji(entry.mood_rating)}</Text>
+          <Text style={styles.moodEmoji}>{getMoodEmoji(entry.mood_rating ?? null)}</Text>
           {entry.mood_rating && (
             <Text style={styles.moodText}>{entry.mood_rating}/5</Text>
           )}
@@ -397,7 +397,6 @@ const styles = StyleSheet.create({
   },
   entryCard: {
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
     padding: 16,
     ...components.card,
     borderWidth: 1,

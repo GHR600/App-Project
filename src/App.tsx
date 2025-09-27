@@ -160,9 +160,10 @@ const MainApp: React.FC = () => {
           />
         );
       case 'entryDetail':
-        return selectedEntry ? (
+        return selectedEntry && user ? (
           <EntryDetailScreen
             entry={selectedEntry}
+            userId={user.id}
             onBack={() => setCurrentScreen('dashboard')}
             onEdit={() => {
               // TODO: Implement entry editing

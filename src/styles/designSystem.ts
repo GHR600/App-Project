@@ -5,6 +5,7 @@ export const colors = {
   warning: '#d97706',
   error: '#dc2626',
   white: '#ffffff',
+  gray50: '#f9fafb',
   gray100: '#f3f4f6',
   gray200: '#e5e7eb',
   gray300: '#d1d5db',

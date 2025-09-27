@@ -31,7 +31,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
     const loadInsights = async () => {
       try {
         console.log('EntryDetailScreen entry object:', { id: entry.id, hasId: !!entry.id, entryKeys: Object.keys(entry) });
-        if (!entry.id) {
+        if (!entry?.id) {
           console.warn('Entry ID is undefined, skipping insights fetch');
           return;
         }
@@ -47,9 +47,10 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
     };
 
     loadInsights();
-  }, [userId, entry.id]);
+  }, [userId, entry?.id]);
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -60,6 +61,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
   };
 
   const formatTime = (dateString: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -68,7 +70,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
     });
   };
 
-  const getMoodText = (rating: number | null) => {
+  const getMoodText = (rating: number | null | undefined) => {
     if (!rating) return 'No mood recorded';
     switch (rating) {
       case 1: return 'Very Low 😢';
@@ -80,7 +82,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
     }
   };
 
-  const getMoodColor = (rating: number | null) => {
+  const getMoodColor = (rating: number | null | undefined) => {
     if (!rating) return colors.gray500;
     switch (rating) {
       case 1: return colors.error;
@@ -92,7 +94,25 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
     }
   };
 
-  const wordCount = entry.word_count || entry.content.split(' ').filter(word => word.length > 0).length;
+  const getMoodBadgeBgColor = (rating: number | null | undefined) => {
+    // Use RGBA for transparency instead of string concatenation
+    const color = getMoodColor(rating);
+    switch (color) {
+      case colors.error: return 'rgba(220, 38, 38, 0.125)';      // error (red-600)
+      case colors.warning: return 'rgba(251, 191, 36, 0.125)';   // warning (yellow-400)
+      case colors.gray600: return 'rgba(75, 85, 99, 0.125)';     // gray-600
+      case colors.success: return 'rgba(16, 185, 129, 0.125)';   // success (emerald-500)
+      case colors.primary: return 'rgba(59, 130, 246, 0.125)';   // primary (blue-500)
+      default: return 'rgba(107, 114, 128, 0.125)';              // gray-500
+    }
+  };
+
+  const getPrimaryAlpha = (alpha: number) => {
+    // Helper for primary color with alpha (assumes blue-500)
+    return `rgba(59, 130, 246, ${alpha})`;
+  };
+
+  const wordCount = entry.word_count ?? (entry.content ? entry.content.split(' ').filter(word => word.length > 0).length : 0);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -117,9 +137,9 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
         <View style={styles.entryMeta}>
           <View style={styles.metaItem}>
             <Text style={styles.metaLabel}>Mood</Text>
-            <View style={[styles.moodBadge, { backgroundColor: `${getMoodColor(entry.mood_rating)}20` }]}>
-              <Text style={[styles.moodText, { color: getMoodColor(entry.mood_rating) }]}>
-                {getMoodText(entry.mood_rating)}
+            <View style={[styles.moodBadge, { backgroundColor: getMoodBadgeBgColor(entry.mood_rating ?? null) }]}>
+              <Text style={[styles.moodText, { color: getMoodColor(entry.mood_rating ?? null) }]}>
+                {getMoodText(entry.mood_rating ?? null)}
               </Text>
             </View>
           </View>
@@ -140,7 +160,13 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
         {entry.voice_memo_url && (
           <View style={styles.voiceMemoContainer}>
             <Text style={styles.voiceMemoLabel}>Voice Memo</Text>
-            <View style={styles.voiceMemoBox}>
+            <View style={[
+              styles.voiceMemoBox,
+              {
+                backgroundColor: getPrimaryAlpha(0.0625), // 0.0625 ≈ 10/160
+                borderColor: getPrimaryAlpha(0.188),      // 0.188 ≈ 30/160
+              }
+            ]}>
               <Text style={styles.voiceMemoText}>🎙️ Voice memo available</Text>
               <Text style={styles.voiceMemoNote}>Voice playback not implemented yet</Text>
             </View>
@@ -156,10 +182,13 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
                   <Text style={styles.insightIcon}>🧠</Text>
                   <View style={styles.insightMeta}>
                     <Text style={styles.insightDate}>
-                      {new Date(insight.createdAt).toLocaleDateString()}
+                      {insight.createdAt ? new Date(insight.createdAt).toLocaleDateString() : ''}
                     </Text>
                     {insight.isPremium && (
-                      <Text style={styles.premiumBadge}>PREMIUM</Text>
+                      <Text style={[
+                        styles.premiumBadge,
+                        { backgroundColor: getPrimaryAlpha(0.125) }
+                      ]}>PREMIUM</Text>
                     )}
                   </View>
                 </View>
@@ -170,7 +199,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
                 </View>
                 <View style={styles.confidenceContainer}>
                   <Text style={styles.confidenceLabel}>
-                    Confidence: {Math.round(insight.confidence * 100)}%
+                    Confidence: {insight.confidence ? Math.round(insight.confidence * 100) : 0}%
                   </Text>
                 </View>
               </View>
@@ -180,9 +209,9 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
 
         <View style={styles.timestampContainer}>
           <Text style={styles.timestampText}>
-            Created: {new Date(entry.created_at).toLocaleString()}
+            Created: {entry.created_at ? new Date(entry.created_at).toLocaleString() : ''}
           </Text>
-          {entry.updated_at !== entry.created_at && (
+          {entry.updated_at && entry.updated_at !== entry.created_at && (
             <Text style={styles.timestampText}>
               Updated: {new Date(entry.updated_at).toLocaleString()}
             </Text>
@@ -242,9 +271,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
     padding: 20,
-    ...components.card,
+    ...(components.card || {}),
   },
   entryDate: {
     fontSize: 20,
@@ -258,10 +286,9 @@ const styles = StyleSheet.create({
   },
   entryMeta: {
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
     padding: 20,
     marginBottom: 20,
-    ...components.card,
+    ...(components.card || {}),
   },
   metaItem: {
     marginBottom: 16,
@@ -291,10 +318,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
     padding: 20,
     marginBottom: 20,
-    ...components.card,
+    ...(components.card || {}),
   },
   contentLabel: {
     fontSize: 14,
@@ -315,17 +341,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: colors.gray800,
-    fontFamily: typography.body.fontFamily,
+    fontFamily: typography.body?.fontFamily ?? 'System',
   },
   voiceMemoContainer: {
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
+  voiceMemoContainer: {
+    backgroundColor: colors.white,
     padding: 20,
     marginBottom: 20,
-    ...components.card,
+    ...(components.card || {}),
   },
-  voiceMemoLabel: {
-    fontSize: 14,
     fontWeight: '600',
     color: colors.gray600,
     marginBottom: 12,
@@ -333,11 +358,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   voiceMemoBox: {
-    backgroundColor: colors.primary + '10',
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: colors.primary + '30',
     alignItems: 'center',
   },
   voiceMemoText: {
@@ -353,14 +376,13 @@ const styles = StyleSheet.create({
   },
   insightsContainer: {
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
+    borderRadius: components.card?.borderRadius ?? 12,
+  insightsContainer: {
+    backgroundColor: colors.white,
     padding: 20,
     marginBottom: 20,
-    ...components.card,
+    ...(components.card || {}),
   },
-  insightsLabel: {
-    fontSize: 14,
-    fontWeight: '600',
     color: colors.gray600,
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -397,7 +419,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: colors.primary,
-    backgroundColor: colors.primary + '20',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -437,13 +458,12 @@ const styles = StyleSheet.create({
   },
   timestampContainer: {
     backgroundColor: colors.white,
-    borderRadius: components.card.borderRadius,
+    borderRadius: components.card?.borderRadius ?? 12,
     padding: 16,
-    ...components.card,
+  timestampContainer: {
+    backgroundColor: colors.white,
+    padding: 16,
+    ...(components.card || {}),
   },
-  timestampText: {
-    fontSize: 12,
-    color: colors.gray500,
-    marginBottom: 2,
   },
 });

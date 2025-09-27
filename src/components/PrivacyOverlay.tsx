@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  Dimensions,
-  BlurView
+  Dimensions
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { colors } from '../styles/designSystem';
 
 interface PrivacyOverlayProps {
