@@ -9,6 +9,7 @@ import {
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { colors, typography, components } from '../styles/designSystem';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
 import { DatabaseJournalEntry } from '../config/supabase';
@@ -88,39 +89,17 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onPress }) => {
     <TouchableOpacity style={styles.entryCard} onPress={onPress}>
       <View style={styles.entryCardHeader}>
         <Text style={styles.entryDate}>{formatDate(entry.created_at)}</Text>
-        <View style={styles.moodContainer}>
-          <Text style={styles.moodEmoji}>{getMoodEmoji(entry.mood_rating ?? null)}</Text>
-          {entry.mood_rating && (
-            <Text style={styles.moodText}>{entry.mood_rating}/5</Text>
-          )}
-        </View>
+        <Text style={styles.moodEmoji}>{getMoodEmoji(entry.mood_rating ?? null)}</Text>
       </View>
-      <Text style={styles.entryPreview} numberOfLines={2}>
+
+      <Text style={styles.entryPreview} numberOfLines={3}>
         {getPreviewText(entry.content)}
       </Text>
 
-      {entry.ai_insights && entry.ai_insights.length > 0 && (
-        <View style={styles.insightPreview}>
-          <View style={styles.insightHeader}>
-            <Text style={styles.insightIcon}>🧠</Text>
-            <Text style={styles.insightLabel}>AI Insight</Text>
-          </View>
-          <Text style={styles.insightText} numberOfLines={1}>
-            {entry.ai_insights[0].insight_text}
-          </Text>
-        </View>
-      )}
-
       <View style={styles.entryCardFooter}>
-        <View style={styles.footerLeft}>
-          <Text style={styles.wordCount}>
-            {entry.word_count || entry.content.split(' ').length} words
-          </Text>
-          {entry.ai_insights && entry.ai_insights.length > 0 && (
-            <Text style={styles.insightCount}>• {entry.ai_insights.length} insight{entry.ai_insights.length !== 1 ? 's' : ''}</Text>
-          )}
-        </View>
-        <Text style={styles.readMore}>Tap to read more →</Text>
+        <Text style={styles.wordCount}>
+          {entry.word_count || entry.content.split(' ').length} words
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -130,8 +109,8 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
   if (isLoading) {
     return (
       <View style={styles.statsContainer}>
-        <View style={styles.statsGrid}>
-          {[1, 2, 3, 4].map(i => (
+        <View style={styles.statsRow}>
+          {[1, 2, 3].map(i => (
             <View key={i} style={[styles.statCard, styles.loadingCard]}>
               <View style={styles.loadingText} />
             </View>
@@ -143,30 +122,20 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
 
   return (
     <View style={styles.statsContainer}>
-      <Text style={styles.statsTitle}>Your Journey</Text>
-      <View style={styles.statsGrid}>
+      <View style={styles.statsRow}>
         <View style={styles.statCard}>
-          <Text style={styles.statIcon}>🔥</Text>
           <Text style={styles.statNumber}>{stats.currentStreak}</Text>
           <Text style={styles.statLabel}>Day Streak</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statIcon}>📔</Text>
           <Text style={styles.statNumber}>{stats.totalEntries}</Text>
-          <Text style={styles.statLabel}>Total Entries</Text>
+          <Text style={styles.statLabel}>Entries</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statIcon}>😊</Text>
           <Text style={styles.statNumber}>{stats.averageMood.toFixed(1)}</Text>
           <Text style={styles.statLabel}>Avg Mood</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Text style={styles.statIcon}>📝</Text>
-          <Text style={styles.statNumber}>{stats.entriesThisMonth}</Text>
-          <Text style={styles.statLabel}>This Month</Text>
         </View>
       </View>
     </View>
@@ -259,29 +228,60 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      {onBack && (
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Dashboard</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-      )}
+      <StatusBar style="light" backgroundColor={colors.background} />
 
       <View style={styles.content}>
         <StatsHeader stats={stats} isLoading={isLoading} />
 
-        <DiaryView
-          entries={entries}
-          isLoading={isLoading}
-          isRefreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          onNewEntry={onNewEntry}
-          onEntryPress={onEntryPress}
-          onEditEntry={handleEditEntry}
-          onChatMessage={handleChatMessage}
-        />
+        <ScrollView
+          style={styles.entriesContainer}
+          contentContainerStyle={styles.entriesContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.entriesHeader}>
+            <Text style={styles.entriesTitle}>Recent Entries</Text>
+            <TouchableOpacity style={styles.newEntryButton} onPress={onNewEntry}>
+              <Text style={styles.newEntryButtonText}>+ New</Text>
+            </TouchableOpacity>
+          </View>
+
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              {[1, 2, 3].map(i => (
+                <View key={i} style={[styles.entryCard, styles.loadingCard]}>
+                  <View style={styles.loadingText} />
+                </View>
+              ))}
+            </View>
+          ) : entries.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateIcon}>📝</Text>
+              <Text style={styles.emptyStateTitle}>Start Your Journey</Text>
+              <Text style={styles.emptyStateDescription}>
+                Write your first journal entry to begin tracking your thoughts and growth.
+              </Text>
+              <TouchableOpacity style={styles.primaryButton} onPress={onNewEntry}>
+                <Text style={styles.primaryButtonText}>Create First Entry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            entries.map((entry) => (
+              <EntryCard
+                key={entry.id}
+                entry={entry}
+                onPress={() => onEntryPress(entry)}
+              />
+            ))
+          )}
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -290,202 +290,111 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray100,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
-  },
-  backButton: {
-    padding: 8,
-  },
-  backButtonText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.gray900,
-  },
-  headerSpacer: {
-    width: 50,
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
   },
+
+  // Compact Stats Header (MyDiary Style)
   statsContainer: {
-    backgroundColor: colors.white,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    marginBottom: 8,
+    backgroundColor: colors.backgroundSecondary,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
-  statsTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.gray900,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  statsGrid: {
+  statsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   statCard: {
-    backgroundColor: colors.gray100,
-    borderRadius: 12,
-    padding: 16,
     alignItems: 'center',
-    width: '48%',
-    marginBottom: 12,
-  },
-  statIcon: {
-    fontSize: 24,
-    marginBottom: 8,
+    flex: 1,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: colors.gray900,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: colors.gray600,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
-  entriesSection: {
-    backgroundColor: colors.white,
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 20,
-    minHeight: 400,
+
+  // Entries Section
+  entriesContainer: {
+    flex: 1,
   },
-  entriesSectionHeader: {
+  entriesContent: {
+    padding: 16,
+  },
+  entriesHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  entriesSectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.gray900,
+  entriesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
   newEntryButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   newEntryButtonText: {
     color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
-  entriesList: {
-    gap: 16,
-  },
+
+  // Dark Entry Cards (MyDiary Style)
   entryCard: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
     padding: 16,
-    ...components.card,
-    borderWidth: 1,
-    borderColor: colors.gray200,
+    marginBottom: 12,
   },
   entryCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   entryDate: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.gray700,
-  },
-  moodContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    fontSize: 12,
+    color: colors.primaryLight,
+    fontWeight: '500',
   },
   moodEmoji: {
     fontSize: 16,
   },
-  moodText: {
-    fontSize: 12,
-    color: colors.gray600,
-  },
   entryPreview: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: colors.gray800,
-    marginBottom: 12,
-  },
-  insightPreview: {
-    backgroundColor: colors.gray50,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-  },
-  insightHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  insightIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  insightLabel: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  insightText: {
     fontSize: 14,
-    color: colors.gray700,
     lineHeight: 20,
-    fontStyle: 'italic',
+    color: colors.textPrimary,
+    marginBottom: 8,
   },
   entryCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   wordCount: {
     fontSize: 12,
-    color: colors.gray500,
+    color: colors.textMuted,
   },
-  insightCount: {
-    fontSize: 12,
-    color: colors.primary,
-    marginLeft: 8,
-  },
-  readMore: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-  },
+
+  // Empty State & Loading
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyStateIcon: {
     fontSize: 48,
@@ -494,12 +403,12 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.gray900,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   emptyStateDescription: {
     fontSize: 16,
-    color: colors.gray600,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
@@ -507,7 +416,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: colors.primary,
-    borderRadius: components.button.borderRadius,
+    borderRadius: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
   },
@@ -516,25 +425,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  viewMoreButton: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    marginTop: 8,
-  },
-  viewMoreButtonText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
   loadingContainer: {
-    gap: 16,
+    gap: 12,
   },
   loadingCard: {
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.backgroundTertiary,
   },
   loadingText: {
-    height: 20,
-    backgroundColor: colors.gray200,
+    height: 16,
+    backgroundColor: colors.backgroundTertiary,
     borderRadius: 4,
     marginBottom: 8,
   },

@@ -29,6 +29,48 @@ export interface JournalEntryWithInsights extends DatabaseJournalEntry {
 }
 
 export class JournalService {
+  /**
+   * Get journal entries within a date range
+   */
+  static async getUserEntriesInDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
+    entries: JournalEntryWithInsights[];
+    error: any;
+  }> {
+    try {
+      const { data: entries, error } = await supabase
+        .from('journal_entries')
+        .select(`
+          *,
+          ai_insights (
+            id,
+            insight_text,
+            follow_up_question,
+            confidence,
+            is_premium,
+            created_at
+          )
+        `)
+        .eq('user_id', userId)
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching entries in date range:', error);
+        return { entries: [], error };
+      }
+
+      return { entries: entries || [], error: null };
+    } catch (error) {
+      console.error('Unexpected error fetching entries in date range:', error);
+      return { entries: [], error };
+    }
+  }
+
   // Create a new journal entry
   static async createEntry(userId: string, data: CreateJournalEntryData): Promise<{
     entry: DatabaseJournalEntry | null;

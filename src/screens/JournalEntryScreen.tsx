@@ -12,32 +12,47 @@ import {
   Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { colors, typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
 import { AIInsightService, AIInsight, JournalEntry, UserContext } from '../services/aiInsightService';
-import { AIInsightDisplay } from '../components/AIInsightDisplay';
+import { ChatService, ChatMessage } from '../services/chatService';
 
 interface JournalEntryScreenProps {
   userId: string;
   onPaywallRequired?: () => void;
   onEntryComplete?: (entry: any, insight?: any) => void;
   onBack?: () => void;
+  initialDate?: Date;
 }
-
-type FlowState = 'writing' | 'saving' | 'generating_insight' | 'showing_insight' | 'success';
 
 export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   userId,
   onPaywallRequired,
   onEntryComplete,
-  onBack
+  onBack,
+  initialDate
 }) => {
+  // Entry content state
+  const [title, setTitle] = useState('');
   const [entryText, setEntryText] = useState('');
-  const [moodRating, setMoodRating] = useState<number | null>(null);
-  const [flowState, setFlowState] = useState<FlowState>('writing');
+  const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
+  const [selectedMood, setSelectedMood] = useState<string>('😐'); // Emoji string instead of number
+
+  // Flow state
+  const [isSaving, setIsSaving] = useState(false);
   const [savedEntry, setSavedEntry] = useState<any>(null);
-  const [generatedInsight, setGeneratedInsight] = useState<AIInsight | null>(null);
-  const [fadeAnim] = useState(new Animated.Value(1));
+
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [currentChatMessage, setCurrentChatMessage] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [initialInsight, setInitialInsight] = useState<string | null>(null);
+  const [hasGeneratedInitialInsight, setHasGeneratedInitialInsight] = useState(false);
+
+  // Summary state
+  const [summary, setSummary] = useState<string | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
 
   // Mock user context - in production this would come from user preferences
   const mockUserContext: UserContext = {
@@ -46,13 +61,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     subscriptionStatus: 'free'
   };
 
-  const handleContinue = () => {
-    setFlowState('success');
-    setTimeout(() => {
-      if (onEntryComplete) {
-        onEntryComplete(savedEntry, generatedInsight);
-      }
-    }, 1500);
+  // Convert mood emoji to number for compatibility
+  const getMoodRating = (emoji: string): number => {
+    const moodMap: { [key: string]: number } = {
+      '😢': 1, '😕': 2, '😐': 3, '😊': 4, '😄': 5
+    };
+    return moodMap[emoji] || 3;
   };
 
   const handleSaveEntry = async () => {
@@ -61,23 +75,22 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       return;
     }
 
-    setFlowState('saving');
+    setIsSaving(true);
 
     try {
       // Save entry to database
       const { entry, error } = await JournalService.createEntry(userId, {
         content: entryText.trim(),
-        moodRating: moodRating ?? undefined
+        moodRating: getMoodRating(selectedMood)
       });
 
       if (error) {
         Alert.alert('Error', 'Failed to save your entry. Please try again.');
-        setFlowState('writing');
+        setIsSaving(false);
         return;
       }
 
       setSavedEntry(entry);
-      setFlowState('generating_insight');
 
       // Convert to AIInsight format
       const journalEntry: JournalEntry = {
@@ -88,7 +101,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         userId: entry!.user_id
       };
 
-      // Auto-generate AI insight
+      // Auto-generate initial AI insight
       try {
         const insight = await AIInsightService.generateInsight(
           journalEntry,
@@ -96,217 +109,319 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           []
         );
 
-        setGeneratedInsight(insight);
+        setInitialInsight(insight.insight);
+        setHasGeneratedInitialInsight(true);
 
         // Save insight to database
         try {
           await AIInsightService.saveInsightToDatabase(userId, entry!.id, insight);
         } catch (saveError) {
           console.error('Failed to save insight to database:', saveError);
-          // Continue with flow even if save fails
         }
 
-        setFlowState('showing_insight');
-
       } catch (insightError) {
-        // If insight generation fails (e.g., paywall), still show success
         console.log('Insight generation failed:', insightError);
         if (insightError instanceof Error && insightError.message.includes('Premium subscription required')) {
           onPaywallRequired?.();
           return;
         }
-
-        setFlowState('success');
+        // Continue without insight if generation fails
       }
+
+      setIsSaving(false);
 
     } catch (error) {
       console.error('Error saving entry:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
-      setFlowState('writing');
+      setIsSaving(false);
     }
   };
 
-  const getMoodEmoji = (rating: number) => {
-    switch (rating) {
-      case 1: return '😢';
-      case 2: return '😕';
-      case 3: return '😐';
-      case 4: return '😊';
-      case 5: return '😄';
-      default: return '😐';
+  // Chat functionality
+  const handleSendChatMessage = async () => {
+    if (!currentChatMessage.trim() || !savedEntry) return;
+
+    const messageToSend = currentChatMessage.trim();
+    setCurrentChatMessage('');
+    setIsChatLoading(true);
+
+    try {
+      const { userMessage, aiResponse, error } = await ChatService.sendMessage(
+        userId,
+        savedEntry.id,
+        messageToSend,
+        entryText // Include journal context
+      );
+
+      if (error) {
+        console.error('Chat error:', error);
+        Alert.alert('Error', 'Failed to send message. Please try again.');
+        return;
+      }
+
+      // Add both messages to the chat
+      setChatMessages(prev => [...prev, userMessage, aiResponse]);
+    } catch (error) {
+      console.error('Unexpected chat error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsChatLoading(false);
     }
   };
 
-  const getMoodLabel = (rating: number) => {
-    switch (rating) {
-      case 1: return 'Very Low';
-      case 2: return 'Low';
-      case 3: return 'Neutral';
-      case 4: return 'Good';
-      case 5: return 'Great';
-      default: return 'Neutral';
+  // Summary functionality
+  const handleGenerateSummary = async () => {
+    if (!savedEntry) return;
+
+    setIsSummaryLoading(true);
+
+    try {
+      // Generate summary based on entry and chat history
+      const conversationContext = chatMessages.map(msg =>
+        `${msg.role === 'user' ? 'User' : 'Claude'}: ${msg.content}`
+      ).join('\n');
+
+      const summaryPrompt = `Please provide a concise summary of this journal entry and our conversation:\n\nJournal Entry: "${entryText}"\n\nConversation:\n${conversationContext}`;
+
+      // Use the same Claude integration as chat
+      const { userMessage, aiResponse, error } = await ChatService.sendMessage(
+        userId,
+        savedEntry.id,
+        summaryPrompt,
+        entryText
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      setSummary(aiResponse.content);
+
+      // Save summary to database (entry_summaries table)
+      // This would need a new service method, for now just store in state
+
+    } catch (error) {
+      console.error('Summary generation error:', error);
+      Alert.alert('Error', 'Failed to generate summary. Please try again.');
+    } finally {
+      setIsSummaryLoading(false);
     }
   };
 
-  const renderMoodSelector = () => (
-    <View style={styles.moodSection}>
-      <Text style={styles.sectionTitle}>How are you feeling? (Optional)</Text>
-      <View style={styles.moodGrid}>
-        {[1, 2, 3, 4, 5].map((rating) => (
-          <TouchableOpacity
-            key={rating}
-            style={[
-              styles.moodButton,
-              moodRating === rating && styles.moodButtonSelected
-            ]}
-            onPress={() => setMoodRating(rating)}
-          >
-            <Text style={styles.moodEmoji}>{getMoodEmoji(rating)}</Text>
-            <Text style={[
-              styles.moodLabel,
-              moodRating === rating && styles.moodLabelSelected
-            ]}>
-              {getMoodLabel(rating)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+  // Mood selection helpers
+  const moodEmojis = ['😢', '😕', '😐', '😊', '😄'];
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  // Render Header (MyDiary style)
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <TouchableOpacity onPress={onBack} style={styles.closeButton}>
+        <Text style={styles.closeButtonText}>✕</Text>
+      </TouchableOpacity>
+      <View style={styles.headerCenter} />
+      <View style={styles.headerRight}>
+        <TouchableOpacity style={styles.menuButton}>
+          <Text style={styles.menuButtonText}>•••</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.saveButton, { opacity: entryText.trim() ? 1 : 0.5 }]}
+          onPress={handleSaveEntry}
+          disabled={!entryText.trim() || isSaving}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaving ? 'SAVING...' : 'SAVE'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 
-  const renderWritingState = () => (
-    <>
-      <Text style={styles.promptText}>What's on your mind today?</Text>
+  // Render Date and Mood Row
+  const renderDateMoodRow = () => (
+    <View style={styles.dateMoodRow}>
+      <TouchableOpacity style={styles.dateSelector}>
+        <Text style={styles.dateSelectorText}>
+          {formatDate(selectedDate)} ▼
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.moodSelector}
+        onPress={() => {
+          const currentIndex = moodEmojis.indexOf(selectedMood);
+          const nextIndex = (currentIndex + 1) % moodEmojis.length;
+          setSelectedMood(moodEmojis[nextIndex]);
+        }}
+      >
+        <Text style={styles.moodEmoji}>{selectedMood}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
+  // Section A: Journal Entry Area
+  const renderJournalSection = () => (
+    <View style={styles.journalSection}>
       <TextInput
-        style={styles.journalInput}
+        style={styles.titleInput}
+        placeholder="Title"
+        placeholderTextColor={colors.placeholderText}
+        value={title}
+        onChangeText={setTitle}
+        editable={!savedEntry}
+      />
+      <TextInput
+        style={styles.contentInput}
         multiline
-        placeholder="Share your thoughts, feelings, and experiences..."
+        placeholder="Write more here..."
+        placeholderTextColor={colors.placeholderText}
         value={entryText}
         onChangeText={setEntryText}
         textAlignVertical="top"
-        editable={flowState === 'writing'}
+        editable={!savedEntry}
       />
-
-      {renderMoodSelector()}
-
-      <TouchableOpacity
-        style={[styles.saveButton, { opacity: entryText.trim() ? 1 : 0.5 }]}
-        onPress={handleSaveEntry}
-        disabled={!entryText.trim()}
-      >
-        <Text style={styles.saveButtonText}>📝 Save & Get Insight</Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderSavingState = () => (
-    <View style={styles.statusContainer}>
-      <Text style={styles.statusIcon}>💾</Text>
-      <Text style={styles.statusTitle}>Saving your entry...</Text>
-      <Text style={styles.statusSubtitle}>Your thoughts are being saved securely</Text>
+      <View style={styles.formattingToolbar}>
+        <Text style={styles.toolbarIcon}>🎨</Text>
+        <Text style={styles.toolbarIcon}>📷</Text>
+        <Text style={styles.toolbarIcon}>⭐</Text>
+        <Text style={styles.toolbarIcon}>😊</Text>
+        <Text style={styles.toolbarIcon}>Tt</Text>
+        <Text style={styles.toolbarIcon}>📝</Text>
+        <Text style={styles.toolbarIcon}>🏷️</Text>
+      </View>
     </View>
   );
 
-  const renderGeneratingInsightState = () => (
-    <View style={styles.statusContainer}>
-      <Text style={styles.statusIcon}>🧠</Text>
-      <Text style={styles.statusTitle}>Generating your insight...</Text>
-      <Text style={styles.statusSubtitle}>AI is analyzing your entry</Text>
-    </View>
-  );
+  // Section B: AI Chat Area
+  const renderChatSection = () => {
+    if (!savedEntry) return null;
 
-  const renderShowingInsightState = () => (
-    <>
-      <View style={styles.completedEntry}>
-        <Text style={styles.completedTitle}>✅ Entry Saved!</Text>
-        <Text style={styles.completedContent}>{entryText}</Text>
-        {moodRating && (
-          <Text style={styles.completedMood}>
-            Mood: {getMoodEmoji(moodRating)} {getMoodLabel(moodRating)}
+    return (
+      <View style={styles.chatSection}>
+        {/* Initial AI Insight */}
+        {initialInsight && (
+          <View style={styles.insightBubble}>
+            <View style={styles.insightHeader}>
+              <Text style={styles.insightIcon}>🤖</Text>
+              <Text style={styles.insightLabel}>AI INSIGHT</Text>
+            </View>
+            <Text style={styles.insightText}>{initialInsight}</Text>
+          </View>
+        )}
+
+        {/* Chat History */}
+        <ScrollView style={styles.chatHistory} showsVerticalScrollIndicator={false}>
+          {chatMessages.map((message) => (
+            <View
+              key={message.id}
+              style={[
+                styles.chatBubble,
+                message.role === 'user' ? styles.userBubble : styles.claudeBubble
+              ]}
+            >
+              <Text
+                style={[
+                  styles.chatBubbleText,
+                  message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                ]}
+              >
+                {message.role === 'assistant' ? '🤖 ' : '💬 '}
+                {message.content}
+              </Text>
+            </View>
+          ))}
+          {isChatLoading && (
+            <View style={styles.claudeBubble}>
+              <Text style={styles.claudeBubbleText}>🤖 Thinking...</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Chat Input */}
+        <View style={styles.chatInputContainer}>
+          <TextInput
+            style={styles.chatInput}
+            placeholder="Type response..."
+            placeholderTextColor={colors.placeholderText}
+            value={currentChatMessage}
+            onChangeText={setCurrentChatMessage}
+            multiline
+            editable={!isChatLoading}
+          />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!currentChatMessage.trim() || isChatLoading) && styles.sendButtonDisabled
+            ]}
+            onPress={handleSendChatMessage}
+            disabled={!currentChatMessage.trim() || isChatLoading}
+          >
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  // Section C: Summary Feature
+  const renderSummarySection = () => {
+    if (!savedEntry || (chatMessages.length === 0 && !initialInsight)) return null;
+
+    return (
+      <View style={styles.summarySection}>
+        <TouchableOpacity
+          style={[
+            styles.summariseButton,
+            isSummaryLoading && styles.summariseButtonDisabled
+          ]}
+          onPress={handleGenerateSummary}
+          disabled={isSummaryLoading}
+        >
+          <Text style={styles.summariseButtonText}>
+            {isSummaryLoading ? 'GENERATING...' : 'SUMMARISE'}
           </Text>
+        </TouchableOpacity>
+
+        {summary && (
+          <View style={styles.summaryDisplay}>
+            <Text style={styles.summaryTitle}>📋 Summary</Text>
+            <Text style={styles.summaryText}>{summary}</Text>
+          </View>
         )}
       </View>
+    );
+  };
 
-      {generatedInsight && savedEntry && (
-        <AIInsightDisplay
-          journalEntry={{
-            id: savedEntry.id,
-            content: savedEntry.content,
-            moodRating: savedEntry.mood_rating,
-            createdAt: savedEntry.created_at,
-            userId: savedEntry.user_id
-          }}
-          userContext={mockUserContext}
-          onPaywallRequired={onPaywallRequired}
-        />
-      )}
-
-      <TouchableOpacity
-        style={styles.continueButton}
-        onPress={handleContinue}
-      >
-        <Text style={styles.continueButtonText}>Continue to Dashboard</Text>
-      </TouchableOpacity>
+  // Main render with 3-section layout
+  const renderContent = () => (
+    <>
+      {renderDateMoodRow()}
+      {renderJournalSection()}
+      {renderChatSection()}
+      {renderSummarySection()}
     </>
   );
-
-  const renderSuccessState = () => (
-    <Animated.View style={[styles.successContainer, { opacity: fadeAnim }]}>
-      <Text style={styles.successIcon}>🎉</Text>
-      <Text style={styles.successTitle}>Entry Saved Successfully!</Text>
-      <Text style={styles.successSubtitle}>Great job journaling today</Text>
-    </Animated.View>
-  );
-
-  const renderCurrentState = () => {
-    switch (flowState) {
-      case 'saving':
-        return renderSavingState();
-      case 'generating_insight':
-        return renderGeneratingInsightState();
-      case 'showing_insight':
-        return renderShowingInsightState();
-      case 'success':
-        return renderSuccessState();
-      default:
-        return renderWritingState();
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="light" backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={onBack}
-            disabled={flowState === 'saving' || flowState === 'generating_insight'}
-          >
-            <Text style={[
-              styles.backButtonText,
-              (flowState === 'saving' || flowState === 'generating_insight') && styles.backButtonDisabled
-            ]}>
-              ← Back
-            </Text>
-          </TouchableOpacity>
-          <Text style={styles.screenTitle}>
-            {flowState === 'writing' ? 'New Entry' :
-             flowState === 'saving' ? 'Saving...' :
-             flowState === 'generating_insight' ? 'Analyzing...' :
-             flowState === 'showing_insight' ? 'Your Insight' :
-             'Complete!'}
-          </Text>
-        </View>
+        {renderHeader()}
 
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          {renderCurrentState()}
+          {renderContent()}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -316,197 +431,264 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.background,
   },
   flex: {
     flex: 1,
   },
+
+  // Header (MyDiary Style)
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    paddingBottom: 16,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.backgroundSecondary,
   },
-  backButton: {
-    marginRight: 15,
-    padding: 8,
+  closeButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 16,
-    color: colors.primary,
+  closeButtonText: {
+    fontSize: 18,
+    color: colors.textPrimary,
     fontWeight: '600',
   },
-  backButtonDisabled: {
-    color: colors.gray400,
+  headerCenter: {
+    flex: 1,
   },
-  screenTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.gray900,
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
+  menuButton: {
+    marginRight: 12,
+    padding: 8,
+  },
+  menuButtonText: {
+    fontSize: 18,
+    color: colors.textPrimary,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  saveButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    padding: 16,
   },
-  promptText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.gray800,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  journalInput: {
-    backgroundColor: colors.white,
-    padding: 20,
-    minHeight: 200,
-    fontSize: 16,
-    lineHeight: 24,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    marginBottom: 24,
-    textAlignVertical: 'top',
-    fontFamily: typography.body.fontFamily,
-    ...components.card,
-  },
-  moodSection: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.gray800,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  moodGrid: {
+
+  // Date and Mood Row
+  dateMoodRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 8,
-  },
-  moodButton: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderRadius: components.button.borderRadius,
-    padding: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.gray200,
-    minHeight: 80,
+    marginBottom: 24,
+    paddingHorizontal: 4,
   },
-  moodButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '10',
+  dateSelector: {
+    flex: 1,
+  },
+  dateSelectorText: {
+    fontSize: 16,
+    color: colors.primaryLight,
+    fontWeight: '500',
+  },
+  moodSelector: {
+    padding: 8,
   },
   moodEmoji: {
     fontSize: 24,
-    marginBottom: 4,
   },
-  moodLabel: {
-    fontSize: 12,
-    color: colors.gray600,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  moodLabelSelected: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    borderRadius: components.button.borderRadius,
-    padding: 18,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  saveButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  statusContainer: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
-  },
-  statusIcon: {
-    fontSize: 64,
+
+  // Section A: Journal Entry
+  journalSection: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 24,
   },
-  statusTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.gray900,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  statusSubtitle: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-  },
-  completedEntry: {
-    backgroundColor: colors.white,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: colors.success,
-    ...components.card,
-  },
-  completedTitle: {
+  titleInput: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.success,
+    fontWeight: '600',
+    color: colors.textPrimary,
     marginBottom: 12,
-    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.cardBorder,
+    paddingBottom: 8,
   },
-  completedContent: {
+  contentInput: {
     fontSize: 16,
-    color: colors.gray800,
+    color: colors.textPrimary,
+    minHeight: 150,
+    textAlignVertical: 'top',
     lineHeight: 24,
+    marginBottom: 16,
+  },
+  formattingToolbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
+  },
+  toolbarIcon: {
+    fontSize: 18,
+    padding: 8,
+  },
+
+  // Section B: Chat Area
+  chatSection: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    minHeight: 200,
+    maxHeight: 400,
+  },
+  insightBubble: {
+    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  insightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  insightIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  insightLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+    textTransform: 'uppercase',
+  },
+  insightText: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    lineHeight: 20,
+  },
+  chatHistory: {
+    flex: 1,
     marginBottom: 12,
   },
-  completedMood: {
-    fontSize: 14,
-    color: colors.gray600,
-    textAlign: 'center',
-    fontStyle: 'italic',
+  chatBubble: {
+    marginBottom: 8,
+    maxWidth: '80%',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
-  continueButton: {
+  userBubble: {
+    alignSelf: 'flex-end',
     backgroundColor: colors.primary,
-    borderRadius: components.button.borderRadius,
-    padding: 18,
-    alignItems: 'center',
-    marginTop: 24,
+    borderBottomRightRadius: 4,
   },
-  continueButtonText: {
+  claudeBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.backgroundTertiary,
+    borderBottomLeftRadius: 4,
+  },
+  chatBubbleText: {
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  userBubbleText: {
     color: colors.white,
-    fontSize: 18,
+  },
+  claudeBubbleText: {
+    color: colors.textPrimary,
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
+  },
+  chatInput: {
+    flex: 1,
+    backgroundColor: colors.inputBackground,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    color: colors.textPrimary,
+    fontSize: 14,
+    maxHeight: 80,
+  },
+  sendButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  sendButtonDisabled: {
+    backgroundColor: colors.textMuted,
+  },
+  sendButtonText: {
+    color: colors.white,
+    fontSize: 14,
     fontWeight: '600',
   },
-  successContainer: {
+
+  // Section C: Summary
+  summarySection: {
     alignItems: 'center',
-    paddingVertical: 80,
-    paddingHorizontal: 20,
-  },
-  successIcon: {
-    fontSize: 80,
     marginBottom: 24,
   },
-  successTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.success,
-    marginBottom: 8,
+  summariseButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  summariseButtonDisabled: {
+    borderColor: colors.textMuted,
+  },
+  summariseButtonText: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
     textAlign: 'center',
   },
-  successSubtitle: {
-    fontSize: 18,
-    color: colors.gray600,
-    textAlign: 'center',
+  summaryDisplay: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primaryLight,
+    marginBottom: 8,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    lineHeight: 20,
   },
 });
