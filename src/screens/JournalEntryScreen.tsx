@@ -55,8 +55,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     chatMessages.forEach((msg, index) => {
       console.log(`   ${index + 1}. [${msg.role}] ${msg.content.substring(0, 50)}...`);
     });
-    // Force re-render after state change
-    setRenderKey(prev => prev + 1);
   }, [chatMessages]);
   const chatScrollViewRef = useRef<ScrollView>(null);
   const [initialInsight, setInitialInsight] = useState<string | null>(null);
