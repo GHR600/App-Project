@@ -426,123 +426,110 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   );
 
   // Section B: AI Chat Area
-  const renderChatSection = () => {
-    if (!savedEntry) {
-      return (
-        <View style={styles.chatSection}>
-          <View style={styles.chatPlaceholder}>
-            <Text style={styles.chatPlaceholderIcon}>💬</Text>
-            <Text style={styles.chatPlaceholderTitle}>Chat with AI</Text>
-            <Text style={styles.chatPlaceholderText}>
-              Save your journal entry first to start chatting with AI about your thoughts and feelings.
-            </Text>
-          </View>
-        </View>
-      );
-    }
-
+const renderChatSection = () => {
+  if (!savedEntry) {
     return (
       <View style={styles.chatSection}>
-        {/* Initial AI Insight */}
-        {initialInsight && (
-          <View style={styles.insightBubble}>
-            <View style={styles.insightHeader}>
-              <Text style={styles.insightIcon}>🤖</Text>
-              <Text style={styles.insightLabel}>AI INSIGHT</Text>
-            </View>
-            <Text style={styles.insightText}>{initialInsight}</Text>
-          </View>
-        )}
-
-        {/* Chat History */}
-        <ScrollView
-          ref={chatScrollViewRef}
-          style={styles.chatHistory}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => scrollToBottom()}
-        >
-          {chatMessages.length === 0 ? (
-            <Text style={{ padding: 20, textAlign: 'center', color: '#666' }}>
-              No messages yet. Start a conversation!
-            </Text>
-          ) : (
-            chatMessages.map((message, index) => (
-              <View
-                key={`${message.id}-${index}`}
-                style={[
-                  styles.chatBubble,
-                  message.role === 'user' ? styles.userBubble : styles.claudeBubble
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.chatBubbleText,
-                    message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
-                  ]}
-                >
-                  {message.role === 'assistant' ? '🤖 ' : '💬 '}
-                  {message.content}
-                </Text>
-                <Text style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
-                  ID: {message.id} | Role: {message.role}
-                </Text>
-              </View>
-            ))
-          )}
-          {isChatLoading && (
-            <View style={styles.claudeBubble}>
-              <Text style={styles.claudeBubbleText}>🤖 Thinking...</Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Debug: Add test message button */}
-        <TouchableOpacity
-          style={{ backgroundColor: '#ff0000', padding: 10, margin: 5, borderRadius: 5 }}
-          onPress={() => {
-            console.log('🧪 Adding test message');
-            const testMessage: ChatMessage = {
-              id: `test-${Date.now()}`,
-              role: 'user',
-              content: 'Test message to debug UI',
-              timestamp: new Date().toISOString(),
-              journalEntryId: savedEntry?.id || 'test',
-              userId: userId || 'test',
-            };
-            setChatMessages(prev => [...prev, testMessage]);
-          }}
-        >
-          <Text style={{ color: 'white' }}>🧪 Add Test Message</Text>
-        </TouchableOpacity>
-
-        {/* Chat Input */}
-        <View style={styles.chatInputContainer}>
-          <TextInput
-            style={styles.chatInput}
-            placeholder="Type response..."
-            placeholderTextColor={colors.placeholderText}
-            value={currentChatMessage}
-            onChangeText={setCurrentChatMessage}
-            multiline
-            editable={!isChatLoading}
-            onSubmitEditing={handleSendChatMessage}
-            returnKeyType="send"
-            blurOnSubmit={false}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!currentChatMessage.trim() || isChatLoading) && styles.sendButtonDisabled
-            ]}
-            onPress={handleSendChatMessage}
-            disabled={!currentChatMessage.trim() || isChatLoading}
-          >
-            <Text style={styles.sendButtonText}>Send</Text>
-          </TouchableOpacity>
+        <View style={styles.chatPlaceholder}>
+          <Text style={styles.chatPlaceholderIcon}>💬</Text>
+          <Text style={styles.chatPlaceholderTitle}>Chat with AI</Text>
+          <Text style={styles.chatPlaceholderText}>
+            Save your journal entry first to start chatting with AI about your thoughts and feelings.
+          </Text>
         </View>
       </View>
     );
-  };
+  }
+
+  return (
+    <View style={[
+      styles.chatSection, 
+      { 
+        minHeight: 800, 
+        flex: 1, 
+        marginBottom: 20,
+        backgroundColor: colors.surface  // Ensure grey background
+      }
+    ]}>
+      {/* Initial AI Insight */}
+      {initialInsight && (
+        <View style={styles.insightBubble}>
+          <View style={styles.insightHeader}>
+            <Text style={styles.insightIcon}>🤖</Text>
+            <Text style={styles.insightLabel}>AI INSIGHT</Text>
+          </View>
+          <Text style={styles.insightText}>{initialInsight}</Text>
+        </View>
+      )}
+
+      <ScrollView
+        ref={chatScrollViewRef}
+        style={{ 
+          flex: 1, 
+          minHeight: 400,
+          backgroundColor: 'transparent'  // Make ScrollView transparent
+        }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+      >
+        {chatMessages.length === 0 ? (
+          <Text style={{ padding: 20, textAlign: 'center', color: '#666' }}>
+            No messages yet. Start a conversation!
+          </Text>
+        ) : (
+          chatMessages.map((message, index) => (
+            <View
+              key={`${message.id}-${index}`}
+              style={[
+                styles.chatBubble,
+                message.role === 'user' ? styles.userBubble : styles.claudeBubble
+              ]}
+            >
+              <Text
+                style={[
+                  styles.chatBubbleText,
+                  message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                ]}
+              >
+                {message.role === 'assistant' ? '🤖 ' : '💬 '}
+                {message.content}
+              </Text>
+            </View>
+          ))
+        )}
+        {isChatLoading && (
+          <View style={styles.claudeBubble}>
+            <Text style={styles.claudeBubbleText}>🤖 Thinking...</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Chat Input */}
+      <View style={[styles.chatInputContainer, { marginBottom: 30 }]}>
+        <TextInput
+          style={styles.chatInput}
+          placeholder="Type response..."
+          placeholderTextColor={colors.placeholderText}
+          value={currentChatMessage}
+          onChangeText={setCurrentChatMessage}
+          multiline
+          editable={!isChatLoading}
+        />
+        <TouchableOpacity
+          style={[
+            styles.sendButton,
+            (!currentChatMessage.trim() || isChatLoading) && styles.sendButtonDisabled
+          ]}
+          onPress={handleSendChatMessage}
+          disabled={!currentChatMessage.trim() || isChatLoading}
+        >
+          <Text style={styles.sendButtonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
   // Section C: Summary Feature
   const renderSummarySection = () => {
