@@ -47,7 +47,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentChatMessage, setCurrentChatMessage] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [renderKey, setRenderKey] = useState(0); // Force re-render when needed
 
   // Debug: Log whenever chatMessages state changes
   useEffect(() => {
@@ -457,13 +456,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
         {/* Chat History */}
         <ScrollView
-          key={`chat-scroll-${renderKey}`}
           ref={chatScrollViewRef}
           style={styles.chatHistory}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => scrollToBottom()}
         >
-          {console.log('🎨 Rendering chat messages:', chatMessages.length, chatMessages.map(m => ({ id: m.id, role: m.role, content: m.content.substring(0, 30) + '...' })))}
           {chatMessages.length === 0 ? (
             <Text style={{ padding: 20, textAlign: 'center', color: '#666' }}>
               No messages yet. Start a conversation!
