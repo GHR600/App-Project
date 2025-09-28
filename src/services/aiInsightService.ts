@@ -422,18 +422,22 @@ export class AIInsightService {
       // Get auth token for server communication
       const authToken = await this.getAuthToken();
 
-      if (!authToken) {
-        console.log(`📱 [${requestId}] No auth token, using mock insights`);
-        return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
-      }
+      // Try server call first (with or without auth token)
+      try {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
 
-      // Call server endpoint for AI insight generation
-      const response = await fetch(`${this.API_BASE_URL}/api/ai/insight`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        } else {
+          console.log(`📱 [${requestId}] No auth token, trying server without auth`);
+        }
+
+        // Call server endpoint for AI insight generation
+        const response = await fetch(`${this.API_BASE_URL}/api/ai/insight`, {
+          method: 'POST',
+          headers,
         body: JSON.stringify({
           content: entry.content,
           moodRating: entry.moodRating,
@@ -447,6 +451,11 @@ export class AIInsightService {
       });
 
       if (!response.ok) {
+        // If it's an auth error, log it and fall back to mock
+        if (response.status === 401) {
+          console.log(`📱 [${requestId}] Server auth failed, falling back to mock insights`);
+          throw new Error('Authentication failed - using fallback');
+        }
         throw new Error(`Server error: ${response.status} ${response.statusText}`);
       }
 
