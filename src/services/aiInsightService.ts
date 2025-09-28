@@ -477,15 +477,22 @@ export class AIInsightService {
         isPremium: userContext.subscriptionStatus === 'premium'
       };
 
-      return insight;
+        return insight;
+
+      } catch (serverError) {
+        console.log(`📱 [${requestId}] Server call failed:`, serverError);
+        // Fall through to mock insights below
+      }
 
     } catch (error) {
       const totalDuration = Date.now() - startTime;
       console.error(`📱 [${requestId}] Failed to generate server insight after ${totalDuration}ms:`, error);
-
-      // Fall back to mock insights
-      return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
     }
+
+    // If we reach here, fall back to mock insights
+    const totalDuration = Date.now() - startTime;
+    console.log(`📱 [${requestId}] Using mock insights after ${totalDuration}ms`);
+    return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
   }
 
   /**

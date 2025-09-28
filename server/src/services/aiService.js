@@ -74,7 +74,7 @@ class AIService {
       contentLength: content.length,
       moodRating,
       hasPreferences: !!userPreferences,
-      recentEntriesCount: recentEntries.length
+      recentEntriesCount: recentEntries?.length || 0
     });
 
     const prompt = this.buildPrompt({
@@ -313,7 +313,7 @@ Requirements:
    */
   generateMockInsight({ content, moodRating, userPreferences, subscriptionStatus }) {
     const isPremium = subscriptionStatus === 'premium';
-    const primaryFocus = userPreferences.focusAreas[0] || 'general';
+    const primaryFocus = userPreferences?.focusAreas?.[0] || 'general';
 
     // Analyze content for keywords and sentiment
     const contentLower = content.toLowerCase();

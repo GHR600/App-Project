@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const aiService = require('../services/aiService');
-const UserService = require('../services/userService');
+// const UserService = require('../services/userService'); // Temporarily disabled for development
 const fetch = require('node-fetch');
 
 /**
@@ -32,8 +32,8 @@ router.post('/insight', async (req, res) => {
     const insight = await aiService.generateInsight({
       content: content.trim(),
       moodRating,
-      userPreferences,
-      recentEntries,
+      userPreferences: userPreferences || { focusAreas: ['general'], personalityType: 'supportive' },
+      recentEntries: recentEntries || [],
       subscriptionStatus: subscriptionStatus || 'free'
     });
 
@@ -81,21 +81,18 @@ router.post('/insights', async (req, res) => {
       });
     }
 
-    // Check user's tier and permissions
-    const permissionCheck = await UserService.canUserGenerateInsight(userId);
+    // Skip user tier checks in development mode
+    // const permissionCheck = await UserService.canUserGenerateInsight(userId);
+    // if (!permissionCheck.canGenerate) {
+    //   const error = new Error('Premium subscription required for AI insights');
+    //   error.name = 'SubscriptionError';
+    //   throw error;
+    // }
 
-    if (!permissionCheck.canGenerate) {
-      const error = new Error('Premium subscription required for AI insights');
-      error.name = 'SubscriptionError';
-      throw error;
-    }
-
-    // Get user context for personalized insights
-    const [userPreferences, recentEntries, userTier] = await Promise.all([
-      UserService.getUserPreferences(userId),
-      UserService.getRecentEntries(userId, 3),
-      UserService.getUserTier(userId)
-    ]);
+    // Use mock user context for development
+    const userPreferences = { focusAreas: ['general'], personalityType: 'supportive' };
+    const recentEntries = [];
+    const userTier = { subscriptionStatus: 'free', freeInsightsUsed: 0 };
 
     // Generate AI insight
     const insight = await aiService.generateInsight({
@@ -106,10 +103,10 @@ router.post('/insights', async (req, res) => {
       subscriptionStatus: userTier.subscriptionStatus
     });
 
-    // Increment usage count for free users
-    if (userTier.subscriptionStatus === 'free') {
-      await UserService.incrementFreeInsightUsage(userId);
-    }
+    // Skip usage tracking in development mode
+    // if (userTier.subscriptionStatus === 'free') {
+    //   await UserService.incrementFreeInsightUsage(userId);
+    // }
 
     // Return insight with metadata
     res.json({
@@ -165,18 +162,14 @@ router.post('/insights', async (req, res) => {
  */
 router.get('/usage', async (req, res) => {
   try {
-    const userId = req.user.id;
-    const userTier = await UserService.getUserTier(userId);
-
+    // Return mock usage stats for development
     res.json({
       success: true,
       usage: {
-        subscriptionStatus: userTier.subscriptionStatus,
-        freeInsightsUsed: userTier.freeInsightsUsed,
-        remainingFreeInsights: userTier.subscriptionStatus === 'free'
-          ? Math.max(0, 3 - userTier.freeInsightsUsed)
-          : null,
-        isUnlimited: userTier.subscriptionStatus === 'premium'
+        subscriptionStatus: 'free',
+        freeInsightsUsed: 0,
+        remainingFreeInsights: 3,
+        isUnlimited: false
       }
     });
   } catch (error) {
