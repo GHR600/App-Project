@@ -92,10 +92,21 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Auto-scroll chat to bottom when messages change
   useEffect(() => {
+    if (chatMessages.length > 0) {
+      // Use a longer timeout to ensure content has rendered
+      const timer = setTimeout(() => {
+        chatScrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [chatMessages]);
+
+  // Helper function to scroll to bottom immediately (for user actions)
+  const scrollToBottom = () => {
     setTimeout(() => {
       chatScrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, [chatMessages]);
+    }, 50);
+  };
 
   const handleSaveEntry = async () => {
     if (!entryText.trim()) {
@@ -173,6 +184,22 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     setCurrentChatMessage('');
     setIsChatLoading(true);
 
+    // Create temporary user message with unique ID for immediate display
+    const tempUserMessage: ChatMessage = {
+      id: `temp-user-${Date.now()}`,
+      role: 'user',
+      content: messageToSend,
+      timestamp: new Date().toISOString(),
+      journalEntryId: savedEntry.id,
+      userId,
+    };
+
+    // Add user message to local state immediately
+    setChatMessages(prev => [...prev, tempUserMessage]);
+
+    // Scroll to show the new user message immediately
+    scrollToBottom();
+
     try {
       const { userMessage, aiResponse, error } = await ChatService.sendMessage(
         userId,
@@ -184,19 +211,26 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       if (error) {
         console.error('Chat error:', error);
         Alert.alert('Error', 'Failed to send message. Please try again.');
-        // Restore the message text so user doesn't lose it
+        // Remove the temporary message and restore input
+        setChatMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
         setCurrentChatMessage(messageToSend);
         return;
       }
 
-      // Add both messages to the chat
+      // Replace temporary user message with real one and add AI response
       if (userMessage && aiResponse) {
-        setChatMessages(prev => [...prev, userMessage, aiResponse]);
+        setChatMessages(prev => {
+          const filtered = prev.filter(msg => msg.id !== tempUserMessage.id);
+          return [...filtered, userMessage, aiResponse];
+        });
+        // Scroll to show the AI response
+        setTimeout(() => scrollToBottom(), 100);
       }
     } catch (error) {
       console.error('Unexpected chat error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
-      // Restore the message text so user doesn't lose it
+      // Remove the temporary message and restore input
+      setChatMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
       setCurrentChatMessage(messageToSend);
     } finally {
       setIsChatLoading(false);
@@ -365,6 +399,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           ref={chatScrollViewRef}
           style={styles.chatHistory}
           showsVerticalScrollIndicator={false}
+          onContentSizeChange={() => scrollToBottom()}
         >
           {chatMessages.map((message) => (
             <View
@@ -402,6 +437,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
             onChangeText={setCurrentChatMessage}
             multiline
             editable={!isChatLoading}
+            onSubmitEditing={handleSendChatMessage}
+            returnKeyType="send"
+            blurOnSubmit={false}
           />
           <TouchableOpacity
             style={[
