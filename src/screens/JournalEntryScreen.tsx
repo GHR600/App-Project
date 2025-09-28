@@ -190,7 +190,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       }
 
       // Add both messages to the chat
-      setChatMessages(prev => [...prev, userMessage, aiResponse]);
+      if (userMessage && aiResponse) {
+        setChatMessages(prev => [...prev, userMessage, aiResponse]);
+      }
     } catch (error) {
       console.error('Unexpected chat error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -331,7 +333,19 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Section B: AI Chat Area
   const renderChatSection = () => {
-    if (!savedEntry) return null;
+    if (!savedEntry) {
+      return (
+        <View style={styles.chatSection}>
+          <View style={styles.chatPlaceholder}>
+            <Text style={styles.chatPlaceholderIcon}>💬</Text>
+            <Text style={styles.chatPlaceholderTitle}>Chat with AI</Text>
+            <Text style={styles.chatPlaceholderText}>
+              Save your journal entry first to start chatting with AI about your thoughts and feelings.
+            </Text>
+          </View>
+        </View>
+      );
+    }
 
     return (
       <View style={styles.chatSection}>
@@ -594,6 +608,30 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     minHeight: 200,
     maxHeight: 400,
+  },
+  chatPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  chatPlaceholderIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  chatPlaceholderTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  chatPlaceholderText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 20,
   },
   insightBubble: {
     backgroundColor: 'rgba(168, 85, 247, 0.2)',

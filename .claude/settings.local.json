@@ -27,7 +27,8 @@
       "Bash(pip install:*)",
       "Bash(git branch:*)",
       "Bash(npm run lint)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(echo $REACT_APP_ANTHROPIC_API_KEY)"
     ],
     "deny": [],
     "ask": []
