@@ -303,29 +303,19 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     setIsSummaryLoading(true);
 
     try {
-      // Generate summary based on entry and chat history
-      const conversationContext = chatMessages.map(msg =>
-        `${msg.role === 'user' ? 'User' : 'Claude'}: ${msg.content}`
-      ).join('\n');
-
-      const summaryPrompt = `Please provide a concise summary of this journal entry and our conversation:\n\nJournal Entry: "${entryText}"\n\nConversation:\n${conversationContext}`;
-
-      // Use the same Claude integration as chat
-      const { userMessage, aiResponse, error } = await AIInsightService.sendChatMessage(
+      // Use the new generateSummary method from AIInsightService
+      const { summary: summaryText, error } = await AIInsightService.generateSummary(
         userId,
         savedEntry.id,
-        summaryPrompt,
-        entryText
+        entryText,
+        chatMessages
       );
 
       if (error) {
-        throw error;
+        console.warn('Summary generation had errors:', error);
       }
 
-      setSummary(aiResponse.content);
-
-      // Save summary to database (entry_summaries table)
-      // This would need a new service method, for now just store in state
+      setSummary(summaryText);
 
     } catch (error) {
       console.error('Summary generation error:', error);
@@ -433,7 +423,7 @@ const renderChatSection = () => {
           <Text style={styles.chatPlaceholderIcon}>💬</Text>
           <Text style={styles.chatPlaceholderTitle}>Chat with AI</Text>
           <Text style={styles.chatPlaceholderText}>
-            Save your journal entry first to start chatting with AI about your thoughts and feelings.
+            Save your journal entry first to start chatting with AI.
           </Text>
         </View>
       </View>
@@ -441,15 +431,7 @@ const renderChatSection = () => {
   }
 
   return (
-    <View style={[
-      styles.chatSection, 
-      { 
-        minHeight: 800, 
-        flex: 1, 
-        marginBottom: 20,
-        backgroundColor: colors.surface  // Ensure grey background
-      }
-    ]}>
+    <View style={styles.chatSection}>
       {/* Initial AI Insight */}
       {initialInsight && (
         <View style={styles.insightBubble}>
@@ -461,19 +443,15 @@ const renderChatSection = () => {
         </View>
       )}
 
+      {/* Chat Messages */}
       <ScrollView
         ref={chatScrollViewRef}
-        style={{ 
-          flex: 1, 
-          minHeight: 400,
-          backgroundColor: 'transparent'  // Make ScrollView transparent
-        }}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
-        showsVerticalScrollIndicator={true}
+        style={styles.chatHistory}
         nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={false}
       >
         {chatMessages.length === 0 ? (
-          <Text style={{ padding: 20, textAlign: 'center', color: '#666' }}>
+          <Text style={styles.emptyStateText}>
             No messages yet. Start a conversation!
           </Text>
         ) : (
@@ -505,7 +483,7 @@ const renderChatSection = () => {
       </ScrollView>
 
       {/* Chat Input */}
-      <View style={[styles.chatInputContainer, { marginBottom: 30 }]}>
+      <View style={styles.chatInputContainer}>
         <TextInput
           style={styles.chatInput}
           placeholder="Type response..."
@@ -650,6 +628,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    
+    flexGrow: 1,
     padding: 16,
   },
 
@@ -718,8 +698,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
-    minHeight: 200,
-    maxHeight: 400,
+    minHeight: 300, // Increased minimum height
+    // Removed maxHeight to allow full scrolling
   },
   chatPlaceholder: {
     flex: 1,
@@ -776,6 +756,7 @@ const styles = StyleSheet.create({
   chatHistory: {
     flex: 1,
     marginBottom: 12,
+    maxHeight: 300, // Limit chat scroll area height
   },
   chatBubble: {
     marginBottom: 8,

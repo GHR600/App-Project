@@ -259,18 +259,20 @@ export class AIInsightService {
               'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
-              messages: conversationHistory,
-              journalContext
+              message: message,
+              journalContext: journalContext,
+              conversationHistory: conversationHistory
             })
           });
 
           if (response.ok) {
             const result = await response.json();
-            aiResponseText = result.response;
+            aiResponseText = result.aiResponse.content;
           } else {
             throw new Error('Server chat error');
           }
         } catch (error) {
+          console.error('Chat API error:', error);
           aiResponseText = this.generateMockChatResponse(message, journalContext);
         }
       } else {
@@ -624,6 +626,133 @@ export class AIInsightService {
     } catch {
       // Silently fail if AsyncStorage is not available
     }
+  }
+
+  /**
+   * Generate summary of journal entry and conversation
+   */
+  static async generateSummary(
+    userId: string,
+    journalEntryId: string,
+    journalContent: string,
+    conversationHistory?: ChatMessage[]
+  ): Promise<{
+    summary: string;
+    error?: any;
+  }> {
+    try {
+      console.log('🚀 AIInsightService.generateSummary called with:', {
+        userId,
+        journalEntryId,
+        contentLength: journalContent.length,
+        conversationLength: conversationHistory?.length || 0
+      });
+
+      // Check if user is authenticated
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (!session) {
+        return {
+          summary: 'Authentication required to generate summary.',
+          error: 'Authentication required'
+        };
+      }
+
+      // Call server for AI summary
+      const authToken = await this.getAuthToken();
+
+      if (authToken) {
+        try {
+          const response = await fetch(`${this.API_BASE_URL}/api/ai/summarise`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+              journalContent: journalContent,
+              conversationHistory: conversationHistory?.map(msg => ({
+                role: msg.role,
+                content: msg.content
+              })) || []
+            })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+
+            // Save summary to database
+            const { error: saveError } = await supabase
+              .from('entry_summaries')
+              .upsert({
+                user_id: userId,
+                journal_entry_id: journalEntryId,
+                summary_content: result.summary.content,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+
+            if (saveError) {
+              console.warn('Failed to save summary to database:', saveError);
+            }
+
+            return { summary: result.summary.content };
+          } else {
+            throw new Error('Server summary error');
+          }
+        } catch (error) {
+          console.error('Summary API error:', error);
+          return {
+            summary: this.generateMockSummary(journalContent, conversationHistory),
+            error
+          };
+        }
+      } else {
+        return {
+          summary: this.generateMockSummary(journalContent, conversationHistory),
+          error: 'No authentication token'
+        };
+      }
+
+    } catch (error) {
+      console.error('Summary service error:', error);
+      return {
+        summary: this.generateMockSummary(journalContent, conversationHistory),
+        error
+      };
+    }
+  }
+
+  /**
+   * Generate mock summary for fallback
+   */
+  private static generateMockSummary(journalContent: string, conversationHistory?: ChatMessage[]): string {
+    const contentWords = journalContent.split(' ').length;
+    const hasConversation = conversationHistory && conversationHistory.length > 0;
+
+    let summary = `This journal entry contains ${contentWords} words reflecting on `;
+
+    // Analyze content for themes
+    const contentLower = journalContent.toLowerCase();
+    const themes = [];
+
+    if (/work|job|career|meeting|project/.test(contentLower)) themes.push('professional experiences');
+    if (/friend|family|relationship|love|social/.test(contentLower)) themes.push('relationships');
+    if (/stress|anxious|worried|pressure/.test(contentLower)) themes.push('emotional challenges');
+    if (/happy|excited|grateful|good/.test(contentLower)) themes.push('positive experiences');
+    if (/goal|plan|future|dream/.test(contentLower)) themes.push('future planning');
+
+    if (themes.length === 0) themes.push('personal thoughts and experiences');
+
+    summary += themes.slice(0, 2).join(' and ') + '. ';
+
+    if (hasConversation) {
+      summary += `The related conversation explored these themes further through ${conversationHistory.length} exchanges, `;
+      summary += 'providing additional insights and perspective. ';
+    }
+
+    summary += 'Key patterns include self-reflection, emotional processing, and consideration of next steps.';
+
+    return summary;
   }
 
   /**

@@ -33,7 +33,8 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "ask": []

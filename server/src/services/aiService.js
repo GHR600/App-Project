@@ -463,6 +463,384 @@ Requirements:
 
     return templates;
   }
+
+  /**
+   * Generate chat response using Claude AI
+   */
+  async generateChatResponse({
+    message,
+    journalContext,
+    conversationHistory,
+    userPreferences,
+    subscriptionStatus
+  }) {
+    try {
+      // Use real Claude API if available
+      if (this.anthropic) {
+        return await this.generateClaudeChatResponse({
+          message,
+          journalContext,
+          conversationHistory,
+          userPreferences,
+          subscriptionStatus
+        });
+      }
+
+      // Fallback to mock chat response
+      return this.generateMockChatResponse(message, journalContext);
+    } catch (error) {
+      console.error('AI chat response generation failed:', error);
+
+      // Fallback to mock on any error
+      return this.generateMockChatResponse(message, journalContext);
+    }
+  }
+
+  /**
+   * Generate chat response using Claude AI
+   */
+  async generateClaudeChatResponse({
+    message,
+    journalContext,
+    conversationHistory,
+    userPreferences,
+    subscriptionStatus
+  }) {
+    const startTime = Date.now();
+    const isPremium = subscriptionStatus === 'premium';
+    const model = isPremium ? 'claude-3-sonnet-20240229' : 'claude-3-haiku-20240307';
+
+    console.log('🤖 Claude AI - Starting chat response generation:', {
+      model,
+      isPremium,
+      messageLength: message.length,
+      journalContextLength: journalContext?.length || 0,
+      conversationHistoryLength: conversationHistory?.length || 0
+    });
+
+    const prompt = this.buildChatPrompt({
+      message,
+      journalContext,
+      conversationHistory,
+      userPreferences,
+      isPremium
+    });
+
+    try {
+      const response = await this.anthropic.messages.create({
+        model,
+        max_tokens: isPremium ? 400 : 250,
+        temperature: 0.7,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      const duration = Date.now() - startTime;
+      console.log('🤖 Claude AI - Chat response received:', {
+        duration: `${duration}ms`,
+        id: response.id,
+        model: response.model,
+        usage: response.usage,
+        stopReason: response.stop_reason
+      });
+
+      const textContent = response.content.find(c => c.type === 'text');
+      if (!textContent) {
+        throw new Error('No text content in Claude response');
+      }
+
+      return {
+        response: textContent.text.trim(),
+        confidence: 0.85,
+        source: 'claude',
+        model: model
+      };
+    } catch (claudeError) {
+      const duration = Date.now() - startTime;
+      console.error('🤖 Claude API chat error after', `${duration}ms:`, claudeError);
+      throw claudeError;
+    }
+  }
+
+  /**
+   * Build prompt for Claude AI chat
+   */
+  buildChatPrompt({ message, journalContext, conversationHistory, userPreferences, isPremium }) {
+    const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
+    const premiumContext = isPremium
+      ? '\n- Premium subscriber: Provide deeper strategic analysis and personalized guidance'
+      : '\n- Free tier: Focus on immediate insights and supportive responses';
+
+    const conversationContext = conversationHistory?.length > 0
+      ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
+      : 'No previous conversation';
+
+    const journalContextText = journalContext
+      ? `Journal Entry Context: "${journalContext.substring(0, 500)}${journalContext.length > 500 ? '...' : ''}"`
+      : 'No journal context provided';
+
+    return `You are a thoughtful AI companion for a journaling app. Your role is to engage in meaningful conversations about the user's journal entries and personal reflections.
+
+Your conversation style should be:
+- Empathetic and understanding
+- Thoughtful and insightful
+- Strategic when appropriate
+- Supportive without being overly cheerful
+- Focused on helping the user explore their thoughts and feelings
+
+User Context:
+- Focus areas: ${focusAreasText}${premiumContext}
+
+${journalContextText}
+
+Previous Conversation:
+${conversationContext}
+
+Current User Message: "${message}"
+
+Please respond naturally as a supportive AI companion. Keep your response concise but meaningful (${isPremium ? '100-200' : '50-150'} words). Focus on:
+1. Acknowledging what the user shared
+2. Offering a thoughtful perspective or insight
+3. Asking a follow-up question when appropriate
+
+Respond directly without any formatting or prefixes.`;
+  }
+
+  /**
+   * Generate summary using Claude AI
+   */
+  async generateSummary({
+    journalContent,
+    conversationHistory,
+    userPreferences,
+    subscriptionStatus
+  }) {
+    try {
+      // Use real Claude API if available
+      if (this.anthropic) {
+        return await this.generateClaudeSummary({
+          journalContent,
+          conversationHistory,
+          userPreferences,
+          subscriptionStatus
+        });
+      }
+
+      // Fallback to mock summary
+      return this.generateMockSummary(journalContent, conversationHistory);
+    } catch (error) {
+      console.error('AI summary generation failed:', error);
+
+      // Fallback to mock on any error
+      return this.generateMockSummary(journalContent, conversationHistory);
+    }
+  }
+
+  /**
+   * Generate summary using Claude AI
+   */
+  async generateClaudeSummary({
+    journalContent,
+    conversationHistory,
+    userPreferences,
+    subscriptionStatus
+  }) {
+    const startTime = Date.now();
+    const isPremium = subscriptionStatus === 'premium';
+    const model = isPremium ? 'claude-3-sonnet-20240229' : 'claude-3-haiku-20240307';
+
+    console.log('🤖 Claude AI - Starting summary generation:', {
+      model,
+      isPremium,
+      journalContentLength: journalContent.length,
+      conversationHistoryLength: conversationHistory?.length || 0
+    });
+
+    const prompt = this.buildSummaryPrompt({
+      journalContent,
+      conversationHistory,
+      userPreferences,
+      isPremium
+    });
+
+    try {
+      const response = await this.anthropic.messages.create({
+        model,
+        max_tokens: isPremium ? 300 : 200,
+        temperature: 0.7,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      const duration = Date.now() - startTime;
+      console.log('🤖 Claude AI - Summary response received:', {
+        duration: `${duration}ms`,
+        id: response.id,
+        model: response.model,
+        usage: response.usage
+      });
+
+      const textContent = response.content.find(c => c.type === 'text');
+      if (!textContent) {
+        throw new Error('No text content in Claude response');
+      }
+
+      return {
+        summary: textContent.text.trim(),
+        confidence: 0.9,
+        source: 'claude',
+        model: model
+      };
+    } catch (claudeError) {
+      const duration = Date.now() - startTime;
+      console.error('🤖 Claude API summary error after', `${duration}ms:`, claudeError);
+      throw claudeError;
+    }
+  }
+
+  /**
+   * Build prompt for Claude AI summary
+   */
+  buildSummaryPrompt({ journalContent, conversationHistory, userPreferences, isPremium }) {
+    const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
+    const premiumContext = isPremium
+      ? '\n- Premium subscriber: Provide comprehensive summary with patterns and insights'
+      : '\n- Free tier: Focus on concise summary of key points';
+
+    const conversationContext = conversationHistory?.length > 0
+      ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
+      : 'No conversation occurred';
+
+    return `You are an AI assistant helping to summarize a journal entry and any related conversation. Create a concise, useful summary that captures the key points and insights.
+
+User Context:
+- Focus areas: ${focusAreasText}${premiumContext}
+
+Journal Entry:
+"${journalContent}"
+
+Related Conversation:
+${conversationContext}
+
+Please provide a ${isPremium ? 'comprehensive' : 'concise'} summary (${isPremium ? '100-150' : '75-100'} words) that includes:
+1. Main themes from the journal entry
+2. Key insights from the conversation (if any)
+3. Notable emotional or experiential patterns
+
+Write the summary in a clear, supportive tone that would be helpful for the user to reference later. Focus on the most meaningful aspects rather than trying to capture every detail.`;
+  }
+
+  /**
+   * Generate mock chat response
+   */
+  generateMockChatResponse(userMessage, journalContext) {
+    const message = userMessage.toLowerCase();
+
+    // Context-aware responses using strategic thinking approach
+    if (message.includes('feel') || message.includes('emotion')) {
+      return {
+        response: "Your feelings are completely valid. What patterns do you notice in these emotions, and what might they be telling you about your needs?",
+        confidence: 0.8,
+        source: 'mock',
+        model: 'internal'
+      };
+    }
+
+    if (message.includes('why') || message.includes('understand')) {
+      return {
+        response: "That's a strategic question. Self-understanding often comes through examining the systems and patterns behind our experiences. What connections are you starting to see?",
+        confidence: 0.75,
+        source: 'mock',
+        model: 'internal'
+      };
+    }
+
+    if (message.includes('help') || message.includes('advice')) {
+      return {
+        response: "I'm here to help you find your own insights through strategic analysis. What specific outcome are you trying to optimize for in this situation?",
+        confidence: 0.8,
+        source: 'mock',
+        model: 'internal'
+      };
+    }
+
+    if (message.includes('stress') || message.includes('anxious') || message.includes('worried')) {
+      return {
+        response: "Stress often signals misalignment between your current state and desired state. What would need to change to move toward your preferred outcome?",
+        confidence: 0.85,
+        source: 'mock',
+        model: 'internal'
+      };
+    }
+
+    if (message.includes('work') || message.includes('job') || message.includes('career')) {
+      return {
+        response: "Career challenges often reflect deeper questions about values and strategic positioning. What matters most to you in your professional growth right now?",
+        confidence: 0.8,
+        source: 'mock',
+        model: 'internal'
+      };
+    }
+
+    // Generic strategic responses
+    const strategicResponses = [
+      "That's a valuable insight. What patterns might this reveal about your decision-making framework?",
+      "Interesting perspective. How does this connect to your broader goals and priorities?",
+      "What you're describing suggests an underlying system at work. What would optimizing that system look like?",
+      "This seems like an important data point. What would this tell you about what to focus on next?",
+    ];
+
+    const selectedResponse = strategicResponses[Math.floor(Math.random() * strategicResponses.length)];
+
+    return {
+      response: selectedResponse,
+      confidence: 0.75,
+      source: 'mock',
+      model: 'internal'
+    };
+  }
+
+  /**
+   * Generate mock summary
+   */
+  generateMockSummary(journalContent, conversationHistory) {
+    const contentWords = journalContent.split(' ').length;
+    const hasConversation = conversationHistory && conversationHistory.length > 0;
+
+    let summary = `This journal entry contains ${contentWords} words reflecting on `;
+
+    // Analyze content for themes
+    const contentLower = journalContent.toLowerCase();
+    const themes = [];
+
+    if (/work|job|career|meeting|project/.test(contentLower)) themes.push('professional experiences');
+    if (/friend|family|relationship|love|social/.test(contentLower)) themes.push('relationships');
+    if (/stress|anxious|worried|pressure/.test(contentLower)) themes.push('emotional challenges');
+    if (/happy|excited|grateful|good/.test(contentLower)) themes.push('positive experiences');
+    if (/goal|plan|future|dream/.test(contentLower)) themes.push('future planning');
+
+    if (themes.length === 0) themes.push('personal thoughts and experiences');
+
+    summary += themes.slice(0, 2).join(' and ') + '. ';
+
+    if (hasConversation) {
+      summary += `The related conversation explored these themes further through ${conversationHistory.length} exchanges, `;
+      summary += 'providing additional insights and perspective. ';
+    }
+
+    summary += 'Key patterns include self-reflection, emotional processing, and consideration of next steps.';
+
+    return {
+      summary: summary,
+      confidence: 0.75,
+      source: 'mock',
+      model: 'internal'
+    };
+  }
 }
 
 module.exports = new AIService();

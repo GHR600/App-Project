@@ -80,7 +80,7 @@ ${recentEntriesText}
 
 Please respond with EXACTLY this JSON format:
 {
-  "insight": "Your ${isPremium ? '75-150' : '75-125'} word strategic analysis identifying 2-3 key patterns with specific, actionable next steps",
+  "insight": "Your ${isPremium ? '50-75' : '50-75'} word strategic analysis identifying 2-3 key patterns with specific, actionable next steps",
   "followUpQuestion": "One strategic follow-up question that helps identify optimization opportunities or decision-making frameworks",
   "confidence": 0.85
 }
