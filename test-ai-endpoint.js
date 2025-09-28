@@ -1,7 +1,7 @@
 // Test script to verify AI endpoint functionality
 const fetch = require('node-fetch');
 
-const API_BASE_URL = 'https://app-project-1lz0jxei7-glebs-projects-dd2e6b15.vercel.app';
+const API_BASE_URL = 'https://app-project-2pd12vfcr-glebs-projects-dd2e6b15.vercel.app';
 
 async function testAIEndpoint() {
   console.log('🧪 Testing AI Insights API Endpoint...\n');

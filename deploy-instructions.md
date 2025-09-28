@@ -40,7 +40,7 @@ After deployment, test these endpoints:
    ```
 
 ## Your Current Vercel URL
-https://app-project-l2582ix6l-glebs-projects-dd2e6b15.vercel.app
+https://app-project-2pd12vfcr-glebs-projects-dd2e6b15.vercel.app
 
 ## Files Added for Vercel:
 - `vercel.json` - Vercel configuration

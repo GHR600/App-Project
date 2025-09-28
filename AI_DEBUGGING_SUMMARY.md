@@ -93,7 +93,7 @@ console.log(`📱 [${requestId}] Success response parsed:`, {
 
 ## 🚀 Current Deployment Status
 
-**Vercel URL:** `https://app-project-1lz0jxei7-glebs-projects-dd2e6b15.vercel.app`
+**Vercel URL:** `https://app-project-2pd12vfcr-glebs-projects-dd2e6b15.vercel.app`
 
 **Environment Configuration:**
 - ANTHROPIC_API_KEY: ✅ Set in vercel.json
