@@ -35,7 +35,7 @@ const getSupabaseConfig = () => {
 const getApiConfig = () => {
   const extra = Constants.expoConfig?.extra || {};
   return {
-    baseUrl: extra.apiBaseUrl || process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001'
+    baseUrl: extra.apiBaseUrl || process.env.REACT_APP_API_BASE_URL || 'https://app-project-h2bqo8fk3-glebs-projects-dd2e6b15.vercel.app'
   };
 };
 

@@ -13,6 +13,9 @@
     },
     "api/ai/insights.js": {
       "memory": 128
+    },
+    "api/ai/insight.js": {
+      "memory": 128
     }
   }
 }
