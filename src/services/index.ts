@@ -10,5 +10,5 @@ export { SubscriptionService } from './subscriptionService';
 export type { AuthUser, SignUpData, SignInData, AuthResponse } from './authService';
 export type { CreatePreferencesData, UpdatePreferencesData } from './userPreferencesService';
 export type { CreateJournalEntryData, UpdateJournalEntryData } from './journalService';
-export type { JournalEntry, UserContext, AIInsight } from './aiInsightService';
+export type { JournalEntry, UserContext, AIInsight, ChatMessage } from './aiInsightService';
 export type { SubscriptionPlan, PurchaseResult } from './subscriptionService';

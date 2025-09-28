@@ -11,7 +11,7 @@ import {
   Alert
 } from 'react-native';
 import { colors } from '../styles/designSystem';
-import { ChatService, ChatMessage } from '../services/chatService';
+import { AIInsightService, ChatMessage } from '../services/aiInsightService';
 import { TypingIndicator } from './TypingIndicator';
 
 interface ChatInterfaceProps {
@@ -48,7 +48,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const loadChatHistory = async () => {
     setIsLoading(true);
     try {
-      const { messages: chatHistory, error } = await ChatService.getChatHistory(
+      const { messages: chatHistory, error } = await AIInsightService.getChatHistory(
         userId,
         journalEntryId
       );
@@ -73,7 +73,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setIsTyping(true);
 
     try {
-      const { userMessage, aiResponse, error } = await ChatService.sendMessage(
+      const { userMessage, aiResponse, error } = await AIInsightService.sendChatMessage(
         userId,
         journalEntryId,
         messageToSend,

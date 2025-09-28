@@ -15,8 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { colors, typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
-import { AIInsightService, AIInsight, JournalEntry, UserContext } from '../services/aiInsightService';
-import { ChatService, ChatMessage } from '../services/chatService';
+import { AIInsightService, AIInsight, JournalEntry, UserContext, ChatMessage } from '../services/aiInsightService';
 
 interface JournalEntryScreenProps {
   userId: string;
@@ -83,7 +82,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     const loadChatHistory = async () => {
       if (savedEntry) {
         try {
-          const { messages, error } = await ChatService.getChatHistory(userId, savedEntry.id);
+          const { messages, error } = await AIInsightService.getChatHistory(userId, savedEntry.id);
           if (error) {
             console.error('Error loading chat history:', error);
           } else {
@@ -225,8 +224,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     scrollToBottom();
 
     try {
-      console.log('📞 Calling ChatService.sendMessage...');
-      const { userMessage, aiResponse, error } = await ChatService.sendMessage(
+      console.log('📞 Calling AIInsightService.sendChatMessage...');
+      const { userMessage, aiResponse, error } = await AIInsightService.sendChatMessage(
         userId,
         savedEntry.id,
         messageToSend,
@@ -312,7 +311,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       const summaryPrompt = `Please provide a concise summary of this journal entry and our conversation:\n\nJournal Entry: "${entryText}"\n\nConversation:\n${conversationContext}`;
 
       // Use the same Claude integration as chat
-      const { userMessage, aiResponse, error } = await ChatService.sendMessage(
+      const { userMessage, aiResponse, error } = await AIInsightService.sendChatMessage(
         userId,
         savedEntry.id,
         summaryPrompt,

@@ -1,5 +1,5 @@
-// AI Insight Service for generating personalized insights via server API
-// No longer imports Anthropic SDK - all AI calls go through our secure server
+// AI Insight Service - Server-only client for consolidated AI architecture
+// All AI calls go through the server to ensure consistent prompts and security
 
 export interface JournalEntry {
   id: string;
@@ -24,9 +24,18 @@ export interface AIInsight {
   isPremium: boolean;
 }
 
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  journalEntryId: string;
+  userId: string;
+}
+
 import { API_CONFIG } from '../utils/env';
 import { supabase } from '../config/supabase';
-import Constants from 'expo-constants';
+import { buildChatPrompt } from '../config/prompts';
 
 export class AIInsightService {
   private static readonly API_BASE_URL = API_CONFIG.baseUrl;
@@ -158,14 +167,232 @@ export class AIInsightService {
   }
 
   /**
+   * Send chat message and get AI response from server
+   */
+  static async sendChatMessage(
+    userId: string,
+    journalEntryId: string,
+    message: string,
+    journalContext?: string
+  ): Promise<{
+    userMessage: ChatMessage;
+    aiResponse: ChatMessage;
+    error?: any;
+  }> {
+    try {
+      console.log('🚀 AIInsightService.sendChatMessage called with:', { userId, journalEntryId, message: message.substring(0, 50) + '...' });
+
+      // Check if user is authenticated
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (!session) {
+        return {
+          userMessage: {
+            id: 'temp-error',
+            role: 'user',
+            content: message,
+            timestamp: new Date().toISOString(),
+            journalEntryId,
+            userId,
+          },
+          aiResponse: {
+            id: 'temp-error-ai',
+            role: 'assistant',
+            content: 'I need you to be signed in to save our conversation.',
+            timestamp: new Date().toISOString(),
+            journalEntryId,
+            userId,
+          },
+          error: 'Authentication required'
+        };
+      }
+
+      // Save user message to database
+      const { data: insertedUserMsg, error: userMsgError } = await supabase
+        .from('chat_messages')
+        .insert({
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
+          journal_entry_id: journalEntryId,
+          user_id: userId,
+        })
+        .select()
+        .single();
+
+      if (userMsgError || !insertedUserMsg) {
+        throw new Error('Failed to save message');
+      }
+
+      const userMessage: ChatMessage = {
+        id: insertedUserMsg.id,
+        role: 'user',
+        content: message,
+        timestamp: insertedUserMsg.timestamp,
+        journalEntryId,
+        userId,
+      };
+
+      // Get conversation history
+      const { data: previousMessages } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('journal_entry_id', journalEntryId)
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: true })
+        .limit(10);
+
+      const conversationHistory = previousMessages?.map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      })) || [];
+
+      // Call server for AI response
+      const authToken = await this.getAuthToken();
+      let aiResponseText: string;
+
+      if (authToken) {
+        try {
+          const response = await fetch(`${this.API_BASE_URL}/api/ai/chat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+              messages: conversationHistory,
+              journalContext
+            })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            aiResponseText = result.response;
+          } else {
+            throw new Error('Server chat error');
+          }
+        } catch (error) {
+          aiResponseText = this.generateMockChatResponse(message, journalContext);
+        }
+      } else {
+        aiResponseText = this.generateMockChatResponse(message, journalContext);
+      }
+
+      // Save AI response to database
+      const { data: insertedAiMsg, error: aiMsgError } = await supabase
+        .from('chat_messages')
+        .insert({
+          role: 'assistant',
+          content: aiResponseText,
+          timestamp: new Date().toISOString(),
+          journal_entry_id: journalEntryId,
+          user_id: userId,
+        })
+        .select()
+        .single();
+
+      if (aiMsgError || !insertedAiMsg) {
+        throw new Error('Failed to save AI response');
+      }
+
+      const aiResponse: ChatMessage = {
+        id: insertedAiMsg.id,
+        role: 'assistant',
+        content: aiResponseText,
+        timestamp: insertedAiMsg.timestamp,
+        journalEntryId,
+        userId,
+      };
+
+      return { userMessage, aiResponse };
+    } catch (error) {
+      console.error('Chat service error:', error);
+      const tempUserUuid = 'temp-user-' + Date.now();
+      const tempAiUuid = 'temp-ai-' + Date.now();
+
+      return {
+        userMessage: {
+          id: tempUserUuid,
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
+          journalEntryId,
+          userId,
+        },
+        aiResponse: {
+          id: tempAiUuid,
+          role: 'assistant',
+          content: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+          timestamp: new Date().toISOString(),
+          journalEntryId,
+          userId,
+        },
+        error,
+      };
+    }
+  }
+
+  /**
+   * Get chat history for a journal entry
+   */
+  static async getChatHistory(
+    userId: string,
+    journalEntryId: string
+  ): Promise<{
+    messages: ChatMessage[];
+    error?: any;
+  }> {
+    try {
+      const { data: messages, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('journal_entry_id', journalEntryId)
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: true });
+
+      if (error) {
+        return { messages: [], error };
+      }
+
+      const formattedMessages: ChatMessage[] = messages?.map(msg => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp,
+        journalEntryId: msg.journal_entry_id,
+        userId: msg.user_id,
+      })) || [];
+
+      return { messages: formattedMessages };
+    } catch (error) {
+      return { messages: [], error };
+    }
+  }
+
+  /**
+   * Delete chat history for a journal entry
+   */
+  static async deleteChatHistory(
+    userId: string,
+    journalEntryId: string
+  ): Promise<{ error?: any }> {
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('journal_entry_id', journalEntryId)
+        .eq('user_id', userId);
+
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  }
+
+  /**
    * Get authentication token from current session
    */
   private static async getAuthToken(): Promise<string | null> {
-    // This would integrate with your auth system to get the current user's token
-    // For now, return null to use mock data if no auth token available
     try {
-      // If using Supabase auth context, get the session token
-      const { supabase } = await import('../config/supabase');
       const { data: { session } } = await supabase.auth.getSession();
       return session?.access_token || null;
     } catch (error) {
@@ -174,7 +401,7 @@ export class AIInsightService {
     }
   }
 
-  // Note: AI prompt engineering is now handled server-side for security
+  // Note: All AI prompt engineering is now handled server-side for security and consistency
 
   static async generateInsight(
     entry: JournalEntry,
@@ -184,7 +411,7 @@ export class AIInsightService {
     const startTime = Date.now();
     const requestId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    console.log(`📱 [${requestId}] Starting insight generation:`, {
+    console.log(`📱 [${requestId}] Starting server-side insight generation:`, {
       entryId: entry.id,
       contentLength: entry.content.length,
       moodRating: entry.moodRating,
@@ -192,55 +419,60 @@ export class AIInsightService {
     });
 
     try {
-      // Try Claude/Anthropic integration first - use Expo Constants for proper access
-      const anthropicApiKey = Constants.expoConfig?.extra?.anthropicApiKey ||
-                             process.env.REACT_APP_ANTHROPIC_API_KEY ||
-                             process.env.ANTHROPIC_API_KEY;
+      // Get auth token for server communication
+      const authToken = await this.getAuthToken();
 
-      console.log(`📱 [${requestId}] Debug - Expo Constants key:`, Constants.expoConfig?.extra?.anthropicApiKey ? 'SET' : 'NOT SET');
-      console.log(`📱 [${requestId}] Debug - REACT_APP_ANTHROPIC_API_KEY:`, process.env.REACT_APP_ANTHROPIC_API_KEY ? 'SET' : 'NOT SET');
-      console.log(`📱 [${requestId}] Debug - Final key:`, anthropicApiKey ? 'AVAILABLE' : 'NOT AVAILABLE');
-
-      if (anthropicApiKey) {
-        console.log(`📱 [${requestId}] Using Claude/Anthropic integration`);
-
-        const result = await this.generateClaudeInsight({
-          journalContent: entry.content,
-          mood: entry.moodRating,
-          userPreferences: {
-            focusAreas: userContext.focusAreas,
-            personality: 'supportive'
-          },
-          apiKey: anthropicApiKey
-        });
-
-        const totalDuration = Date.now() - startTime;
-        console.log(`📱 [${requestId}] Claude success! Duration: ${totalDuration}ms`);
-
-        const insight = {
-          id: `claude_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          insight: result.insight,
-          followUpQuestion: result.followUpQuestion,
-          confidence: result.confidence,
-          createdAt: new Date().toISOString(),
-          isPremium: userContext.subscriptionStatus === 'premium'
-        };
-
-        console.log(`📱 [${requestId}] Generated insight:`, {
-          insightLength: insight.insight.length,
-          followUpLength: insight.followUpQuestion.length,
-          confidence: insight.confidence
-        });
-
-        return insight;
+      if (!authToken) {
+        console.log(`📱 [${requestId}] No auth token, using mock insights`);
+        return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
       }
 
-      console.log(`📱 [${requestId}] Claude/Anthropic not available, using mock insights`);
-      return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
+      // Call server endpoint for AI insight generation
+      const response = await fetch(`${this.API_BASE_URL}/api/ai/insight`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          content: entry.content,
+          moodRating: entry.moodRating,
+          userPreferences: {
+            focusAreas: userContext.focusAreas,
+            personalityType: 'supportive'
+          },
+          recentEntries: recentEntries.map(e => ({ content: e.content })),
+          subscriptionStatus: userContext.subscriptionStatus
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Server returned error');
+      }
+
+      const totalDuration = Date.now() - startTime;
+      console.log(`📱 [${requestId}] Server insight success! Duration: ${totalDuration}ms`);
+
+      const insight = {
+        id: `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        insight: result.insight,
+        followUpQuestion: result.followUpQuestion,
+        confidence: result.confidence,
+        createdAt: new Date().toISOString(),
+        isPremium: userContext.subscriptionStatus === 'premium'
+      };
+
+      return insight;
 
     } catch (error) {
       const totalDuration = Date.now() - startTime;
-      console.error(`📱 [${requestId}] Failed to generate AI insight after ${totalDuration}ms:`, error);
+      console.error(`📱 [${requestId}] Failed to generate server insight after ${totalDuration}ms:`, error);
 
       // Fall back to mock insights
       return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
@@ -373,107 +605,41 @@ export class AIInsightService {
   }
 
   /**
-   * Generate insight using Claude/Anthropic API
+   * Generate mock chat response for fallback
    */
-  private static async generateClaudeInsight({
-    journalContent,
-    mood,
-    userPreferences,
-    apiKey
-  }: {
-    journalContent: string;
-    mood?: number;
-    userPreferences?: {
-      focusAreas: string[];
-      personality: string;
-    };
-    apiKey: string;
-  }): Promise<{
-    insight: string;
-    followUpQuestion: string;
-    confidence: number;
-  }> {
-    const systemPrompt = `You are an empathetic AI journal companion. Your role is to:
-1. Provide thoughtful, personalized insights about the user's journal entry
-2. Ask meaningful follow-up questions that encourage deeper reflection
-3. Be supportive and non-judgmental
-4. Focus on emotional patterns, growth opportunities, and positive reinforcement
+  private static generateMockChatResponse(userMessage: string, journalContext?: string): string {
+    const message = userMessage.toLowerCase();
 
-Response format (JSON):
-{
-  "insight": "Your main insight about their entry",
-  "followUpQuestion": "A thoughtful question to encourage reflection",
-  "confidence": 0.85
-}${userPreferences?.focusAreas?.length ? `\n\nUser's focus areas: ${userPreferences.focusAreas.join(', ')}` : ''}`;
-
-    let userPrompt = `Journal entry: "${journalContent}"`;
-    if (mood) {
-      userPrompt += `\nMood rating: ${mood}/5`;
+    // Context-aware responses using strategic thinking approach
+    if (message.includes('feel') || message.includes('emotion')) {
+      return "Your feelings are completely valid. What patterns do you notice in these emotions, and what might they be telling you about your needs?";
     }
 
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 300,
-          system: systemPrompt,
-          messages: [
-            {
-              role: 'user',
-              content: userPrompt
-            }
-          ]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const content = data.content[0]?.text;
-
-      if (!content) {
-        throw new Error('No response from Claude');
-      }
-
-      return this.parseInsightResponse(content);
-    } catch (error) {
-      console.error('Claude insight generation error:', error);
-      throw error;
+    if (message.includes('why') || message.includes('understand')) {
+      return "That's a strategic question. Self-understanding often comes through examining the systems and patterns behind our experiences. What connections are you starting to see?";
     }
-  }
 
-  /**
-   * Parse Claude's response into structured insight format
-   */
-  private static parseInsightResponse(content: string): {
-    insight: string;
-    followUpQuestion: string;
-    confidence: number;
-  } {
-    try {
-      const parsed = JSON.parse(content);
-      return {
-        insight: parsed.insight || content,
-        followUpQuestion: parsed.followUpQuestion || "How does this make you feel?",
-        confidence: parsed.confidence || 0.8,
-      };
-    } catch {
-      // If JSON parsing fails, treat as plain text
-      const lines = content.split('\n').filter(line => line.trim());
-      return {
-        insight: lines[0] || content,
-        followUpQuestion: lines[1] || "What would you like to explore further about this?",
-        confidence: 0.7,
-      };
+    if (message.includes('help') || message.includes('advice')) {
+      return "I'm here to help you find your own insights through strategic analysis. What specific outcome are you trying to optimize for in this situation?";
     }
+
+    if (message.includes('stress') || message.includes('anxious') || message.includes('worried')) {
+      return "Stress often signals misalignment between your current state and desired state. What would need to change to move toward your preferred outcome?";
+    }
+
+    if (message.includes('work') || message.includes('job') || message.includes('career')) {
+      return "Career challenges often reflect deeper questions about values and strategic positioning. What matters most to you in your professional growth right now?";
+    }
+
+    // Generic strategic responses
+    const strategicResponses = [
+      "That's a valuable insight. What patterns might this reveal about your decision-making framework?",
+      "Interesting perspective. How does this connect to your broader goals and priorities?",
+      "What you're describing suggests an underlying system at work. What would optimizing that system look like?",
+      "This seems like an important data point. What would this tell you about what to focus on next?",
+    ];
+
+    return strategicResponses[Math.floor(Math.random() * strategicResponses.length)];
   }
 
   static generatePersonalizedPrompt(userContext: UserContext): string {
