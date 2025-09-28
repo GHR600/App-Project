@@ -435,7 +435,9 @@ export class AIInsightService {
         }
 
         // Call server endpoint for AI insight generation
-        const response = await fetch(`${this.API_BASE_URL}/api/ai/insight`, {
+        const apiUrl = `${this.API_BASE_URL}/api/ai/insight`;
+        console.log(`📱 [${requestId}] Making API call to:`, apiUrl);
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers,
         body: JSON.stringify({
@@ -480,7 +482,11 @@ export class AIInsightService {
         return insight;
 
       } catch (serverError) {
-        console.log(`📱 [${requestId}] Server call failed:`, serverError);
+        console.error(`📱 [${requestId}] Server call failed:`, {
+          error: serverError,
+          message: serverError instanceof Error ? serverError.message : 'Unknown error',
+          apiUrl: `${this.API_BASE_URL}/api/ai/insight`
+        });
         // Fall through to mock insights below
       }
 
