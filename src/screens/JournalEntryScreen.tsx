@@ -47,6 +47,17 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentChatMessage, setCurrentChatMessage] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [renderKey, setRenderKey] = useState(0); // Force re-render when needed
+
+  // Debug: Log whenever chatMessages state changes
+  useEffect(() => {
+    console.log('🔄 chatMessages state updated:', chatMessages.length, 'messages');
+    chatMessages.forEach((msg, index) => {
+      console.log(`   ${index + 1}. [${msg.role}] ${msg.content.substring(0, 50)}...`);
+    });
+    // Force re-render after state change
+    setRenderKey(prev => prev + 1);
+  }, [chatMessages]);
   const chatScrollViewRef = useRef<ScrollView>(null);
   const [initialInsight, setInitialInsight] = useState<string | null>(null);
   const [hasGeneratedInitialInsight, setHasGeneratedInitialInsight] = useState(false);
@@ -205,12 +216,19 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     };
 
     // Add user message to local state immediately
-    setChatMessages(prev => [...prev, tempUserMessage]);
+    console.log('🔄 Adding temporary user message to state');
+    setChatMessages(prev => {
+      const newMessages = [...prev, tempUserMessage];
+      console.log('📊 State before temp message:', prev.length);
+      console.log('📊 State after temp message:', newMessages.length);
+      return newMessages;
+    });
 
     // Scroll to show the new user message immediately
     scrollToBottom();
 
     try {
+      console.log('📞 Calling ChatService.sendMessage...');
       const { userMessage, aiResponse, error } = await ChatService.sendMessage(
         userId,
         savedEntry.id,
@@ -218,24 +236,57 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         entryText // Include journal context
       );
 
-      if (error) {
-        console.error('Chat error:', error);
+      console.log('📋 ChatService response:', {
+        hasUserMessage: !!userMessage,
+        hasAiResponse: !!aiResponse,
+        error: error || 'none'
+      });
+
+      // Check if we have valid messages even if there's a warning error
+      if (userMessage && aiResponse) {
+        console.log('✅ Adding messages to UI state...');
+        console.log('📋 UserMessage:', { id: userMessage.id, role: userMessage.role, content: userMessage.content.substring(0, 50) });
+        console.log('📋 AiResponse:', { id: aiResponse.id, role: aiResponse.role, content: aiResponse.content.substring(0, 50) });
+
+        setChatMessages(prev => {
+          console.log('📊 Previous messages:', prev.length);
+          const filtered = prev.filter(msg => msg.id !== tempUserMessage.id);
+          console.log('📊 After filtering temp:', filtered.length);
+          const newMessages = [...filtered, userMessage, aiResponse];
+          console.log('📊 Final message count:', newMessages.length);
+          console.log('📊 Final messages:', newMessages.map(m => ({ id: m.id, role: m.role })));
+
+          // Double-check the messages are valid
+          newMessages.forEach((msg, idx) => {
+            if (!msg.id || !msg.role || !msg.content) {
+              console.error(`❌ Invalid message at index ${idx}:`, msg);
+            }
+          });
+
+          return newMessages;
+        });
+
+        // Scroll to show the AI response
+        setTimeout(() => scrollToBottom(), 200);
+
+        // If there was an error but we got messages, it might be a non-critical warning
+        if (error) {
+          console.warn('⚠️ Non-critical warning:', error);
+        }
+      } else if (error) {
+        console.error('❌ Critical chat error:', error);
         const errorMessage = typeof error === 'string' ? error : 'Failed to send message. Please try again.';
         Alert.alert('Chat Error', errorMessage);
         // Remove the temporary message and restore input
         setChatMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
         setCurrentChatMessage(messageToSend);
         return;
-      }
-
-      // Replace temporary user message with real one and add AI response
-      if (userMessage && aiResponse) {
-        setChatMessages(prev => {
-          const filtered = prev.filter(msg => msg.id !== tempUserMessage.id);
-          return [...filtered, userMessage, aiResponse];
-        });
-        // Scroll to show the AI response
-        setTimeout(() => scrollToBottom(), 100);
+      } else {
+        console.error('❌ No messages received from ChatService');
+        Alert.alert('Chat Error', 'No response received. Please try again.');
+        setChatMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
+        setCurrentChatMessage(messageToSend);
+        return;
       }
     } catch (error) {
       console.error('Unexpected chat error:', error);
@@ -408,36 +459,66 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
         {/* Chat History */}
         <ScrollView
+          key={`chat-scroll-${renderKey}`}
           ref={chatScrollViewRef}
           style={styles.chatHistory}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => scrollToBottom()}
         >
-          {chatMessages.map((message) => (
-            <View
-              key={message.id}
-              style={[
-                styles.chatBubble,
-                message.role === 'user' ? styles.userBubble : styles.claudeBubble
-              ]}
-            >
-              <Text
+          {console.log('🎨 Rendering chat messages:', chatMessages.length, chatMessages.map(m => ({ id: m.id, role: m.role, content: m.content.substring(0, 30) + '...' })))}
+          {chatMessages.length === 0 ? (
+            <Text style={{ padding: 20, textAlign: 'center', color: '#666' }}>
+              No messages yet. Start a conversation!
+            </Text>
+          ) : (
+            chatMessages.map((message, index) => (
+              <View
+                key={`${message.id}-${index}`}
                 style={[
-                  styles.chatBubbleText,
-                  message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                  styles.chatBubble,
+                  message.role === 'user' ? styles.userBubble : styles.claudeBubble
                 ]}
               >
-                {message.role === 'assistant' ? '🤖 ' : '💬 '}
-                {message.content}
-              </Text>
-            </View>
-          ))}
+                <Text
+                  style={[
+                    styles.chatBubbleText,
+                    message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                  ]}
+                >
+                  {message.role === 'assistant' ? '🤖 ' : '💬 '}
+                  {message.content}
+                </Text>
+                <Text style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
+                  ID: {message.id} | Role: {message.role}
+                </Text>
+              </View>
+            ))
+          )}
           {isChatLoading && (
             <View style={styles.claudeBubble}>
               <Text style={styles.claudeBubbleText}>🤖 Thinking...</Text>
             </View>
           )}
         </ScrollView>
+
+        {/* Debug: Add test message button */}
+        <TouchableOpacity
+          style={{ backgroundColor: '#ff0000', padding: 10, margin: 5, borderRadius: 5 }}
+          onPress={() => {
+            console.log('🧪 Adding test message');
+            const testMessage: ChatMessage = {
+              id: `test-${Date.now()}`,
+              role: 'user',
+              content: 'Test message to debug UI',
+              timestamp: new Date().toISOString(),
+              journalEntryId: savedEntry?.id || 'test',
+              userId: userId || 'test',
+            };
+            setChatMessages(prev => [...prev, testMessage]);
+          }}
+        >
+          <Text style={{ color: 'white' }}>🧪 Add Test Message</Text>
+        </TouchableOpacity>
 
         {/* Chat Input */}
         <View style={styles.chatInputContainer}>
