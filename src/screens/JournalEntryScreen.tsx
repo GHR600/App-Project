@@ -533,7 +533,7 @@ const renderChatSection = () => {
 
   // Section C: Summary Feature
   const renderSummarySection = () => {
-    if (!savedEntry || (chatMessages.length === 0 && !initialInsight)) return null;
+    if (!savedEntry) return null;
 
     return (
       <View style={styles.summarySection}>
