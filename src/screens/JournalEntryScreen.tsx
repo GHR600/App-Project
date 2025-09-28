@@ -178,11 +178,21 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Chat functionality
   const handleSendChatMessage = async () => {
-    if (!currentChatMessage.trim() || !savedEntry) return;
+    console.log('🎯 handleSendChatMessage called');
+    console.log('📝 currentChatMessage:', currentChatMessage);
+    console.log('💾 savedEntry:', savedEntry);
+    console.log('👤 userId:', userId);
+
+    if (!currentChatMessage.trim() || !savedEntry) {
+      console.log('❌ Early return - missing message or saved entry');
+      return;
+    }
 
     const messageToSend = currentChatMessage.trim();
     setCurrentChatMessage('');
     setIsChatLoading(true);
+
+    console.log('📤 Sending message:', messageToSend);
 
     // Create temporary user message with unique ID for immediate display
     const tempUserMessage: ChatMessage = {
@@ -210,7 +220,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
       if (error) {
         console.error('Chat error:', error);
-        Alert.alert('Error', 'Failed to send message. Please try again.');
+        const errorMessage = typeof error === 'string' ? error : 'Failed to send message. Please try again.';
+        Alert.alert('Chat Error', errorMessage);
         // Remove the temporary message and restore input
         setChatMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
         setCurrentChatMessage(messageToSend);
@@ -228,7 +239,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       }
     } catch (error) {
       console.error('Unexpected chat error:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      Alert.alert('Chat Error', errorMessage);
       // Remove the temporary message and restore input
       setChatMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
       setCurrentChatMessage(messageToSend);

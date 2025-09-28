@@ -31,6 +31,35 @@ export class ChatService {
     error?: any;
   }> {
     try {
+      console.log('🚀 ChatService.sendMessage called with:', { userId, journalEntryId, message: message.substring(0, 50) + '...' });
+
+      // Check if user is authenticated for Supabase RLS
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔐 Current session:', !!session, sessionError ? `Error: ${sessionError.message}` : 'OK');
+
+      if (!session) {
+        console.error('❌ No authenticated session found');
+        return {
+          userMessage: {
+            id: 'temp-error',
+            role: 'user',
+            content: message,
+            timestamp: new Date().toISOString(),
+            journalEntryId,
+            userId,
+          },
+          aiResponse: {
+            id: 'temp-error-ai',
+            role: 'assistant',
+            content: 'I need you to be signed in to save our conversation. The chat works, but messages won\'t be saved to your journal.',
+            timestamp: new Date().toISOString(),
+            journalEntryId,
+            userId,
+          },
+          error: 'Authentication required for saving messages'
+        };
+      }
+
       // Save user message to database first to get the UUID
       const { data: insertedUserMsg, error: userMsgError } = await supabase
         .from('chat_messages')
@@ -45,9 +74,12 @@ export class ChatService {
         .single();
 
       if (userMsgError || !insertedUserMsg) {
-        console.error('Error saving user message:', userMsgError);
+        console.error('❌ Error saving user message:', userMsgError);
+        console.error('❌ Insert data:', { role: 'user', content: message.substring(0, 50), journal_entry_id: journalEntryId, user_id: userId });
         throw new Error('Failed to save message');
       }
+
+      console.log('✅ User message saved to database:', insertedUserMsg.id);
 
       // Create user message object with the database-generated ID
       const userMessage: ChatMessage = {
@@ -90,23 +122,30 @@ export class ChatService {
       const anthropicApiKey = Constants.expoConfig?.extra?.anthropicApiKey ||
                              process.env.REACT_APP_ANTHROPIC_API_KEY ||
                              process.env.ANTHROPIC_API_KEY;
+
+      console.log('🔑 API Key configured:', !!anthropicApiKey);
+
       if (anthropicApiKey) {
         try {
+          console.log('🤖 Generating Claude response...');
           aiResponseText = await this.generateClaudeResponse({
             messages: conversationHistory,
             journalContext,
             apiKey: anthropicApiKey,
           });
+          console.log('✅ Claude response generated:', aiResponseText.substring(0, 50) + '...');
         } catch (error) {
-          console.error('Claude chat error:', error);
+          console.error('❌ Claude chat error:', error);
+          console.log('⚠️ Falling back to mock response');
           aiResponseText = this.generateMockChatResponse(message, journalContext);
         }
       } else {
-        console.warn('Claude/Anthropic API key not configured. Using mock responses.');
+        console.warn('⚠️ Claude/Anthropic API key not configured. Using mock responses.');
         aiResponseText = this.generateMockChatResponse(message, journalContext);
       }
 
       // Save AI response to database first to get the UUID
+      console.log('💾 Saving AI response to database...');
       const { data: insertedAiMsg, error: aiMsgError } = await supabase
         .from('chat_messages')
         .insert({
@@ -120,9 +159,12 @@ export class ChatService {
         .single();
 
       if (aiMsgError || !insertedAiMsg) {
-        console.error('Error saving AI message:', aiMsgError);
+        console.error('❌ Error saving AI message:', aiMsgError);
+        console.error('❌ AI response data:', { role: 'assistant', content: aiResponseText.substring(0, 50), journal_entry_id: journalEntryId, user_id: userId });
         throw new Error('Failed to save AI response');
       }
+
+      console.log('✅ AI response saved to database:', insertedAiMsg.id);
 
       // Create AI response message object with the database-generated ID
       const aiResponse: ChatMessage = {
