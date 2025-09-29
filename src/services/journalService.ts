@@ -81,32 +81,40 @@ export class JournalService {
     error: any;
   }> {
     try {
-      // Check if journal entry already exists for today (if entryType is 'journal')
+      // Check if journal entry already exists for today (only if entry_type column exists)
       if (data.entryType === 'journal') {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: existingJournal } = await supabase
-          .from('journal_entries')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('entry_type', 'journal')
-          .gte('created_at', `${today}T00:00:00.000Z`)
-          .lt('created_at', `${today}T23:59:59.999Z`);
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const { data: existingJournal, error: queryError } = await supabase
+            .from('journal_entries')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('entry_type', 'journal')
+            .gte('created_at', `${today}T00:00:00.000Z`)
+            .lt('created_at', `${today}T23:59:59.999Z`);
 
-        if (existingJournal && existingJournal.length > 0) {
-          return { entry: null, error: 'You can only have one journal entry per day. You can add notes instead.' };
+          // If the query fails due to missing column, skip validation
+          if (queryError && queryError.code === 'PGRST204') {
+            console.log('entry_type column not found - skipping journal validation until database migration');
+          } else if (existingJournal && existingJournal.length > 0) {
+            return { entry: null, error: 'You can only have one journal entry per day. You can add notes instead.' };
+          }
+        } catch (error) {
+          console.log('Skipping journal validation due to database schema mismatch:', error);
         }
       }
 
+      // For backward compatibility, only use the original fields until database migration
+      const insertData = {
+        user_id: userId,
+        content: data.content,
+        mood_rating: data.moodRating,
+        voice_memo_url: data.voiceMemoUrl,
+      };
+
       const { data: entry, error } = await supabase
         .from('journal_entries')
-        .insert({
-          user_id: userId,
-          content: data.content,
-          mood_rating: data.moodRating,
-          voice_memo_url: data.voiceMemoUrl,
-          title: data.title,
-          entry_type: data.entryType || 'note'
-        })
+        .insert(insertData)
         .select()
         .single();
 

@@ -495,10 +495,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   // Section A: Journal Entry Area
   const renderJournalSection = () => (
     <View style={styles.journalSection}>
-      {renderEntryTypeSelector()}
+      {/* Temporarily hide entry type selector until database migration */}
+      {/* {renderEntryTypeSelector()} */}
       <TextInput
         style={styles.titleInput}
-        placeholder={entryType === 'journal' ? "What's on your mind?" : "Note title (optional)"}
+        placeholder="Title (optional)"
         placeholderTextColor={colors.placeholderText}
         value={title}
         onChangeText={setTitle}
