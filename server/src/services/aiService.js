@@ -230,19 +230,27 @@ class AIService {
   }
 
   /**
-   * Build prompt for Claude AI
+   * Build unified strategic thinking partner prompt
    */
-  buildPrompt({ content, moodRating, userPreferences, recentEntries, isPremium }) {
-  const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
-  const moodText = moodRating ? `${moodRating}/5` : 'Not specified';
-  const recentEntriesText = recentEntries?.length > 0 
-    ? recentEntries.map(entry => `"${entry.content.substring(0, 150)}..."`).join('\n')
-    : 'No recent entries available';
-  const premiumContext = isPremium 
-    ? '\n- Premium subscriber: Provide deeper strategic analysis and long-term pattern recognition'
-    : '\n- Free tier: Focus on immediate insights and actionable steps';
+  buildUnifiedPrompt({
+    content,
+    moodRating,
+    userPreferences,
+    recentEntries,
+    isPremium,
+    outputFormat = 'insight', // 'insight', 'chat', or 'summary'
+    // Chat-specific parameters
+    message,
+    journalContext,
+    conversationHistory
+  }) {
+    const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
+    const premiumContext = isPremium
+      ? '\n- Premium subscriber: Provide deeper strategic analysis and long-term pattern recognition'
+      : '\n- Free tier: Focus on immediate insights and actionable steps';
 
-  return `You are a strategic thinking partner who responds to journal entries with analytical depth and practical guidance. Your tone should be:
+    // Core strategic thinking partner personality (same for both modes)
+    const corePersonality = `You are a strategic thinking partner who provides analytical depth and practical guidance. Your tone should be:
 
 ANALYTICAL BUT ACCESSIBLE
 - Break down complex situations into clear patterns and frameworks
@@ -279,8 +287,20 @@ AVOID:
 - Generic advice or obvious observations
 - Emotional validation without practical insight
 - Analysis paralysis - always provide clear next steps
-- Treating symptoms instead of addressing root causes
+- Treating symptoms instead of addressing root causes`;
 
+    // Build context based on format type
+    let contextSection = '';
+    let outputSection = '';
+
+    if (outputFormat === 'insight') {
+      // Insight format - analyze journal entry
+      const moodText = moodRating ? `${moodRating}/5` : 'Not specified';
+      const recentEntriesText = recentEntries?.length > 0
+        ? recentEntries.map(entry => `"${entry.content.substring(0, 150)}..."`).join('\n')
+        : 'No recent entries available';
+
+      contextSection = `
 User Context:
 - Focus areas: ${focusAreasText}
 - Current mood: ${moodText}
@@ -290,8 +310,9 @@ Current Entry:
 "${content}"
 
 Recent Context:
-${recentEntriesText}
+${recentEntriesText}`;
 
+      outputSection = `
 Please respond with EXACTLY this JSON format:
 {
   "insight": "Your ${isPremium ? '75-150' : '75-125'} word strategic analysis identifying 2-3 key patterns with specific, actionable next steps",
@@ -306,7 +327,86 @@ Requirements:
 - Be direct and analytical without being cold or clinical
 - Confidence should be between 0.7-0.95
 - ${isPremium ? 'Provide deeper pattern analysis across life areas and strategic positioning' : 'Focus on immediate patterns and tactical next steps'}`;
-}
+
+    } else if (outputFormat === 'chat') {
+      // Chat format - conversational dialogue
+      const conversationContext = conversationHistory?.length > 0
+        ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
+        : 'No previous conversation';
+
+      const journalContextText = journalContext
+        ? `Journal Entry Context: "${journalContext.substring(0, 500)}${journalContext.length > 500 ? '...' : ''}"`
+        : 'No journal context provided';
+
+      contextSection = `
+User Context:
+- Focus areas: ${focusAreasText}${premiumContext}
+
+${journalContextText}
+
+Previous Conversation:
+${conversationContext}
+
+Current User Message: "${message}"`;
+
+      outputSection = `
+Keep responses conversational (1-3 sentences) and ask thoughtful follow-up questions that encourage strategic thinking.
+
+CHAT-SPECIFIC GUIDELINES:
+- Use the same analytical approach but in conversational tone
+- Ask probing questions without being harsh
+- Guide them toward actionable insights through dialogue
+- Avoid long analysis paragraphs (save detailed analysis for insights)
+
+Respond naturally as their strategic thinking partner.`;
+
+    } else if (outputFormat === 'summary') {
+      // Summary format - synthesize journal and conversation
+      const conversationContext = conversationHistory?.length > 0
+        ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
+        : 'No conversation occurred';
+
+      contextSection = `
+User Context:
+- Focus areas: ${focusAreasText}${premiumContext}
+
+Journal Entry:
+"${content}"
+
+Related Conversation:
+${conversationContext}`;
+
+      outputSection = `
+Please provide a ${isPremium ? 'comprehensive' : 'concise'} summary (${isPremium ? '100-150' : '75-100'} words) that includes:
+1. Main themes from the journal entry
+2. Key insights from the conversation (if any)
+3. Notable emotional or experiential patterns
+
+Write the summary in a clear, supportive tone that would be helpful for the user to reference later. Focus on the most meaningful aspects rather than trying to capture every detail.
+
+Use the same analytical approach to identify patterns and insights, but present them as a cohesive summary rather than separate analysis points.`;
+    }
+
+    return `${corePersonality}
+
+${contextSection}
+
+${outputSection}`;
+  }
+
+  /**
+   * Build prompt for Claude AI (legacy wrapper)
+   */
+  buildPrompt({ content, moodRating, userPreferences, recentEntries, isPremium }) {
+    return this.buildUnifiedPrompt({
+      content,
+      moodRating,
+      userPreferences,
+      recentEntries,
+      isPremium,
+      outputFormat: 'insight'
+    });
+  }
 
   /**
    * Generate sophisticated mock insights
@@ -565,51 +665,18 @@ Requirements:
   }
 
   /**
-   * Build prompt for Claude AI chat
+   * Build prompt for Claude AI chat (legacy wrapper)
    */
   buildChatPrompt({ message, journalContext, conversationHistory, userPreferences, isPremium }) {
-    const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
-    const premiumContext = isPremium
-      ? '\n- Premium subscriber: Provide deeper strategic analysis and personalized guidance'
-      : '\n- Free tier: Focus on immediate insights and supportive responses';
-
-    const conversationContext = conversationHistory?.length > 0
-      ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
-      : 'No previous conversation';
-
-    const journalContextText = journalContext
-      ? `Journal Entry Context: "${journalContext.substring(0, 500)}${journalContext.length > 500 ? '...' : ''}"`
-      : 'No journal context provided';
-
-    return `You are a strategic thinking partner in conversation mode. You're chatting with someone about their journal entry and helping them explore their thoughts through dialogue.
-
-Your conversational style should be:
-- Analytical but accessible - help them see patterns in their experiences
-- Direct and honest - ask probing questions without being harsh  
-- Strategic and future-focused - connect their thoughts to bigger goals
-- Pattern-recognition oriented - help them notice recurring themes
-- Practical - guide them toward actionable insights
-
-Keep responses conversational (1-3 sentences) and ask thoughtful follow-up questions that encourage strategic thinking.
-
-AVOID:
-- Generic validation without insight
-- Long analysis paragraphs (save that for insights)
-- Emotional cheerleading  
-- Surface-level responses
-
-User Context:
-- Focus areas: ${focusAreasText}${premiumContext}
-
-${journalContextText}
-
-Previous Conversation:
-${conversationContext}
-
-Current User Message: "${message}"
-
-Respond naturally as their strategic thinking partner.`;
-}
+    return this.buildUnifiedPrompt({
+      message,
+      journalContext,
+      conversationHistory,
+      userPreferences,
+      isPremium,
+      outputFormat: 'chat'
+    });
+  }
 
   /**
    * Generate summary using Claude AI
@@ -706,35 +773,16 @@ Respond naturally as their strategic thinking partner.`;
   }
 
   /**
-   * Build prompt for Claude AI summary
+   * Build prompt for Claude AI summary (legacy wrapper)
    */
   buildSummaryPrompt({ journalContent, conversationHistory, userPreferences, isPremium }) {
-    const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
-    const premiumContext = isPremium
-      ? '\n- Premium subscriber: Provide comprehensive summary with patterns and insights'
-      : '\n- Free tier: Focus on concise summary of key points';
-
-    const conversationContext = conversationHistory?.length > 0
-      ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
-      : 'No conversation occurred';
-
-    return `You are an AI assistant helping to summarize a journal entry and any related conversation. Create a concise, useful summary that captures the key points and insights.
-
-User Context:
-- Focus areas: ${focusAreasText}${premiumContext}
-
-Journal Entry:
-"${journalContent}"
-
-Related Conversation:
-${conversationContext}
-
-Please provide a ${isPremium ? 'comprehensive' : 'concise'} summary (${isPremium ? '100-150' : '75-100'} words) that includes:
-1. Main themes from the journal entry
-2. Key insights from the conversation (if any)
-3. Notable emotional or experiential patterns
-
-Write the summary in a clear, supportive tone that would be helpful for the user to reference later. Focus on the most meaningful aspects rather than trying to capture every detail.`;
+    return this.buildUnifiedPrompt({
+      content: journalContent,
+      conversationHistory,
+      userPreferences,
+      isPremium,
+      outputFormat: 'summary'
+    });
   }
 
   /**

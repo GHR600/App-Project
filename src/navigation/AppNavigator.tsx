@@ -11,6 +11,7 @@ import { OnboardingFlow } from '../screens/OnboardingFlow';
 import { DashboardHomeScreen } from '../screens/DashboardHomeScreen';
 import { JournalEntryScreen } from '../screens/JournalEntryScreen';
 import { EntryDetailScreen } from '../screens/EntryDetailScreen';
+import { DayDetailScreen } from '../screens/DayDetailScreen';
 import { SubscriptionPaywallScreen } from '../screens/SubscriptionPaywallScreen';
 
 // Type definitions for navigation
@@ -24,9 +25,18 @@ export type RootStackParamList = {
     entryId?: string;
     mood?: number;
     prompt?: string;
+    mode?: 'create' | 'edit';
+    initialDate?: string;
+    entryType?: 'journal' | 'note';
+    fromScreen?: 'DayDetail' | 'Dashboard';
   };
   EntryDetail: {
     entryId: string;
+  };
+  DayDetail: {
+    date: string;
+    dayData: any; // DayCardData type
+    userId: string;
   };
   SubscriptionPaywall: {
     source?: 'insights' | 'premium_features';
@@ -85,6 +95,14 @@ const MainStack = () => (
     }}
   >
     <Stack.Screen name="Dashboard" component={DashboardHomeScreen} />
+    <Stack.Screen
+      name="DayDetail"
+      component={DayDetailScreen}
+      options={{
+        title: 'Day Entries',
+        headerBackTitle: 'Back',
+      }}
+    />
     <Stack.Screen
       name="JournalEntry"
       component={JournalEntryScreen}

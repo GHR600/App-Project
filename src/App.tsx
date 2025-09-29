@@ -148,6 +148,19 @@ const MainApp: React.FC = () => {
           setCurrentScreen('signUp');
           return renderHomeScreen();
         }
+        // Mock navigation object for standalone app usage
+        const mockNavigation = {
+          navigate: (screen: string, params?: any) => {
+            if (screen === 'JournalEntry') {
+              setCurrentScreen('journal');
+            } else if (screen === 'DayDetail') {
+              // For now, just go to journal - this would be handled by proper navigation
+              setCurrentScreen('journal');
+            }
+          },
+          goBack: () => setCurrentScreen('home')
+        };
+
         return (
           <DashboardHomeScreen
             userId={user.id}
@@ -157,6 +170,7 @@ const MainApp: React.FC = () => {
               setCurrentScreen('entryDetail');
             }}
             onBack={() => setCurrentScreen('home')}
+            navigation={mockNavigation}
           />
         );
       case 'entryDetail':

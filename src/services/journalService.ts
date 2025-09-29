@@ -5,12 +5,16 @@ export interface CreateJournalEntryData {
   content: string;
   moodRating?: number;
   voiceMemoUrl?: string;
+  title?: string;
+  entryType?: 'journal' | 'note';
 }
 
 export interface UpdateJournalEntryData {
   content?: string;
   moodRating?: number;
   voiceMemoUrl?: string;
+  title?: string;
+  entryType?: 'journal' | 'note';
 }
 
 export interface JournalEntryWithWordCount extends DatabaseJournalEntry {
@@ -77,13 +81,31 @@ export class JournalService {
     error: any;
   }> {
     try {
+      // Check if journal entry already exists for today (if entryType is 'journal')
+      if (data.entryType === 'journal') {
+        const today = new Date().toISOString().split('T')[0];
+        const { data: existingJournal } = await supabase
+          .from('journal_entries')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('entry_type', 'journal')
+          .gte('created_at', `${today}T00:00:00.000Z`)
+          .lt('created_at', `${today}T23:59:59.999Z`);
+
+        if (existingJournal && existingJournal.length > 0) {
+          return { entry: null, error: 'You can only have one journal entry per day. You can add notes instead.' };
+        }
+      }
+
       const { data: entry, error } = await supabase
         .from('journal_entries')
         .insert({
           user_id: userId,
           content: data.content,
           mood_rating: data.moodRating,
-          voice_memo_url: data.voiceMemoUrl
+          voice_memo_url: data.voiceMemoUrl,
+          title: data.title,
+          entry_type: data.entryType || 'note'
         })
         .select()
         .single();

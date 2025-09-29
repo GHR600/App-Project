@@ -23,6 +23,10 @@ interface JournalEntryScreenProps {
   onEntryComplete?: (entry: any, insight?: any) => void;
   onBack?: () => void;
   initialDate?: Date;
+  mode?: 'create' | 'edit';
+  entryId?: string;
+  entryType?: 'journal' | 'note';
+  fromScreen?: 'DayDetail' | 'Dashboard';
 }
 
 export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
@@ -30,13 +34,18 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   onPaywallRequired,
   onEntryComplete,
   onBack,
-  initialDate
+  initialDate,
+  mode = 'create',
+  entryId,
+  entryType: initialEntryType = 'journal',
+  fromScreen
 }) => {
   // Entry content state
   const [title, setTitle] = useState('');
   const [entryText, setEntryText] = useState('');
   const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
   const [selectedMood, setSelectedMood] = useState<string>('😐'); // Emoji string instead of number
+  const [entryType, setEntryType] = useState<'journal' | 'note'>(initialEntryType);
 
   // Flow state
   const [isSaving, setIsSaving] = useState(false);
@@ -134,7 +143,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       // Save entry to database
       const { entry, error } = await JournalService.createEntry(userId, {
         content: entryText.trim(),
-        moodRating: getMoodRating(selectedMood)
+        moodRating: getMoodRating(selectedMood),
+        title: title.trim() || undefined,
+        entryType: entryType
       });
 
       if (error) {
@@ -442,12 +453,52 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     </View>
   );
 
+  // Entry Type Selector Component
+  const renderEntryTypeSelector = () => (
+    <View style={styles.entryTypeContainer}>
+      <Text style={styles.entryTypeLabel}>Entry Type:</Text>
+      <View style={styles.entryTypePicker}>
+        <TouchableOpacity
+          style={[
+            styles.entryTypeOption,
+            entryType === 'journal' && styles.entryTypeOptionSelected
+          ]}
+          onPress={() => setEntryType('journal')}
+          disabled={!!savedEntry}
+        >
+          <Text style={[
+            styles.entryTypeOptionText,
+            entryType === 'journal' && styles.entryTypeOptionTextSelected
+          ]}>
+            📝 Journal Entry
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.entryTypeOption,
+            entryType === 'note' && styles.entryTypeOptionSelected
+          ]}
+          onPress={() => setEntryType('note')}
+          disabled={!!savedEntry}
+        >
+          <Text style={[
+            styles.entryTypeOptionText,
+            entryType === 'note' && styles.entryTypeOptionTextSelected
+          ]}>
+            🗒️ Quick Note
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   // Section A: Journal Entry Area
   const renderJournalSection = () => (
     <View style={styles.journalSection}>
+      {renderEntryTypeSelector()}
       <TextInput
         style={styles.titleInput}
-        placeholder="Title"
+        placeholder={entryType === 'journal' ? "What's on your mind?" : "Note title (optional)"}
         placeholderTextColor={colors.placeholderText}
         value={title}
         onChangeText={setTitle}
@@ -734,6 +785,40 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
+  },
+  entryTypeContainer: {
+    marginBottom: 16,
+  },
+  entryTypeLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  entryTypePicker: {
+    flexDirection: 'row',
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: 8,
+    padding: 4,
+  },
+  entryTypeOption: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  entryTypeOptionSelected: {
+    backgroundColor: colors.primary,
+  },
+  entryTypeOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  entryTypeOptionTextSelected: {
+    color: colors.white,
+    fontWeight: '600',
   },
   titleInput: {
     fontSize: 18,

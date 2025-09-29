@@ -12,7 +12,9 @@
 - Body: Inter Regular, 16px
 - Caption: Inter Regular, 14px
 
+
 ## Component Patterns
 - Buttons: Rounded corners (8px), 44px height
 - Input fields: Border radius 8px, 16px padding
 - Cards: Shadow elevation 2, 12px radius
+

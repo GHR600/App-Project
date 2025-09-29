@@ -10,16 +10,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { colors, typography, components } from '../styles/designSystem';
+import { colors, typography, spacing, borderRadius } from '../styles/designSystem';
+import { FloatingActionButton } from '../components/FloatingActionButton';
+import { DayCard } from '../components/DayCard';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
-import { DatabaseJournalEntry } from '../config/supabase';
-import { DiaryView } from '../components/DiaryView';
+import { EntryService } from '../services/entryService';
+import { DayCardData } from '../types';
 
 interface DashboardHomeScreenProps {
   userId: string;
   onNewEntry: () => void;
-  onEntryPress: (entry: DatabaseJournalEntry) => void;
+  onEntryPress: (entry: any) => void;
   onBack?: () => void;
+  navigation: any;
 }
 
 interface UserStats {
@@ -29,81 +32,6 @@ interface UserStats {
   totalWords: number;
   entriesThisMonth: number;
 }
-
-interface EntryCardProps {
-  entry: JournalEntryWithInsights;
-  onPress: () => void;
-}
-
-const EntryCard: React.FC<EntryCardProps> = ({ entry, onPress }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return `Today, ${date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      })}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday, ${date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      })}`;
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    }
-  };
-
-  const getMoodEmoji = (rating: number | null) => {
-    if (!rating) return '😐';
-    switch (rating) {
-      case 1: return '😢';
-      case 2: return '😕';
-      case 3: return '😐';
-      case 4: return '😊';
-      case 5: return '😄';
-      default: return '😐';
-    }
-  };
-
-  const getPreviewText = (content: string) => {
-    const lines = content.split('\n');
-    const firstTwoLines = lines.slice(0, 2).join(' ');
-    return firstTwoLines.length > 120
-      ? `${firstTwoLines.substring(0, 120)}...`
-      : firstTwoLines;
-  };
-
-  return (
-    <TouchableOpacity style={styles.entryCard} onPress={onPress}>
-      <View style={styles.entryCardHeader}>
-        <Text style={styles.entryDate}>{formatDate(entry.created_at)}</Text>
-        <Text style={styles.moodEmoji}>{getMoodEmoji(entry.mood_rating ?? null)}</Text>
-      </View>
-
-      <Text style={styles.entryPreview} numberOfLines={3}>
-        {getPreviewText(entry.content)}
-      </Text>
-
-      <View style={styles.entryCardFooter}>
-        <Text style={styles.wordCount}>
-          {entry.word_count || entry.content.split(' ').length} words
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats, isLoading }) => {
   if (isLoading) {
@@ -146,9 +74,10 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   userId,
   onNewEntry,
   onEntryPress,
-  onBack
+  onBack,
+  navigation
 }) => {
-  const [entries, setEntries] = useState<JournalEntryWithInsights[]>([]);
+  const [dayCards, setDayCards] = useState<DayCardData[]>([]);
   const [stats, setStats] = useState<UserStats>({
     totalEntries: 0,
     currentStreak: 0,
@@ -158,10 +87,11 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showMoreDays, setShowMoreDays] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
-      // Load user stats
+      // Load user stats (keep existing functionality)
       const { stats: userStats, error: statsError } = await JournalService.getUserStats(userId);
       if (statsError) {
         console.error('Error loading stats:', statsError);
@@ -169,18 +99,15 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
         setStats(userStats);
       }
 
-      // Load recent entries with insights
-      const { entries: userEntries, error: entriesError } = await JournalService.getUserEntriesWithInsights(userId, {
-        limit: 10,
-        orderBy: 'created_at',
-        ascending: false
-      });
+      // Load day-based entries
+      const limit = showMoreDays ? 14 : 7; // Show 7 initially, 14 when "Show More" is pressed
+      const { dayCards: userDayCards, error: dayCardsError } = await EntryService.getEntriesGroupedByDay(userId, limit);
 
-      if (entriesError) {
-        console.error('Error loading entries:', entriesError);
+      if (dayCardsError) {
+        console.error('Error loading day cards:', dayCardsError);
         Alert.alert('Error', 'Failed to load your journal entries. Please try again.');
       } else {
-        setEntries(userEntries);
+        setDayCards(userDayCards);
       }
     } catch (error) {
       console.error('Unexpected error loading dashboard data:', error);
@@ -188,7 +115,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, showMoreDays]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -196,35 +123,76 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     setIsRefreshing(false);
   }, [loadData]);
 
-  const handleEditEntry = useCallback(async (entryId: string, newContent: string) => {
-    try {
-      const { error } = await JournalService.updateEntry(userId, entryId, { content: newContent });
-      if (error) {
-        Alert.alert('Error', 'Failed to update entry. Please try again.');
-      } else {
-        // Refresh the entries to show the updated content
-        await loadData();
-      }
-    } catch (error) {
-      console.error('Error updating entry:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-    }
-  }, [userId, loadData]);
+  const handleDayPress = (dayData: DayCardData) => {
+    navigation.navigate('DayDetail', {
+      date: dayData.date,
+      dayData,
+      userId
+    });
+  };
 
-  const handleChatMessage = useCallback(async (entryId: string, message: string) => {
-    try {
-      // TODO: Implement chat functionality with AI
-      console.log('Chat message for entry', entryId, ':', message);
-      Alert.alert('Coming Soon', 'Chat functionality will be available in a future update.');
-    } catch (error) {
-      console.error('Error sending chat message:', error);
-      Alert.alert('Error', 'Failed to send message. Please try again.');
-    }
-  }, []);
+  const handleNewEntry = () => {
+    navigation.navigate('JournalEntry', {
+      mode: 'create',
+      fromScreen: 'Dashboard'
+    });
+  };
+
+  const handleShowMore = () => {
+    setShowMoreDays(true);
+  };
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const renderDayCards = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          {[1, 2, 3].map(i => (
+            <View key={i} style={[styles.dayCardLoading]}>
+              <View style={styles.loadingText} />
+              <View style={[styles.loadingText, { width: '60%', marginTop: 8 }]} />
+            </View>
+          ))}
+        </View>
+      );
+    }
+
+    if (dayCards.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateIcon}>📝</Text>
+          <Text style={styles.emptyStateTitle}>Start Your Journey</Text>
+          <Text style={styles.emptyStateDescription}>
+            Write your first journal entry to begin tracking your thoughts and growth.
+          </Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleNewEntry}>
+            <Text style={styles.primaryButtonText}>Create First Entry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <>
+        {dayCards.map((dayData) => (
+          <DayCard
+            key={dayData.date}
+            dayData={dayData}
+            onPress={() => handleDayPress(dayData)}
+          />
+        ))}
+
+        {!showMoreDays && dayCards.length >= 7 && (
+          <TouchableOpacity style={styles.showMoreButton} onPress={handleShowMore}>
+            <Text style={styles.showMoreText}>Show More</Text>
+          </TouchableOpacity>
+        )}
+      </>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -247,42 +215,17 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.entriesHeader}>
-            <Text style={styles.entriesTitle}>Recent Entries</Text>
-            <TouchableOpacity style={styles.newEntryButton} onPress={onNewEntry}>
+            <Text style={styles.entriesTitle}>Recent Days</Text>
+            <TouchableOpacity style={styles.newEntryButton} onPress={handleNewEntry}>
               <Text style={styles.newEntryButtonText}>+ New</Text>
             </TouchableOpacity>
           </View>
 
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              {[1, 2, 3].map(i => (
-                <View key={i} style={[styles.entryCard, styles.loadingCard]}>
-                  <View style={styles.loadingText} />
-                </View>
-              ))}
-            </View>
-          ) : entries.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateIcon}>📝</Text>
-              <Text style={styles.emptyStateTitle}>Start Your Journey</Text>
-              <Text style={styles.emptyStateDescription}>
-                Write your first journal entry to begin tracking your thoughts and growth.
-              </Text>
-              <TouchableOpacity style={styles.primaryButton} onPress={onNewEntry}>
-                <Text style={styles.primaryButtonText}>Create First Entry</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            entries.map((entry) => (
-              <EntryCard
-                key={entry.id}
-                entry={entry}
-                onPress={() => onEntryPress(entry)}
-              />
-            ))
-          )}
+          {renderDayCards()}
         </ScrollView>
       </View>
+
+      <FloatingActionButton onPress={handleNewEntry} />
     </SafeAreaView>
   );
 };
@@ -299,8 +242,8 @@ const styles = StyleSheet.create({
   // Compact Stats Header (MyDiary Style)
   statsContainer: {
     backgroundColor: colors.backgroundSecondary,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm, // Made more compact
   },
   statsRow: {
     flexDirection: 'row',
@@ -312,13 +255,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 18, // Slightly smaller
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textSecondary,
     textAlign: 'center',
   },
@@ -328,22 +271,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   entriesContent: {
-    padding: 16,
+    padding: spacing.md,
+    paddingBottom: 100, // Space for FAB
   },
   entriesHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   entriesTitle: {
-    fontSize: 18,
+    ...typography.h3,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   newEntryButton: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: borderRadius.sm,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
@@ -353,41 +296,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Dark Entry Cards (MyDiary Style)
-  entryCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    padding: 16,
-    marginBottom: 12,
-  },
-  entryCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  // Show More Button
+  showMoreButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    marginBottom: 8,
+    marginTop: spacing.md,
   },
-  entryDate: {
-    fontSize: 12,
-    color: colors.primaryLight,
-    fontWeight: '500',
-  },
-  moodEmoji: {
-    fontSize: 16,
-  },
-  entryPreview: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  entryCardFooter: {
-    alignItems: 'flex-start',
-  },
-  wordCount: {
-    fontSize: 12,
-    color: colors.textMuted,
+  showMoreText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
   },
 
   // Empty State & Loading
@@ -398,27 +320,26 @@ const styles = StyleSheet.create({
   },
   emptyStateIcon: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyStateTitle: {
-    fontSize: 20,
+    ...typography.h2,
     fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   emptyStateDescription: {
-    fontSize: 16,
+    ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
     maxWidth: 280,
   },
   primaryButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   primaryButtonText: {
     color: colors.white,
@@ -426,7 +347,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   loadingContainer: {
-    gap: 12,
+    gap: spacing.sm,
+  },
+  dayCardLoading: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   loadingCard: {
     backgroundColor: colors.surface,

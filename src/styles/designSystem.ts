@@ -46,6 +46,10 @@ export const colors = {
   inputBorder: 'rgba(255,255,255,0.2)',
   placeholderText: '#9ca3af',
 
+  // Floating Action Button
+  floatingButton: '#7C3AED',
+  floatingButtonShadow: 'rgba(124, 58, 237, 0.3)',
+
   // Additional colors for extended functionality
   green600: '#10b981',
   red600: '#ef4444',
@@ -55,6 +59,44 @@ export const colors = {
 };
 
 export const typography = {
+  // Consistent typography across all screens
+  h1: {
+    fontSize: 28,
+    fontWeight: 'bold' as 'bold',
+    color: colors.textPrimary,
+    lineHeight: 34,
+  },
+  h2: {
+    fontSize: 24,
+    fontWeight: '600' as '600',
+    color: colors.textPrimary,
+    lineHeight: 30,
+  },
+  h3: {
+    fontSize: 20,
+    fontWeight: '600' as '600',
+    color: colors.textPrimary,
+    lineHeight: 26,
+  },
+  body: {
+    fontSize: 16,
+    fontWeight: '400' as '400',
+    color: colors.textPrimary,
+    lineHeight: 24,
+  },
+  caption: {
+    fontSize: 14,
+    fontWeight: '400' as '400',
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  small: {
+    fontSize: 12,
+    fontWeight: '400' as '400',
+    color: colors.textMuted,
+    lineHeight: 16,
+  },
+  // Legacy support
   heading: {
     fontFamily: 'Inter',
     fontWeight: 'bold' as 'bold',
@@ -69,26 +111,45 @@ export const typography = {
     color: colors.textPrimary,
     lineHeight: 28,
   },
-  body: {
-    fontFamily: 'Inter',
-    fontWeight: 'normal' as 'normal',
-    fontSize: 16,
-    color: colors.textPrimary,
-    lineHeight: 24,
-  },
-  caption: {
-    fontFamily: 'Inter',
-    fontWeight: 'normal' as 'normal',
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 40,
+};
+
+export const borderRadius = {
+  sm: 6,
+  md: 12,
+  lg: 16,
+  xl: 24,
+};
+
+export const shadows = {
   small: {
-    fontFamily: 'Inter',
-    fontWeight: 'normal' as 'normal',
-    fontSize: 12,
-    color: colors.textMuted,
-    lineHeight: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  medium: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  large: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
   },
 };
 
@@ -121,4 +182,13 @@ export const components = {
     shadowRadius: 8,
     elevation: 8
   }
+};
+
+// Complete theme object for consistent application
+export const theme = {
+  colors,
+  typography,
+  spacing,
+  borderRadius,
+  shadows,
 };
