@@ -31,6 +31,7 @@ export interface ChatMessage {
   timestamp: string;
   journalEntryId: string;
   userId: string;
+  isInitialInsight?: boolean;
 }
 
 import { API_CONFIG } from '../utils/env';
@@ -386,6 +387,51 @@ export class AIInsightService {
   }
 
   /**
+   * Save initial AI insight as a chat message
+   */
+  static async saveInitialInsightAsMessage(
+    userId: string,
+    journalEntryId: string,
+    insightText: string
+  ): Promise<{
+    message: ChatMessage | null;
+    error?: any;
+  }> {
+    try {
+      const { data: insertedMsg, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          role: 'assistant',
+          content: insightText,
+          timestamp: new Date().toISOString(),
+          journal_entry_id: journalEntryId,
+          user_id: userId,
+        })
+        .select()
+        .single();
+
+      if (error || !insertedMsg) {
+        console.error('Failed to save initial insight as chat message:', error);
+        return { message: null, error };
+      }
+
+      const message: ChatMessage = {
+        id: insertedMsg.id,
+        role: 'assistant',
+        content: insightText,
+        timestamp: insertedMsg.timestamp,
+        journalEntryId,
+        userId,
+      };
+
+      return { message, error: null };
+    } catch (error) {
+      console.error('Error saving initial insight as chat message:', error);
+      return { message: null, error };
+    }
+  }
+
+  /**
    * Delete chat history for a journal entry
    */
   static async deleteChatHistory(
@@ -486,15 +532,37 @@ export class AIInsightService {
 
       const totalDuration = Date.now() - startTime;
       console.log(`📱 [${requestId}] Server insight success! Duration: ${totalDuration}ms`);
+      console.log(`📱 [${requestId}] Server response structure:`, {
+        hasInsight: !!result.insight,
+        insightType: typeof result.insight,
+        insightLength: result.insight?.length,
+        insightPreview: typeof result.insight === 'string' ? result.insight.substring(0, 100) : JSON.stringify(result.insight).substring(0, 100)
+      });
+
+      // Ensure insight is always a string, not an object
+      let insightText = result.insight;
+      if (typeof insightText === 'object' && insightText !== null) {
+        // If it's an object, try to extract the text field or stringify it
+        insightText = insightText.insight || insightText.text || JSON.stringify(insightText);
+      }
+      if (typeof insightText !== 'string') {
+        insightText = String(insightText);
+      }
 
       const insight = {
         id: `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        insight: result.insight,
+        insight: insightText,
         followUpQuestion: result.followUpQuestion,
         confidence: result.confidence,
         createdAt: new Date().toISOString(),
         isPremium: userContext.subscriptionStatus === 'premium'
       };
+
+      console.log(`📱 [${requestId}] Final insight object:`, {
+        insightType: typeof insight.insight,
+        insightLength: insight.insight?.length,
+        insightPreview: typeof insight.insight === 'string' ? insight.insight.substring(0, 100) : JSON.stringify(insight.insight).substring(0, 100)
+      });
 
         return insight;
 

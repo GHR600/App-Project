@@ -199,8 +199,27 @@ router.post('/chat', async (req, res) => {
     }
 
     // Build system prompt for chat
-    let systemPrompt = `You are a supportive AI companion helping someone with their journaling and self-reflection.
-Be empathetic, ask thoughtful questions, and provide gentle guidance. Keep responses concise (1-2 sentences).`;
+    let systemPrompt = `You are a strategic thinking partner in conversation mode. You're chatting with someone about their journal entry and helping them explore their thoughts through dialogue.
+
+Your conversational style should be:
+- Analytical but accessible - help them see patterns in their experiences
+- Direct and honest - ask probing questions without being harsh
+- Strategic and future-focused - connect their thoughts to bigger goals
+- Pattern-recognition oriented - help them notice recurring themes
+- Practical - guide them toward actionable insights
+
+Keep responses conversational (1-3 sentences) and ask thoughtful follow-up questions that encourage strategic thinking.
+
+AVOID:
+- Generic validation without insight
+- Long analysis paragraphs (save that for insights)
+- Emotional cheerleading
+- Surface-level responses
+
+Context from their journal: "{journalContext}"
+Previous conversation: {conversationHistory}
+
+Respond naturally as their strategic thinking partner.`;
 
     if (journalContext) {
       systemPrompt += `\n\nContext from their recent journal entry: "${journalContext}"`;
@@ -217,7 +236,7 @@ Be empathetic, ask thoughtful questions, and provide gentle guidance. Keep respo
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-3-haiku-20240307',
+            model: 'claude-sonnet-4-20250514',
             max_tokens: 150,
             system: systemPrompt,
             messages: messages.map(msg => ({

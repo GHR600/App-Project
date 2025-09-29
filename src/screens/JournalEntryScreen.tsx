@@ -49,11 +49,18 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Debug: Log whenever chatMessages state changes
   useEffect(() => {
-    console.log('🔄 chatMessages state updated:', chatMessages.length, 'messages');
-    chatMessages.forEach((msg, index) => {
-      console.log(`   ${index + 1}. [${msg.role}] ${msg.content.substring(0, 50)}...`);
+    const visibleMessages = chatMessages.filter(message => {
+      if (message.role === 'assistant' && initialInsight && message.content === initialInsight) {
+        return false;
+      }
+      return true;
     });
-  }, [chatMessages]);
+    console.log('🔄 chatMessages state updated:', chatMessages.length, 'total messages,', visibleMessages.length, 'visible');
+    chatMessages.forEach((msg, index) => {
+      const isHidden = msg.role === 'assistant' && initialInsight && msg.content === initialInsight;
+      console.log(`   ${index + 1}. [${msg.role}] ${msg.content.substring(0, 50)}...${isHidden ? ' (HIDDEN - initial insight)' : ''}`);
+    });
+  }, [chatMessages, initialInsight]);
   const chatScrollViewRef = useRef<ScrollView>(null);
   const [initialInsight, setInitialInsight] = useState<string | null>(null);
   const [hasGeneratedInitialInsight, setHasGeneratedInitialInsight] = useState(false);
@@ -155,8 +162,62 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           []
         );
 
-        setInitialInsight(insight.insight);
+        // Ensure insight is displayed as clean text
+        let insightText = insight.insight;
+        if (typeof insightText === 'object' && insightText !== null) {
+          insightText = insightText.insight || insightText.text || JSON.stringify(insightText);
+        }
+        if (typeof insightText !== 'string') {
+          insightText = String(insightText);
+        }
+
+        console.log('📺 Setting initial insight:', {
+          originalType: typeof insight.insight,
+          finalType: typeof insightText,
+          finalLength: insightText?.length,
+          finalPreview: insightText.substring(0, 100)
+        });
+        setInitialInsight(insightText);
         setHasGeneratedInitialInsight(true);
+
+        // Save insight as a chat message to database
+        try {
+          const { message, error: chatError } = await AIInsightService.saveInitialInsightAsMessage(
+            userId,
+            entry!.id,
+            insightText
+          );
+
+          if (chatError) {
+            console.error('Failed to save insight as chat message:', chatError);
+            // Still add to local state as fallback
+            const insightMessage: ChatMessage = {
+              id: `insight-${Date.now()}`,
+              role: 'assistant',
+              content: insightText,
+              timestamp: new Date().toISOString(),
+              journalEntryId: entry!.id,
+              userId,
+            };
+            setChatMessages([insightMessage]);
+          } else if (message) {
+            // Successfully saved to database, add to local state
+            setChatMessages([message]);
+          }
+        } catch (saveError) {
+          console.error('Error saving insight as chat message:', saveError);
+          // Fallback to local state only
+          const insightMessage: ChatMessage = {
+            id: `insight-${Date.now()}`,
+            role: 'assistant',
+            content: insightText,
+            timestamp: new Date().toISOString(),
+            journalEntryId: entry!.id,
+            userId,
+          };
+          setChatMessages([insightMessage]);
+        }
+
 
         // Save insight to database
         try {
@@ -450,31 +511,42 @@ const renderChatSection = () => {
         nestedScrollEnabled={true}
         showsVerticalScrollIndicator={false}
       >
-        {chatMessages.length === 0 ? (
-          <Text style={styles.emptyStateText}>
-            No messages yet. Start a conversation!
-          </Text>
-        ) : (
-          chatMessages.map((message, index) => (
-            <View
-              key={`${message.id}-${index}`}
-              style={[
-                styles.chatBubble,
-                message.role === 'user' ? styles.userBubble : styles.claudeBubble
-              ]}
-            >
-              <Text
+        {(() => {
+          // Filter out initial insight from visible chat (keep for context but don't show)
+          const visibleMessages = chatMessages.filter(message => {
+            // Hide if it's an assistant message that matches the initial insight
+            if (message.role === 'assistant' && initialInsight && message.content === initialInsight) {
+              return false;
+            }
+            return true;
+          });
+
+          return visibleMessages.length === 0 ? (
+            <Text style={styles.emptyStateText}>
+              No messages yet. Start a conversation!
+            </Text>
+          ) : (
+            visibleMessages.map((message, index) => (
+              <View
+                key={`${message.id}-${index}`}
                 style={[
-                  styles.chatBubbleText,
-                  message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                  styles.chatBubble,
+                  message.role === 'user' ? styles.userBubble : styles.claudeBubble
                 ]}
               >
-                {message.role === 'assistant' ? '🤖 ' : '💬 '}
-                {message.content}
-              </Text>
-            </View>
-          ))
-        )}
+                <Text
+                  style={[
+                    styles.chatBubbleText,
+                    message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                  ]}
+                >
+                  {message.role === 'assistant' ? '🤖 ' : '💬 '}
+                  {message.content}
+                </Text>
+              </View>
+            ))
+          );
+        })()}
         {isChatLoading && (
           <View style={styles.claudeBubble}>
             <Text style={styles.claudeBubbleText}>🤖 Thinking...</Text>
