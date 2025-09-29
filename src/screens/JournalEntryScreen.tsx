@@ -85,6 +85,39 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     subscriptionStatus: 'free'
   };
 
+  // Load existing entry data if in edit mode
+  useEffect(() => {
+    const loadExistingEntry = async () => {
+      if (mode === 'edit' && entryId) {
+        try {
+          const { data, error } = await JournalService.getEntry(userId, entryId);
+          if (!error && data) {
+            setTitle(data.title || '');
+            setEntryText(data.content);
+            setSelectedMood(getMoodEmoji(data.mood_rating || 3));
+            setEntryType(data.entry_type || 'note');
+            setSavedEntry(data);
+          }
+        } catch (error) {
+          console.error('Error loading entry for editing:', error);
+        }
+      }
+    };
+
+    loadExistingEntry();
+  }, [mode, entryId, userId]);
+
+  const getMoodEmoji = (rating: number): string => {
+    switch (rating) {
+      case 1: return '😢';
+      case 2: return '😕';
+      case 3: return '😐';
+      case 4: return '😊';
+      case 5: return '😄';
+      default: return '😐';
+    }
+  };
+
   // Convert mood emoji to number for compatibility
   const getMoodRating = (emoji: string): number => {
     const moodMap: { [key: string]: number } = {
@@ -140,13 +173,29 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     setIsSaving(true);
 
     try {
-      // Save entry to database
-      const { entry, error } = await JournalService.createEntry(userId, {
-        content: entryText.trim(),
-        moodRating: getMoodRating(selectedMood),
-        title: title.trim() || undefined,
-        entryType: entryType
-      });
+      let entry, error;
+
+      if (mode === 'edit' && entryId) {
+        // Update existing entry
+        const result = await JournalService.updateEntry(userId, entryId, {
+          content: entryText.trim(),
+          moodRating: getMoodRating(selectedMood),
+          title: title.trim() || undefined,
+          entryType: entryType
+        });
+        entry = result.entry;
+        error = result.error;
+      } else {
+        // Create new entry
+        const result = await JournalService.createEntry(userId, {
+          content: entryText.trim(),
+          moodRating: getMoodRating(selectedMood),
+          title: title.trim() || undefined,
+          entryType: entryType
+        });
+        entry = result.entry;
+        error = result.error;
+      }
 
       if (error) {
         Alert.alert('Error', 'Failed to save your entry. Please try again.');
@@ -425,7 +474,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           disabled={!entryText.trim() || isSaving}
         >
           <Text style={styles.saveButtonText}>
-            {isSaving ? 'SAVING...' : 'SAVE'}
+            {isSaving ? 'SAVING...' : (mode === 'edit' ? 'UPDATE' : 'SAVE')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -454,10 +503,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   );
 
   // Entry Type Selector Component
-  const renderEntryTypeSelector = () => (
-    <View style={styles.entryTypeContainer}>
-      <Text style={styles.entryTypeLabel}>Entry Type:</Text>
-      <View style={styles.entryTypePicker}>
+  const renderEntryTypeSelector = () => {
+    console.log('🎯 Rendering entry type selector, current type:', entryType);
+    return (
+      <View style={styles.entryTypeContainer}>
+        <Text style={styles.entryTypeLabel}>Entry Type:</Text>
+        <View style={styles.entryTypePicker}>
         <TouchableOpacity
           style={[
             styles.entryTypeOption,
@@ -493,13 +544,14 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   );
 
   // Section A: Journal Entry Area
-  const renderJournalSection = () => (
-    <View style={styles.journalSection}>
-      {/* Temporarily hide entry type selector until database migration */}
-      {/* {renderEntryTypeSelector()} */}
-      <TextInput
+  const renderJournalSection = () => {
+    console.log('📝 Rendering journal section');
+    return (
+      <View style={styles.journalSection}>
+        {renderEntryTypeSelector()}
+        <TextInput
         style={styles.titleInput}
-        placeholder="Title (optional)"
+        placeholder={entryType === 'journal' ? "What's on your mind?" : "Note title (optional)"}
         placeholderTextColor={colors.placeholderText}
         value={title}
         onChangeText={setTitle}
@@ -789,12 +841,17 @@ const styles = StyleSheet.create({
   },
   entryTypeContainer: {
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: colors.surface,
   },
   entryTypeLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: 8,
+    color: colors.primary,
+    marginBottom: 12,
   },
   entryTypePicker: {
     flexDirection: 'row',

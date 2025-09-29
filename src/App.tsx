@@ -12,6 +12,7 @@ import { SubscriptionPaywallScreen } from './screens/SubscriptionPaywallScreen';
 import { JournalEntryScreen } from './screens/JournalEntryScreen';
 import { DashboardHomeScreen } from './screens/DashboardHomeScreen';
 import { EntryDetailScreen } from './screens/EntryDetailScreen';
+import { DayDetailScreen } from './screens/DayDetailScreen';
 import { SignUpScreen } from './screens/SignUpScreen';
 import { SignInScreen } from './screens/SignInScreen';
 import { DatabaseJournalEntry } from './config/supabase';
@@ -154,8 +155,12 @@ const MainApp: React.FC = () => {
             if (screen === 'JournalEntry') {
               setCurrentScreen('journal');
             } else if (screen === 'DayDetail') {
-              // For now, just go to journal - this would be handled by proper navigation
-              setCurrentScreen('journal');
+              // Navigate to day detail screen with proper params
+              setCurrentScreen('dayDetail');
+              // Store the day data for the day detail screen
+              if (params) {
+                (window as any).dayDetailParams = params;
+              }
             }
           },
           goBack: () => setCurrentScreen('home')
@@ -172,6 +177,23 @@ const MainApp: React.FC = () => {
             onBack={() => setCurrentScreen('home')}
             navigation={mockNavigation}
           />
+        );
+      case 'dayDetail':
+        const dayDetailParams = (window as any).dayDetailParams;
+        return dayDetailParams && user ? (
+          <DayDetailScreen
+            route={{ params: dayDetailParams }}
+            navigation={{
+              navigate: (screen: string, params?: any) => {
+                if (screen === 'JournalEntry') {
+                  setCurrentScreen('journal');
+                }
+              },
+              goBack: () => setCurrentScreen('dashboard')
+            }}
+          />
+        ) : (
+          renderHomeScreen()
         );
       case 'entryDetail':
         return selectedEntry && user ? (

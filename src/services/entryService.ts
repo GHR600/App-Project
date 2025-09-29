@@ -98,8 +98,8 @@ export class EntryService {
         user_id: entry.user_id,
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: entry.entry_type || 'note', // Default to 'note' for backward compatibility
-        title: entry.title || undefined, // Handle case where title column doesn't exist
+        entry_type: entry.entry_type || 'note', // Default to 'note' for any legacy entries
+        title: entry.title,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
         ai_insight_generated: entry.ai_insight_generated,
@@ -140,7 +140,7 @@ export class EntryService {
         content: entry.content,
         mood_rating: entry.mood_rating,
         entry_type: entry.entry_type || 'note',
-        title: entry.title || undefined, // Handle case where title column doesn't exist
+        title: entry.title,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
         ai_insight_generated: entry.ai_insight_generated,
