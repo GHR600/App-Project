@@ -252,6 +252,14 @@ export class AIInsightService {
 
       if (authToken) {
         try {
+          console.log('🚀 Making chat API request:', {
+            url: `${this.API_BASE_URL}/api/ai/chat`,
+            hasAuthToken: !!authToken,
+            messageLength: message.length,
+            hasJournalContext: !!journalContext,
+            conversationHistoryLength: conversationHistory?.length || 0
+          });
+
           const response = await fetch(`${this.API_BASE_URL}/api/ai/chat`, {
             method: 'POST',
             headers: {
@@ -269,7 +277,14 @@ export class AIInsightService {
             const result = await response.json();
             aiResponseText = result.aiResponse.content;
           } else {
-            throw new Error('Server chat error');
+            console.error('Chat API error response:', {
+              status: response.status,
+              statusText: response.statusText,
+              url: response.url
+            });
+            const errorText = await response.text();
+            console.error('Chat API error body:', errorText);
+            throw new Error(`Server chat error: ${response.status} ${response.statusText}`);
           }
         } catch (error) {
           console.error('Chat API error:', error);
@@ -697,7 +712,14 @@ export class AIInsightService {
 
             return { summary: result.summary.content };
           } else {
-            throw new Error('Server summary error');
+            console.error('Summary API error response:', {
+              status: response.status,
+              statusText: response.statusText,
+              url: response.url
+            });
+            const errorText = await response.text();
+            console.error('Summary API error body:', errorText);
+            throw new Error(`Server summary error: ${response.status} ${response.statusText}`);
           }
         } catch (error) {
           console.error('Summary API error:', error);
