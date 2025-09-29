@@ -32,7 +32,11 @@ export const DayDetailScreen: React.FC<DayDetailScreenProps> = ({ route, navigat
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Unknown Date';
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -51,7 +55,11 @@ export const DayDetailScreen: React.FC<DayDetailScreenProps> = ({ route, navigat
   };
 
   const formatTime = (dateString: string) => {
+    if (!dateString) return 'Unknown Time';
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Time';
+
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -90,9 +98,12 @@ export const DayDetailScreen: React.FC<DayDetailScreenProps> = ({ route, navigat
   };
 
   const handleNewEntry = () => {
+    // Convert date string to Date object
+    const initialDate = date ? new Date(date) : new Date();
+
     navigation.navigate('JournalEntry', {
       mode: 'create',
-      initialDate: date,
+      initialDate: initialDate,
       fromScreen: 'DayDetail'
     });
   };
@@ -148,10 +159,15 @@ export const DayDetailScreen: React.FC<DayDetailScreenProps> = ({ route, navigat
   const renderNotes = () => {
     if (dayData.notes.length === 0) return null;
 
+    // Sort notes by created_at descending (newest first)
+    const sortedNotes = [...dayData.notes].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>NOTES OF THE DAY</Text>
-        {dayData.notes.map((note) => (
+        {sortedNotes.map((note) => (
           <TouchableOpacity
             key={note.id}
             style={styles.entryCard}

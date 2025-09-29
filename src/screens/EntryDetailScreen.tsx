@@ -51,7 +51,10 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -62,7 +65,10 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
 
   const formatTime = (dateString: string) => {
     if (!dateString) return '';
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Time';
+
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -182,7 +188,10 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
                   <Text style={styles.insightIcon}>🧠</Text>
                   <View style={styles.insightMeta}>
                     <Text style={styles.insightDate}>
-                      {insight.createdAt ? new Date(insight.createdAt).toLocaleDateString() : ''}
+                      {insight.createdAt ? (() => {
+                        const date = new Date(insight.createdAt);
+                        return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+                      })() : ''}
                     </Text>
                     {insight.isPremium && (
                       <Text style={[

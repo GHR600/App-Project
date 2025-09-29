@@ -131,7 +131,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           analytics?.moodTrends.slice(-7).map((trend, index) => (
             <View key={index} style={styles.moodItem}>
               <Text style={styles.moodDate}>
-                {new Date(trend.date).toLocaleDateString()}
+                {trend.date ? (() => {
+                  const date = new Date(trend.date);
+                  return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+                })() : 'Unknown Date'}
               </Text>
               <View style={styles.moodBar}>
                 <View

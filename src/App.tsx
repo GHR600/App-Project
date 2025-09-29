@@ -133,15 +133,27 @@ const MainApp: React.FC = () => {
           setCurrentScreen('signUp');
           return renderHomeScreen();
         }
+        const journalParams = (window as any).journalEntryParams || {};
         return (
           <JournalEntryScreen
             userId={user.id}
-            onBack={() => setCurrentScreen('dashboard')}
+            onBack={() => {
+              (window as any).journalEntryParams = null;
+              const targetScreen = journalParams.fromScreen === 'DayDetail' ? 'dayDetail' : 'dashboard';
+              setCurrentScreen(targetScreen);
+            }}
             onEntryComplete={(entry, insight) => {
               console.log('Entry completed:', entry, insight);
-              setCurrentScreen('dashboard');
+              (window as any).journalEntryParams = null;
+              const targetScreen = journalParams.fromScreen === 'DayDetail' ? 'dayDetail' : 'dashboard';
+              setCurrentScreen(targetScreen);
             }}
             onPaywallRequired={() => setCurrentScreen('subscription')}
+            mode={journalParams.mode}
+            entryId={journalParams.entryId}
+            entryType={journalParams.entryType}
+            fromScreen={journalParams.fromScreen}
+            initialDate={journalParams.initialDate}
           />
         );
       case 'dashboard':
@@ -154,6 +166,10 @@ const MainApp: React.FC = () => {
           navigate: (screen: string, params?: any) => {
             if (screen === 'JournalEntry') {
               setCurrentScreen('journal');
+              // Store the journal entry params for the journal screen
+              if (params) {
+                (window as any).journalEntryParams = params;
+              }
             } else if (screen === 'DayDetail') {
               // Navigate to day detail screen with proper params
               setCurrentScreen('dayDetail');
@@ -187,6 +203,10 @@ const MainApp: React.FC = () => {
               navigate: (screen: string, params?: any) => {
                 if (screen === 'JournalEntry') {
                   setCurrentScreen('journal');
+                  // Store the journal entry params for the journal screen
+                  if (params) {
+                    (window as any).journalEntryParams = params;
+                  }
                 }
               },
               goBack: () => setCurrentScreen('dashboard')

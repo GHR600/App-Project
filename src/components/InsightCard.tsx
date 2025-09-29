@@ -20,7 +20,11 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   onPress
 }) => {
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Unknown Date';
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

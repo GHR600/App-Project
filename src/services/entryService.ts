@@ -21,7 +21,9 @@ export class EntryService {
     const dayCards: DayCardData[] = Object.entries(dayGroups).map(([date, dayEntries]) => {
       // Separate journal entries from notes
       const journalEntry = dayEntries.find(entry => entry.entry_type === 'journal');
-      const notes = dayEntries.filter(entry => entry.entry_type === 'note');
+      const notes = dayEntries
+        .filter(entry => entry.entry_type === 'note')
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       // Calculate dominant mood
       const moodRatings = dayEntries

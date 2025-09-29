@@ -10,7 +10,11 @@ interface DayCardProps {
 
 export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Unknown Date';
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);

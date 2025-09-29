@@ -290,7 +290,10 @@ export const DailyCard: React.FC<DailyCardProps> = ({
                       <Text style={styles.insightIcon}>✨</Text>
                       <View style={styles.insightMeta}>
                         <Text style={styles.insightDate}>
-                          {new Date(insight.created_at).toLocaleDateString()}
+                          {insight.created_at ? (() => {
+                            const date = new Date(insight.created_at);
+                            return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+                          })() : 'Unknown Date'}
                         </Text>
                         {insight.is_premium && (
                           <Text style={styles.premiumBadge}>PREMIUM</Text>

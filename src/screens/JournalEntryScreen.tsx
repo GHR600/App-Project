@@ -43,7 +43,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   // Entry content state
   const [title, setTitle] = useState('');
   const [entryText, setEntryText] = useState('');
-  const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (initialDate && initialDate instanceof Date && !isNaN(initialDate.getTime())) {
+      return initialDate;
+    }
+    return new Date();
+  });
   const [selectedMood, setSelectedMood] = useState<string>('😐'); // Emoji string instead of number
   const [entryType, setEntryType] = useState<'journal' | 'note'>(initialEntryType);
 
@@ -90,13 +95,13 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     const loadExistingEntry = async () => {
       if (mode === 'edit' && entryId) {
         try {
-          const { data, error } = await JournalService.getEntry(userId, entryId);
-          if (!error && data) {
-            setTitle(data.title || '');
-            setEntryText(data.content);
-            setSelectedMood(getMoodEmoji(data.mood_rating || 3));
-            setEntryType(data.entry_type || 'note');
-            setSavedEntry(data);
+          const { entry, error } = await JournalService.getEntry(userId, entryId);
+          if (!error && entry) {
+            setTitle(entry.title || '');
+            setEntryText(entry.content);
+            setSelectedMood(getMoodEmoji(entry.mood_rating || 3));
+            setEntryType(entry.entry_type || 'note');
+            setSavedEntry(entry);
           }
         } catch (error) {
           console.error('Error loading entry for editing:', error);
@@ -450,6 +455,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const moodEmojis = ['😢', '😕', '😐', '😊', '😄'];
 
   const formatDate = (date: Date) => {
+    if (!date || isNaN(date.getTime())) return 'Invalid Date';
+
     return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: 'short',
@@ -541,7 +548,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         </TouchableOpacity>
       </View>
     </View>
-  );
+    );
+  };
 
   // Section A: Journal Entry Area
   const renderJournalSection = () => {
@@ -577,10 +585,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         <Text style={styles.toolbarIcon}>🏷️</Text>
       </View>
     </View>
-  );
+    );
+  };
 
   // Section B: AI Chat Area
-const renderChatSection = () => {
+  const renderChatSection = () => {
   if (!savedEntry) {
     return (
       <View style={styles.chatSection}>
@@ -682,7 +691,7 @@ const renderChatSection = () => {
       </View>
     </View>
   );
-};
+  };
 
   // Section C: Summary Feature
   const renderSummarySection = () => {
@@ -1073,4 +1082,13 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     lineHeight: 20,
   },
+  emptyStateText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 20,
+  },
 });
+
+export default JournalEntryScreen;
