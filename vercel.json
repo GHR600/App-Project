@@ -16,6 +16,12 @@
     },
     "api/ai/insight.js": {
       "memory": 128
+    },
+    "api/ai/chat.js": {
+      "memory": 128
+    },
+    "api/ai/summarise.js": {
+      "memory": 128
     }
   }
 }
