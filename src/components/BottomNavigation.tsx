@@ -27,7 +27,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           onPress={() => onTabPress('calendar')}
         >
           <Text style={[styles.icon, { color: activeTab === 'calendar' ? theme.primary : theme.textSecondary }]}>
-            📅
+            ☷
           </Text>
           <Text style={[styles.label, { color: activeTab === 'calendar' ? theme.primary : theme.textSecondary }]}>
             Calendar
@@ -53,7 +53,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           onPress={() => onTabPress('stats')}
         >
           <Text style={[styles.icon, { color: activeTab === 'stats' ? theme.primary : theme.textSecondary }]}>
-            📊
+            ⚊
           </Text>
           <Text style={[styles.label, { color: activeTab === 'stats' ? theme.primary : theme.textSecondary }]}>
             Stats
@@ -70,7 +70,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 20,
+    paddingBottom: 34, // Increased padding to avoid Android system buttons
+    paddingTop: 8,
     paddingHorizontal: 16,
   },
   navBar: {

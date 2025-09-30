@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../contexts/ThemeContext';
 import { typography, spacing, borderRadius } from '../styles/designSystem';
-import { FloatingActionButton } from '../components/FloatingActionButton';
+import { BottomNavigation } from '../components/BottomNavigation';
 import { DayCard } from '../components/DayCard';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
 import { EntryService } from '../services/entryService';
@@ -24,6 +24,8 @@ interface DashboardHomeScreenProps {
   onEntryPress: (entry: any) => void;
   onBack?: () => void;
   onMenuPress?: () => void;
+  onNavigateToCalendar?: () => void;
+  onNavigateToStats?: () => void;
   navigation: any;
 }
 
@@ -118,6 +120,8 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   onEntryPress,
   onBack,
   onMenuPress,
+  onNavigateToCalendar,
+  onNavigateToStats,
   navigation
 }) => {
   const { theme } = useTheme();
@@ -168,10 +172,16 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   }, [loadData]);
 
   const handleDayPress = (dayData: DayCardData) => {
-    navigation.navigate('DayDetail', {
-      date: dayData.date,
-      dayData,
-      userId
+    // Navigate directly to the journal entry for that day
+    // If there's an existing entry, open it in edit mode
+    // If no entry exists, create a new one for that date
+    const hasJournalEntry = dayData.journalEntry !== null;
+
+    navigation.navigate('JournalEntry', {
+      mode: hasJournalEntry ? 'edit' : 'create',
+      entryId: hasJournalEntry ? dayData.journalEntry.id : undefined,
+      initialDate: dayData.date,
+      fromScreen: 'Dashboard'
     });
   };
 
@@ -278,7 +288,17 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
         </ScrollView>
       </View>
 
-      <FloatingActionButton onPress={handleNewEntry} />
+      <BottomNavigation
+        activeTab="home"
+        onTabPress={(tab) => {
+          if (tab === 'calendar' && onNavigateToCalendar) {
+            onNavigateToCalendar();
+          } else if (tab === 'stats' && onNavigateToStats) {
+            onNavigateToStats();
+          }
+        }}
+        onNewEntry={handleNewEntry}
+      />
     </SafeAreaView>
   );
 };

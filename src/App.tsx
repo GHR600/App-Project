@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity
+  TouchableOpacity,
+  BackHandler
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { useAndroidBackHandler } from './hooks/useAndroidBackHandler';
 import { SubscriptionPaywallScreen } from './screens/SubscriptionPaywallScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { JournalEntryScreen } from './screens/JournalEntryScreen';
@@ -32,6 +34,29 @@ const MainApp: React.FC = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const { user, loading } = useAuth();
   const { theme, isDark } = useTheme();
+
+  // Android back button handler
+  const handleAndroidBack = useCallback(() => {
+    // Handle navigation stack
+    if (currentScreen === 'journal' || currentScreen === 'settings' ||
+        currentScreen === 'calendar' || currentScreen === 'stats' ||
+        currentScreen === 'notes' || currentScreen === 'account' ||
+        currentScreen === 'subscription' || currentScreen === 'entryDetail') {
+      // Navigate back to dashboard
+      setCurrentScreen('dashboard');
+      return true; // Prevent default (exit app)
+    } else if (currentScreen === 'dashboard' || currentScreen === 'home') {
+      // On dashboard or home, allow exit
+      return false; // Allow default (exit app)
+    } else if (currentScreen === 'signIn' || currentScreen === 'signUp') {
+      // On auth screens, go back to home
+      setCurrentScreen('home');
+      return true; // Prevent default
+    }
+    return false; // Allow default
+  }, [currentScreen]);
+
+  useAndroidBackHandler(handleAndroidBack);
 
   const renderHomeScreen = () => (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -138,9 +163,9 @@ const MainApp: React.FC = () => {
           />
         );
       case 'subscription':
-        return <SubscriptionPaywallScreen onBack={() => setCurrentScreen('home')} />;
+        return <SubscriptionPaywallScreen onBack={() => setCurrentScreen('dashboard')} />;
       case 'settings':
-        return <SettingsScreen onBack={() => setCurrentScreen('home')} />;
+        return <SettingsScreen onBack={() => setCurrentScreen('dashboard')} />;
       case 'journal':
         if (!user) {
           setCurrentScreen('signUp');
@@ -183,16 +208,9 @@ const MainApp: React.FC = () => {
               if (params) {
                 (window as any).journalEntryParams = params;
               }
-            } else if (screen === 'DayDetail') {
-              // Navigate to day detail screen with proper params
-              setCurrentScreen('dayDetail');
-              // Store the day data for the day detail screen
-              if (params) {
-                (window as any).dayDetailParams = params;
-              }
             }
           },
-          goBack: () => setCurrentScreen('home')
+          goBack: () => setCurrentScreen('dashboard')
         };
 
         return (
@@ -203,31 +221,10 @@ const MainApp: React.FC = () => {
               setSelectedEntry(entry);
               setCurrentScreen('entryDetail');
             }}
-            onBack={() => setCurrentScreen('home')}
+            onBack={() => setCurrentScreen('dashboard')}
             onMenuPress={() => setMenuVisible(true)}
             navigation={mockNavigation}
           />
-        );
-      case 'dayDetail':
-        const dayDetailParams = (window as any).dayDetailParams;
-        return dayDetailParams && user ? (
-          <DayDetailScreen
-            route={{ params: dayDetailParams }}
-            navigation={{
-              navigate: (screen: string, params?: any) => {
-                if (screen === 'JournalEntry') {
-                  setCurrentScreen('journal');
-                  // Store the journal entry params for the journal screen
-                  if (params) {
-                    (window as any).journalEntryParams = params;
-                  }
-                }
-              },
-              goBack: () => setCurrentScreen('dashboard')
-            }}
-          />
-        ) : (
-          renderHomeScreen()
         );
       case 'entryDetail':
         return selectedEntry && user ? (
