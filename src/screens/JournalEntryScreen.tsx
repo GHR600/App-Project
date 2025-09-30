@@ -17,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
 import { AIInsightService, AIInsight, JournalEntry, UserContext, ChatMessage } from '../services/aiInsightService';
+import { TagSelector } from '../components/TagSelector';
 
 interface JournalEntryScreenProps {
   userId: string;
@@ -44,6 +45,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   // Entry content state
   const [title, setTitle] = useState('');
   const [entryText, setEntryText] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState(() => {
     if (initialDate && initialDate instanceof Date && !isNaN(initialDate.getTime())) {
       return initialDate;
@@ -100,6 +102,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
             setTitle(entry.title || '');
             setEntryText(entry.content);
             setSelectedMood(getMoodEmoji(entry.mood_rating || 3));
+            setSelectedTags(entry.tags || []);
             setSavedEntry(entry);
           } else if (error) {
             console.error('Error loading entry for editing:', error);
@@ -188,7 +191,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         const result = await JournalService.updateEntry(userId, entryId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
-          title: title.trim() || undefined
+          title: title.trim() || undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined
         });
         entry = result.entry;
         error = result.error;
@@ -197,7 +201,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         const result = await JournalService.createEntry(userId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
-          title: title.trim() || undefined
+          title: title.trim() || undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          date: selectedDate // Pass the selected date
         });
         entry = result.entry;
         error = result.error;
@@ -522,6 +528,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           textAlignVertical="top"
           editable={!savedEntry}
         />
+        {!savedEntry && (
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+          />
+        )}
         <TouchableOpacity
           style={[
             styles.saveButtonBottom,

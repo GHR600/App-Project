@@ -1,30 +1,65 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CONFIG, validateEnvironment, isDevelopment } from '../utils/env';
 
 // Supabase configuration from environment
 const { url: supabaseUrl, anonKey: supabaseAnonKey } = SUPABASE_CONFIG;
 
-// Create and export the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-});
+// Validate configuration before creating client
+console.log('🔧 Initializing Supabase client...');
+console.log('   URL:', supabaseUrl);
+console.log('   Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'NOT SET');
+
+const { isValid, errors } = validateEnvironment();
+
+if (!isValid) {
+  console.error('❌ Supabase Configuration Errors:');
+  errors.forEach(error => console.error(`   - ${error}`));
+  console.error('   Please check your environment variables.');
+}
+
+// Create the Supabase client (even with placeholders for development)
+let supabaseClient: SupabaseClient | null = null;
+
+try {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
+  console.log('✅ Supabase client created successfully');
+} catch (error) {
+  console.error('❌ Failed to create Supabase client:', error);
+}
+
+// Export the client (may be null if creation failed)
+export const supabase = supabaseClient!;
 
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = (): boolean => {
-  const { isValid } = validateEnvironment();
-  return isValid;
+  return isValid && supabaseClient !== null;
+};
+
+// Helper to check if client is ready before operations
+export const ensureSupabaseReady = (): boolean => {
+  if (!supabaseClient) {
+    console.error('❌ Supabase client is not initialized');
+    return false;
+  }
+  if (!isValid) {
+    console.warn('⚠️  Supabase is not properly configured');
+    return false;
+  }
+  return true;
 };
 
 // Development warning
 if (isDevelopment()) {
-  const { isValid, errors } = validateEnvironment();
   if (!isValid) {
     console.warn('⚠️  Supabase Configuration Issues:');
     errors.forEach(error => console.warn(`   - ${error}`));
     console.warn('   Please check your .env.local file or environment variables.');
+    console.warn('   The app will use placeholder values for development.');
   }
 }

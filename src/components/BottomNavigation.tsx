@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, TouchableOpacity, StyleSheet, Text, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface BottomNavigationProps {
@@ -14,57 +14,83 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onNewEntry,
 }) => {
   const { theme } = useTheme();
-  const [pressedButton, setPressedButton] = useState<'calendar' | 'stats' | null>(null);
+
+  // Animated values for pulsating halo
+  const pulseScale = useRef(new Animated.Value(1)).current;
+  const pulseOpacity = useRef(new Animated.Value(0.7)).current;
+
+  useEffect(() => {
+    // Create pulsating animation
+    Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(pulseScale, {
+            toValue: 1.3,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseScale, {
+            toValue: 1,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(pulseOpacity, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.7,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    ).start();
+  }, [pulseScale, pulseOpacity]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.surface }]}>
-      <View style={[styles.navBar, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-        {/* Calendar Button */}
-        <TouchableOpacity
-          style={[
-            styles.navButton,
-            pressedButton === 'calendar' && { backgroundColor: theme.primaryLight }
-          ]}
-          onPressIn={() => setPressedButton('calendar')}
-          onPressOut={() => setPressedButton(null)}
-          onPress={() => onTabPress('calendar')}
-        >
-          <Text style={[styles.icon, { color: pressedButton === 'calendar' ? theme.primary : theme.textSecondary }]}>
-            ☷
-          </Text>
-          <Text style={[styles.label, { color: pressedButton === 'calendar' ? theme.primary : theme.textSecondary }]}>
-            Calendar
-          </Text>
-        </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: 'transparent' }]}>
+      {/* Calendar Button (LEFT) */}
+      <TouchableOpacity
+        style={styles.sideButton}
+        onPress={() => onTabPress('calendar')}
+      >
+        <Text style={[styles.sideIcon, { color: activeTab === 'calendar' ? theme.primary : '#FFFFFF' }]}>
+          ☷
+        </Text>
+      </TouchableOpacity>
 
-        {/* New Entry Button (Center) */}
-        <View style={styles.centerButtonContainer}>
-          <TouchableOpacity
-            style={[styles.centerButton, { backgroundColor: theme.primary }]}
-            onPress={onNewEntry}
-          >
-            <Text style={[styles.plusIcon, { color: theme.white }]}>+</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Stats Button */}
-        <TouchableOpacity
+      {/* New Entry Button (CENTER) with Pulsating Halo */}
+      <View style={styles.centerButtonContainer}>
+        <Animated.View
           style={[
-            styles.navButton,
-            pressedButton === 'stats' && { backgroundColor: theme.primaryLight }
+            styles.halo,
+            {
+              transform: [{ scale: pulseScale }],
+              opacity: pulseOpacity,
+            },
           ]}
-          onPressIn={() => setPressedButton('stats')}
-          onPressOut={() => setPressedButton(null)}
-          onPress={() => onTabPress('stats')}
+        />
+        <TouchableOpacity
+          style={[styles.centerButton, { backgroundColor: theme.primary }]}
+          onPress={onNewEntry}
         >
-          <Text style={[styles.icon, { color: pressedButton === 'stats' ? theme.primary : theme.textSecondary }]}>
-            ⚊
-          </Text>
-          <Text style={[styles.label, { color: pressedButton === 'stats' ? theme.primary : theme.textSecondary }]}>
-            Stats
-          </Text>
+          <Text style={[styles.plusIcon, { color: theme.white }]}>+</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Stats Button (RIGHT) */}
+      <TouchableOpacity
+        style={styles.sideButton}
+        onPress={() => onTabPress('stats')}
+      >
+        <Text style={[styles.sideIcon, { color: activeTab === 'stats' ? theme.primary : '#FFFFFF' }]}>
+          ⚊
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -75,47 +101,44 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 34, // Increased padding to avoid Android system buttons
-    paddingTop: 8,
-    paddingHorizontal: 16,
-  },
-  navBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 1,
+    paddingBottom: 75,
+    paddingTop: 8,
+    paddingHorizontal: 30,
+  },
+  sideButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  navButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginHorizontal: 4,
-  },
-  icon: {
-    fontSize: 24,
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '500',
+  sideIcon: {
+    fontSize: 22,
+    fontWeight: '600',
   },
   centerButtonContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 8,
+  },
+  halo: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
   },
   centerButton: {
     width: 60,

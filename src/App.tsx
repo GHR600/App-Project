@@ -21,7 +21,6 @@ import { SignUpScreen } from './screens/SignUpScreen';
 import { SignInScreen } from './screens/SignInScreen';
 import { CalendarScreen } from './screens/CalendarScreen';
 import { StatsScreen } from './screens/StatsScreen';
-import { NotesScreen } from './screens/NotesScreen';
 import { AccountScreen } from './screens/AccountScreen';
 import { DatabaseJournalEntry } from './config/supabase';
 import { BottomNavigation } from './components/BottomNavigation';
@@ -40,7 +39,7 @@ const MainApp: React.FC = () => {
     // Handle navigation stack
     if (currentScreen === 'journal' || currentScreen === 'settings' ||
         currentScreen === 'calendar' || currentScreen === 'stats' ||
-        currentScreen === 'notes' || currentScreen === 'account' ||
+        currentScreen === 'account' ||
         currentScreen === 'subscription' || currentScreen === 'entryDetail') {
       // Navigate back to dashboard
       setCurrentScreen('dashboard');
@@ -189,7 +188,6 @@ const MainApp: React.FC = () => {
             onPaywallRequired={() => setCurrentScreen('subscription')}
             mode={journalParams.mode}
             entryId={journalParams.entryId}
-            entryType={journalParams.entryType}
             fromScreen={journalParams.fromScreen}
             initialDate={journalParams.initialDate}
           />
@@ -271,12 +269,6 @@ const MainApp: React.FC = () => {
           return renderHomeScreen();
         }
         return <StatsScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
-      case 'notes':
-        if (!user) {
-          setCurrentScreen('signUp');
-          return renderHomeScreen();
-        }
-        return <NotesScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
       case 'account':
         if (!user) {
           setCurrentScreen('signUp');
@@ -309,11 +301,11 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const handleMenuNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => {
+  const handleMenuNavigate = (screen: 'account' | 'settings' | 'calendar' | 'stats') => {
     setCurrentScreen(screen);
   };
 
-  const shouldShowBottomNav = user && ['dashboard', 'calendar', 'stats', 'notes', 'account'].includes(currentScreen);
+  const shouldShowBottomNav = user && ['dashboard', 'calendar', 'stats', 'account'].includes(currentScreen);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>

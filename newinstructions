@@ -1,0 +1,55 @@
+Refactor the app to use a unified entry system instead of separating journal and notes. All entries should be treated the same and displayed in a single chronological feed. Implement the following:
+
+1. DATABASE & DATA MODEL:
+   - Update the entries table schema to remove any "entry_type" or "type" field that distinguishes between journal/notes
+   - Add an optional "tags" field (array of strings) to store entry tags like "journal", "thought", "idea", "goal", "gratitude"
+   - Ensure all entries have: id, userId, content, date, createdAt, updatedAt, mood (optional), tags (optional array)
+   - Migration: Convert any existing "notes" and "journal" entries to unified entries with appropriate tags
+
+2. ENTRY CREATION:
+   - Remove any UI that asks users to choose between "journal entry" or "note"
+   - Single entry creation screen for all entries
+   - Add optional tag selector (chips/pills UI) with preset tags: 📝 Journal, 💭 Thought, 💡 Idea, 🎯 Goal, ✨ Gratitude
+   - Tags should be optional - users can create entries without any tags
+   - Allow custom tags (user can type their own)
+   - Keep the floating + button for creating new entries
+
+3. HOME SCREEN (DASHBOARD):
+   - Display ALL entries in a single feed sorted by most recent (date/time descending)
+   - Each entry card should show: timestamp, content preview (first 2-3 lines), mood emoji (if exists), tags (as small colored chips)
+   - Remove any section headers like "Journal Entries" or "Notes" - just one unified feed
+   - Add search bar at the top: "Search all entries..."
+   - Keep stats card at top showing: entry streak, total entries count
+   - Implement "Show More" pagination if needed (load 20 entries at a time)
+
+4. SEARCH FUNCTIONALITY:
+   - Search bar should filter entries by content text
+   - Allow filtering by tags (clicking a tag shows all entries with that tag)
+   - Search should be real-time/debounced as user types
+   - Show search results in same chronological format
+
+5. CALENDAR VIEW:
+   - Show ALL entries for selected date in chronological order
+   - Display tags on each entry card
+   - No distinction between entry types - all entries appear together
+
+6. TAG SYSTEM:
+   - Preset tags with emojis: 📝 Journal, 💭 Thought, 💡 Idea, 🎯 Goal, ✨ Gratitude
+   - Tags displayed as small, rounded chips/pills with subtle colors
+   - Tappable tags that filter to show all entries with that tag
+   - Optional tag selector during entry creation (not required)
+   - Store tags as array in database
+
+7. CLEANUP:
+   - Remove all references to "entry type", "journal vs notes", or separate note sections
+   - Remove any navigation/buttons that separate journals from notes
+   - Remove any state variables like "entryType" or "setEntryType"
+   - Ensure AI context system treats all entries equally (already done based on previous work)
+
+8. UI CONSISTENCY:
+   - All entry cards should have consistent styling regardless of tags
+   - Use the dark purple theme throughout
+   - Tags should be visually subtle (not dominating the card)
+   - Maintain existing bottom navigation (calendar, +, stats)
+
+The goal is a clean, unified experience where users can quickly capture any thought/entry without friction, and use tags/search to organize later if needed.

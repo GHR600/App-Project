@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, typography, shadows, borderRadius, spacing } from '../styles/designSystem';
 import { DayCardData } from '../types';
+import { TagChips } from './TagChips';
 
 interface DayCardProps {
   dayData: DayCardData;
@@ -35,21 +36,20 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
     return entryType === 'journal' ? '📝' : '🗒️';
   };
 
-  const renderEntryTags = () => {
-    const tags: string[] = [];
+  const getAllTags = () => {
+    const allTags: string[] = [];
 
-    if (dayData.journalEntry) {
-      tags.push('📝 Main Journal');
-    }
-
-    dayData.notes.forEach((note, index) => {
-      if (index < 2) { // Show max 2 note titles
-        const title = note.title || `Note ${index + 1}`;
-        tags.push(`🗒️ ${title}`);
+    dayData.entries.forEach(entry => {
+      if (entry.tags) {
+        entry.tags.forEach(tag => {
+          if (!allTags.includes(tag)) {
+            allTags.push(tag);
+          }
+        });
       }
     });
 
-    return tags.slice(0, 3); // Max 3 tags total
+    return allTags;
   };
 
   const getAdditionalEntriesText = () => {
@@ -80,11 +80,7 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
       <View style={styles.separator} />
 
       <View style={styles.tagsContainer}>
-        {renderEntryTags().map((tag, index) => (
-          <Text key={index} style={styles.tagText} numberOfLines={1}>
-            {tag}
-          </Text>
-        ))}
+        <TagChips tags={getAllTags()} small />
       </View>
     </TouchableOpacity>
   );

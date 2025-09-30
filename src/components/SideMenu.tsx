@@ -18,7 +18,7 @@ const MENU_WIDTH = Math.min(280, width * 0.8);
 interface SideMenuProps {
   visible: boolean;
   onClose: () => void;
-  onNavigate: (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => void;
+  onNavigate: (screen: 'account' | 'settings' | 'calendar' | 'stats') => void;
 }
 
 export const SideMenu: React.FC<SideMenuProps> = ({
@@ -47,7 +47,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
     }
   }, [visible]);
 
-  const handleNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => {
+  const handleNavigate = (screen: 'account' | 'settings' | 'calendar' | 'stats') => {
     onNavigate(screen);
     onClose();
   };
@@ -58,11 +58,10 @@ export const SideMenu: React.FC<SideMenuProps> = ({
   };
 
   const menuItems = [
-    { key: 'account' as const, icon: '👤', label: 'Account', onPress: () => handleNavigate('account') },
-    { key: 'settings' as const, icon: '⚙️', label: 'Settings', onPress: () => handleNavigate('settings') },
-    { key: 'notes' as const, icon: '📝', label: 'Notes', onPress: () => handleNavigate('notes') },
-    { key: 'calendar' as const, icon: '📅', label: 'Calendar', onPress: () => handleNavigate('calendar') },
-    { key: 'stats' as const, icon: '📊', label: 'Stats', onPress: () => handleNavigate('stats') },
+    { key: 'calendar' as const, icon: '☷', label: 'Calendar', onPress: () => handleNavigate('calendar') },
+    { key: 'stats' as const, icon: '⚊', label: 'Stats', onPress: () => handleNavigate('stats') },
+    { key: 'settings' as const, icon: '⚙', label: 'Settings', onPress: () => handleNavigate('settings') },
+    { key: 'account' as const, icon: '◯', label: 'Account', onPress: () => handleNavigate('account') },
   ];
 
   return (
@@ -87,7 +86,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             >
               {/* Header */}
               <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
-                <Text style={[styles.appTitle, { color: theme.primary }]}>📝 Journal</Text>
+                <Text style={[styles.appTitle, { color: theme.primary }]}>◧ Journal</Text>
                 {user && (
                   <Text style={[styles.userEmail, { color: theme.textSecondary }]} numberOfLines={1}>
                     {user.email}
@@ -171,9 +170,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 20,
     marginRight: 16,
-    width: 28,
+    width: 24,
+    textAlign: 'center',
+    fontWeight: '300',
   },
   menuLabel: {
     fontSize: 16,

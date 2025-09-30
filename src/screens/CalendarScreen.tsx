@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../contexts/ThemeContext';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
+import { TagChips } from '../components/TagChips';
 
 interface CalendarScreenProps {
   userId: string;
@@ -106,6 +107,17 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
     });
   };
 
+  const getMoodEmoji = (rating: number): string => {
+    switch (rating) {
+      case 1: return '😢';
+      case 2: return '😕';
+      case 3: return '😐';
+      case 4: return '😊';
+      case 5: return '😄';
+      default: return '😐';
+    }
+  };
+
   // Load entries for current month
   const loadEntriesForMonth = useCallback(async (month: Date) => {
     setIsLoading(true);
@@ -125,11 +137,11 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
         return;
       }
 
-      // Group entries by date
+      // Group entries by date field (not created_at)
       const newEntriesMap = new Map<string, JournalEntryWithInsights[]>();
       entries.forEach(entry => {
-        const entryDate = new Date(entry.created_at);
-        const dateKey = entryDate.toISOString().split('T')[0];
+        // Use the date field which stores YYYY-MM-DD format
+        const dateKey = entry.date || new Date(entry.created_at).toISOString().split('T')[0];
 
         if (!newEntriesMap.has(dateKey)) {
           newEntriesMap.set(dateKey, []);
@@ -258,7 +270,11 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
         <Text style={[styles.selectedDateText, { color: theme.primaryLight }]}>{formatSelectedDate(selectedDate)}</Text>
 
         {selectedEntries.length === 0 ? (
-          <Text style={[styles.noEntriesText, { color: theme.textMuted }]}>No diaries on this day.</Text>
+          <View style={styles.emptyStateContainer}>
+            <Text style={[styles.emptyStateIcon, { color: theme.textMuted }]}>📖</Text>
+            <Text style={[styles.noEntriesText, { color: theme.textMuted }]}>No entry for this date</Text>
+            <Text style={[styles.emptyStateHint, { color: theme.textSecondary }]}>Tap the + button to create one</Text>
+          </View>
         ) : (
           <ScrollView style={styles.entriesContainer} showsVerticalScrollIndicator={false}>
             {selectedEntries.map(entry => (
@@ -267,16 +283,31 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                 style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
                 onPress={() => onEntryPress?.(entry)}
               >
-                <Text style={[styles.entryPreviewText, { color: theme.textPrimary }]} numberOfLines={2}>
+                {entry.title && (
+                  <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
+                    {entry.title}
+                  </Text>
+                )}
+                <Text style={[styles.entryPreviewText, { color: theme.textSecondary }]} numberOfLines={3}>
                   {entry.content}
                 </Text>
-                <Text style={[styles.entryTime, { color: theme.textMuted }]}>
-                  {new Date(entry.created_at).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                  })}
-                </Text>
+                {entry.tags && entry.tags.length > 0 && (
+                  <TagChips tags={entry.tags} small />
+                )}
+                <View style={styles.entryFooter}>
+                  <Text style={[styles.entryTime, { color: theme.textMuted }]}>
+                    {new Date(entry.created_at).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </Text>
+                  {entry.mood_rating && (
+                    <Text style={styles.entryMood}>
+                      {getMoodEmoji(entry.mood_rating)}
+                    </Text>
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -425,11 +456,25 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 16,
   },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
   noEntriesText: {
-    fontSize: 14,
-    fontStyle: 'italic',
+    fontSize: 16,
+    fontWeight: '500',
     textAlign: 'center',
-    marginTop: 20,
+    marginBottom: 8,
+  },
+  emptyStateHint: {
+    fontSize: 14,
+    textAlign: 'center',
   },
   entriesContainer: {
     flex: 1,
@@ -437,16 +482,29 @@ const styles = StyleSheet.create({
   entryPreview: {
     borderRadius: 8,
     padding: 12,
-    marginBottom: 8,
-    borderLeftWidth: 3,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+  },
+  entryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
   },
   entryPreviewText: {
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: 8,
+  },
+  entryFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   entryTime: {
     fontSize: 12,
+  },
+  entryMood: {
+    fontSize: 20,
   },
 
   // Floating Button

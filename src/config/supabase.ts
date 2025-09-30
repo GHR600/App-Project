@@ -202,6 +202,7 @@ export interface DatabaseJournalEntry {
   mood_rating?: number;
   voice_memo_url?: string;
   title?: string;
+  tags?: string[]; // Optional tags for categorizing entries
   created_at: string;
   updated_at: string;
   word_count: number;

@@ -177,10 +177,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     // If no entry exists, create a new one for that date
     const hasJournalEntry = dayData.journalEntry !== null && dayData.journalEntry !== undefined;
 
+    // Convert date string (YYYY-MM-DD) to Date object
+    const dateObj = new Date(dayData.date + 'T00:00:00');
+
     navigation.navigate('JournalEntry', {
       mode: hasJournalEntry ? 'edit' : 'create',
       entryId: hasJournalEntry && dayData.journalEntry ? dayData.journalEntry.id : undefined,
-      initialDate: dayData.date,
+      initialDate: dateObj,
       fromScreen: 'Dashboard'
     });
   };
@@ -253,17 +256,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       <StatusBar style="light" />
 
       <View style={styles.content}>
-        {/* Header with menu button */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={onMenuPress}
-          >
-            <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Dashboard</Text>
-          <View style={styles.menuButton} />
-        </View>
+        {/* Menu button - top right */}
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={onMenuPress}
+        >
+          <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
+        </TouchableOpacity>
 
         <StatsHeader stats={stats} isLoading={isLoading} />
 
@@ -280,10 +279,6 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           }
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.entriesHeader}>
-            <Text style={[styles.entriesTitle, { color: theme.textPrimary }]}>Recent Days</Text>
-          </View>
-
           {renderDayCards()}
         </ScrollView>
       </View>
@@ -306,17 +301,17 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   menuButton: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.md,
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
   },
   menuIcon: {
     fontSize: 28,
-    fontWeight: 'bold',
-  },
-  headerTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
   },
 
@@ -377,16 +372,6 @@ const styles = StyleSheet.create({
   entriesContent: {
     padding: spacing.md,
     paddingBottom: 100, // Space for FAB
-  },
-  entriesHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  entriesTitle: {
-    ...typography.h3,
-    fontWeight: '600',
   },
   newEntryButton: {
     borderRadius: borderRadius.sm,

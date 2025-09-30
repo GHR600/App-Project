@@ -9,9 +9,10 @@ export class EntryService {
   static groupEntriesByDay(entries: JournalEntry[]): DayCardData[] {
     const dayGroups: { [key: string]: JournalEntry[] } = {};
 
-    // Group entries by date
+    // Group entries by date field (not created_at)
     entries.forEach(entry => {
-      const dateKey = entry.created_at.split('T')[0]; // Get YYYY-MM-DD
+      // Use the explicit date field (YYYY-MM-DD format)
+      const dateKey = entry.date;
       if (!dayGroups[dateKey]) {
         dayGroups[dateKey] = [];
       }
@@ -22,9 +23,6 @@ export class EntryService {
     const dayCards: DayCardData[] = Object.entries(dayGroups).map(([date, dayEntries]) => {
       // Sort entries by created_at (most recent first)
       const sortedEntries = dayEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      // Take the first (most recent) entry as the main journal entry
-      const journalEntry = sortedEntries[0] || undefined;
 
       // Calculate dominant mood
       const moodRatings = dayEntries
@@ -37,10 +35,11 @@ export class EntryService {
 
       const dominantMood = EntryService.getMoodEmoji(avgMood);
 
-      // Generate preview text
+      // Generate preview text from first entry
       let previewText = '';
-      if (journalEntry) {
-        previewText = journalEntry.title || journalEntry.content.substring(0, 100);
+      if (sortedEntries.length > 0) {
+        const firstEntry = sortedEntries[0];
+        previewText = firstEntry.title || firstEntry.content.substring(0, 100);
       }
 
       if (previewText.length > 100) {
@@ -50,8 +49,6 @@ export class EntryService {
       return {
         date,
         entries: sortedEntries,
-        journalEntry,
-        notes: [], // No longer using separate notes
         dominantMood,
         previewText,
         totalEntries: dayEntries.length,
@@ -78,6 +75,13 @@ export class EntryService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in getEntriesGroupedByDay');
+        return { dayCards: [], error: 'Database connection not available' };
+      }
+
+      console.log('📊 Fetching entries grouped by day for user:', userId);
+
       const { data: entries, error } = await supabase
         .from('journal_entries')
         .select('*')
@@ -86,6 +90,7 @@ export class EntryService {
         .limit(limit * 5); // Get more entries to ensure we have enough days
 
       if (error) {
+        console.error('❌ Error fetching entries:', error);
         return { dayCards: [], error };
       }
 
@@ -97,10 +102,11 @@ export class EntryService {
       const journalEntries: JournalEntry[] = entries.map(entry => ({
         id: entry.id,
         user_id: entry.user_id,
+        date: entry.date || entry.created_at.split('T')[0], // Use date field or extract from created_at
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: 'journal', // All entries are now journal type
         title: entry.title,
+        tags: entry.tags,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
         ai_insight_generated: entry.ai_insight_generated,
@@ -123,12 +129,18 @@ export class EntryService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in getEntriesForDate');
+        return { entries: [], error: 'Database connection not available' };
+      }
+
+      console.log('📅 Fetching entries for date:', date);
+
       const { data, error } = await supabase
         .from('journal_entries')
         .select('*')
         .eq('user_id', userId)
-        .gte('created_at', `${date}T00:00:00.000Z`)
-        .lt('created_at', `${date}T23:59:59.999Z`)
+        .eq('date', date) // Use the explicit date field
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -138,10 +150,11 @@ export class EntryService {
       const entries: JournalEntry[] = (data || []).map(entry => ({
         id: entry.id,
         user_id: entry.user_id,
+        date: entry.date || entry.created_at.split('T')[0], // Use date field or extract from created_at
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: 'journal', // All entries are now journal type
         title: entry.title,
+        tags: entry.tags,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
         ai_insight_generated: entry.ai_insight_generated,
@@ -163,14 +176,19 @@ export class EntryService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in checkJournalEntryExists');
+        return { exists: false, error: 'Database connection not available' };
+      }
+
       const { data, error } = await supabase
         .from('journal_entries')
         .select('id')
         .eq('user_id', userId)
-        .gte('created_at', `${date}T00:00:00.000Z`)
-        .lt('created_at', `${date}T23:59:59.999Z`);
+        .eq('date', date); // Use the explicit date field
 
       if (error) {
+        console.error('❌ Error checking entry exists:', error);
         return { exists: false, error };
       }
 

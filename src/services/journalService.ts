@@ -6,6 +6,8 @@ export interface CreateJournalEntryData {
   moodRating?: number;
   voiceMemoUrl?: string;
   title?: string;
+  tags?: string[]; // Optional tags for categorizing the entry
+  date?: Date; // Optional date for the entry (defaults to today)
 }
 
 export interface UpdateJournalEntryData {
@@ -13,6 +15,7 @@ export interface UpdateJournalEntryData {
   moodRating?: number;
   voiceMemoUrl?: string;
   title?: string;
+  tags?: string[]; // Optional tags for categorizing the entry
 }
 
 export interface JournalEntryWithWordCount extends DatabaseJournalEntry {
@@ -43,6 +46,17 @@ export class JournalService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in getUserEntriesInDateRange');
+        return { entries: [], error: 'Database connection not available' };
+      }
+
+      // Convert dates to YYYY-MM-DD format for date field comparison
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      console.log('📅 Fetching entries from', startDateStr, 'to', endDateStr);
+
       const { data: entries, error } = await supabase
         .from('journal_entries')
         .select(`
@@ -57,9 +71,9 @@ export class JournalService {
           )
         `)
         .eq('user_id', userId)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
-        .order('created_at', { ascending: false });
+        .gte('date', startDateStr)
+        .lte('date', endDateStr)
+        .order('date', { ascending: false });
 
       if (error) {
         console.error('Error fetching entries in date range:', error);
@@ -79,14 +93,24 @@ export class JournalService {
     error: any;
   }> {
     try {
-      // Check if journal entry already exists for today
-      const today = new Date().toISOString().split('T')[0];
+      // Check if Supabase client is available
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in createEntry');
+        return { entry: null, error: 'Database connection not available. Please check your configuration.' };
+      }
+
+      // Use provided date or default to today
+      const entryDate = data.date || new Date();
+      const dateStr = entryDate.toISOString().split('T')[0];
+
+      console.log('📝 Creating entry for date:', dateStr);
+
+      // Check if journal entry already exists for this date using the date field
       const { data: existingEntry, error: queryError } = await supabase
         .from('journal_entries')
         .select('id')
         .eq('user_id', userId)
-        .gte('created_at', `${today}T00:00:00.000Z`)
-        .lt('created_at', `${today}T23:59:59.999Z`);
+        .eq('date', dateStr);
 
       if (queryError) {
         console.error('Error checking existing journal entries:', queryError);
@@ -94,16 +118,18 @@ export class JournalService {
       }
 
       if (existingEntry && existingEntry.length > 0) {
-        return { entry: null, error: 'You already have an entry for today. You can edit it or wait until tomorrow.' };
+        return { entry: null, error: `You already have an entry for this date. You can edit it instead.` };
       }
 
-      // Prepare insert data
+      // Prepare insert data with explicit date
       const insertData = {
         user_id: userId,
+        date: dateStr, // Explicit date in YYYY-MM-DD format
         content: data.content,
         mood_rating: data.moodRating,
         voice_memo_url: data.voiceMemoUrl,
-        title: data.title
+        title: data.title,
+        tags: data.tags || null
       };
 
       const { data: entry, error } = await supabase
@@ -118,7 +144,7 @@ export class JournalService {
       }
 
       // Update user's last entry date and streak
-      await this.updateUserStreak(userId);
+      await this.updateUserStreak(userId, dateStr);
 
       return { entry, error: null };
     } catch (error) {
@@ -133,6 +159,11 @@ export class JournalService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in getEntry');
+        return { entry: null, error: 'Database connection not available' };
+      }
+
       const { data: entry, error } = await supabase
         .from('journal_entries')
         .select('*')
@@ -279,11 +310,20 @@ export class JournalService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client is not available in updateEntry');
+        return { entry: null, error: 'Database connection not available' };
+      }
+
       const updateData: any = {};
 
       if (data.content !== undefined) updateData.content = data.content;
       if (data.moodRating !== undefined) updateData.mood_rating = data.moodRating;
       if (data.voiceMemoUrl !== undefined) updateData.voice_memo_url = data.voiceMemoUrl;
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.tags !== undefined) updateData.tags = data.tags;
+
+      console.log('📝 Updating entry:', entryId);
 
       const { data: entry, error } = await supabase
         .from('journal_entries')
@@ -438,7 +478,7 @@ export class JournalService {
   }
 
   // Update user streak based on last entry date
-  private static async updateUserStreak(userId: string): Promise<void> {
+  private static async updateUserStreak(userId: string, entryDateStr: string): Promise<void> {
     try {
       const { data: user, error: userError } = await supabase
         .from('users')
@@ -452,7 +492,6 @@ export class JournalService {
         return;
       }
 
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
       const lastEntryDate = user?.last_entry_date;
       let newStreakCount = user?.streak_count || 0;
 
@@ -460,25 +499,27 @@ export class JournalService {
         // First entry ever
         newStreakCount = 1;
       } else {
-        const yesterday = new Date();
+        // Calculate yesterday relative to the entry date
+        const entryDate = new Date(entryDateStr + 'T00:00:00');
+        const yesterday = new Date(entryDate);
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
         if (lastEntryDate === yesterdayStr) {
           // Consecutive day - increment streak
           newStreakCount += 1;
-        } else if (lastEntryDate !== today) {
+        } else if (lastEntryDate !== entryDateStr) {
           // Missed days - reset streak
           newStreakCount = 1;
         }
-        // If lastEntryDate === today, keep current streak (same day, multiple entries)
+        // If lastEntryDate === entryDateStr, keep current streak (same day, multiple entries)
       }
 
-      // Update user record
+      // Update user record with the entry date (not necessarily today)
       await supabase
         .from('users')
         .update({
-          last_entry_date: today,
+          last_entry_date: entryDateStr,
           streak_count: newStreakCount
         })
         .eq('id', userId);
