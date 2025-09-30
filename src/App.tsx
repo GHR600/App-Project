@@ -8,24 +8,35 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { SubscriptionPaywallScreen } from './screens/SubscriptionPaywallScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { JournalEntryScreen } from './screens/JournalEntryScreen';
 import { DashboardHomeScreen } from './screens/DashboardHomeScreen';
 import { EntryDetailScreen } from './screens/EntryDetailScreen';
 import { DayDetailScreen } from './screens/DayDetailScreen';
 import { SignUpScreen } from './screens/SignUpScreen';
 import { SignInScreen } from './screens/SignInScreen';
+import { CalendarScreen } from './screens/CalendarScreen';
+import { StatsScreen } from './screens/StatsScreen';
+import { NotesScreen } from './screens/NotesScreen';
+import { AccountScreen } from './screens/AccountScreen';
 import { DatabaseJournalEntry } from './config/supabase';
+import { BottomNavigation } from './components/BottomNavigation';
+import { SideMenu } from './components/SideMenu';
 
 const MainApp: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [selectedEntry, setSelectedEntry] = useState<DatabaseJournalEntry | null>(null);
+  const [activeTab, setActiveTab] = useState<'calendar' | 'home' | 'stats'>('home');
+  const [menuVisible, setMenuVisible] = useState(false);
   const { user, loading } = useAuth();
+  const { theme, isDark } = useTheme();
 
   const renderHomeScreen = () => (
-    <View style={styles.container}>
-      <Text style={styles.title}>🧠 AI Journaling App</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.primary }]}>🧠 AI Journaling App</Text>
+      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
         {user ? `Welcome back, ${user.email}!` : 'Your AI-powered journaling companion'}
       </Text>
 
@@ -34,72 +45,72 @@ const MainApp: React.FC = () => {
           // Authenticated user buttons
           <>
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[styles.primaryButton, { backgroundColor: theme.primary }]}
               onPress={() => setCurrentScreen('dashboard')}
             >
-              <Text style={styles.primaryButtonText}>📊 Open Dashboard</Text>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>📊 Open Dashboard</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[styles.primaryButton, { backgroundColor: theme.primary }]}
               onPress={() => setCurrentScreen('journal')}
             >
-              <Text style={styles.primaryButtonText}>📝 New Journal Entry</Text>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>📝 New Journal Entry</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={() => setCurrentScreen('subscription')}
+              style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]}
+              onPress={() => setCurrentScreen('settings')}
             >
-              <Text style={styles.secondaryButtonText}>💎 View Subscription</Text>
+              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>⚙️ Settings</Text>
             </TouchableOpacity>
           </>
         ) : (
           // Unauthenticated user buttons
           <>
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[styles.primaryButton, { backgroundColor: theme.primary }]}
               onPress={() => setCurrentScreen('signUp')}
             >
-              <Text style={styles.primaryButtonText}>🚀 Create Free Account</Text>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>🚀 Create Free Account</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]}
               onPress={() => setCurrentScreen('signIn')}
             >
-              <Text style={styles.secondaryButtonText}>🔑 Sign In</Text>
+              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>🔑 Sign In</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
 
       {!user && (
-        <View style={styles.benefits}>
-          <Text style={styles.benefitsTitle}>What you get for free:</Text>
+        <View style={[styles.benefits, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+          <Text style={[styles.benefitsTitle, { color: theme.textPrimary }]}>What you get for free:</Text>
           <View style={styles.benefitsList}>
             <View style={styles.benefitItem}>
               <Text style={styles.benefitIcon}>✨</Text>
-              <Text style={styles.benefitText}>3 AI-powered insights per month</Text>
+              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>3 AI-powered insights per month</Text>
             </View>
             <View style={styles.benefitItem}>
               <Text style={styles.benefitIcon}>📝</Text>
-              <Text style={styles.benefitText}>Unlimited journal entries</Text>
+              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Unlimited journal entries</Text>
             </View>
             <View style={styles.benefitItem}>
               <Text style={styles.benefitIcon}>📊</Text>
-              <Text style={styles.benefitText}>Basic mood tracking</Text>
+              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Basic mood tracking</Text>
             </View>
             <View style={styles.benefitItem}>
               <Text style={styles.benefitIcon}>🔒</Text>
-              <Text style={styles.benefitText}>Private and secure</Text>
+              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Private and secure</Text>
             </View>
           </View>
         </View>
       )}
 
-      <View style={styles.successBadge}>
-        <Text style={styles.successText}>✅ Mobile App Ready!</Text>
+      <View style={[styles.successBadge, { backgroundColor: theme.success }]}>
+        <Text style={[styles.successText, { color: theme.white }]}>✅ Mobile App Ready!</Text>
       </View>
     </View>
   );
@@ -128,6 +139,8 @@ const MainApp: React.FC = () => {
         );
       case 'subscription':
         return <SubscriptionPaywallScreen onBack={() => setCurrentScreen('home')} />;
+      case 'settings':
+        return <SettingsScreen onBack={() => setCurrentScreen('home')} />;
       case 'journal':
         if (!user) {
           setCurrentScreen('signUp');
@@ -191,6 +204,7 @@ const MainApp: React.FC = () => {
               setCurrentScreen('entryDetail');
             }}
             onBack={() => setCurrentScreen('home')}
+            onMenuPress={() => setMenuVisible(true)}
             navigation={mockNavigation}
           />
         );
@@ -229,6 +243,49 @@ const MainApp: React.FC = () => {
         ) : (
           renderHomeScreen()
         );
+      case 'calendar':
+        if (!user) {
+          setCurrentScreen('signUp');
+          return renderHomeScreen();
+        }
+        return (
+          <CalendarScreen
+            userId={user.id}
+            onBack={() => setCurrentScreen('dashboard')}
+            onMenuPress={() => setMenuVisible(true)}
+            onDateSelect={(date) => console.log('Date selected:', date)}
+            onEntryPress={(entry) => {
+              setSelectedEntry(entry);
+              setCurrentScreen('entryDetail');
+            }}
+            onNewEntry={(date) => {
+              (window as any).journalEntryParams = {
+                mode: 'create',
+                fromScreen: 'Calendar',
+                initialDate: date
+              };
+              setCurrentScreen('journal');
+            }}
+          />
+        );
+      case 'stats':
+        if (!user) {
+          setCurrentScreen('signUp');
+          return renderHomeScreen();
+        }
+        return <StatsScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
+      case 'notes':
+        if (!user) {
+          setCurrentScreen('signUp');
+          return renderHomeScreen();
+        }
+        return <NotesScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
+      case 'account':
+        if (!user) {
+          setCurrentScreen('signUp');
+          return renderHomeScreen();
+        }
+        return <AccountScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
       default:
         return renderHomeScreen();
     }
@@ -236,20 +293,47 @@ const MainApp: React.FC = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <Text style={styles.title}>🧠 AI Journaling App</Text>
-          <Text style={styles.subtitle}>Loading...</Text>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+          <Text style={[styles.title, { color: theme.primary }]}>🧠 AI Journaling App</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Loading...</Text>
         </View>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
       </SafeAreaView>
     );
   }
 
+  const handleTabPress = (tab: 'calendar' | 'home' | 'stats') => {
+    setActiveTab(tab);
+    if (tab === 'calendar') {
+      setCurrentScreen('calendar');
+    } else if (tab === 'stats') {
+      setCurrentScreen('stats');
+    }
+  };
+
+  const handleMenuNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => {
+    setCurrentScreen(screen);
+  };
+
+  const shouldShowBottomNav = user && ['dashboard', 'calendar', 'stats', 'notes', 'account'].includes(currentScreen);
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       {renderCurrentScreen()}
-      <StatusBar style="dark" />
+      {shouldShowBottomNav && (
+        <BottomNavigation
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onNewEntry={() => setCurrentScreen('journal')}
+        />
+      )}
+      <SideMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        onNavigate={handleMenuNavigate}
+      />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </SafeAreaView>
   );
 };
@@ -257,9 +341,11 @@ const MainApp: React.FC = () => {
 const App: React.FC = () => {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <MainApp />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 };
@@ -267,24 +353,20 @@ const App: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   title: {
-    color: '#2563eb',
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 16,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#6b7280',
     fontSize: 18,
     textAlign: 'center',
     maxWidth: 300,
@@ -297,46 +379,39 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: 'white',
     fontSize: 18,
     fontWeight: '600',
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
-    borderColor: '#2563eb',
     borderWidth: 2,
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#2563eb',
     fontSize: 18,
     fontWeight: '600',
   },
   successBadge: {
     marginTop: 40,
-    backgroundColor: '#10b981',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
   },
   successText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
   benefits: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 20,
     marginVertical: 20,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -349,7 +424,6 @@ const styles = StyleSheet.create({
   benefitsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#374151',
     marginBottom: 12,
   },
   benefitsList: {
@@ -366,7 +440,6 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     fontSize: 14,
-    color: '#6b7280',
     flex: 1,
   },
 });

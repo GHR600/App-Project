@@ -34,7 +34,9 @@
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
       "Bash(find:*)",
-      "Bash(npm run typecheck:*)"
+      "Bash(npm run typecheck:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

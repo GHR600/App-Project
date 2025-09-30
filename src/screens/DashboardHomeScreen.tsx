@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { colors, typography, spacing, borderRadius } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
+import { typography, spacing, borderRadius } from '../styles/designSystem';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { DayCard } from '../components/DayCard';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
@@ -22,6 +23,7 @@ interface DashboardHomeScreenProps {
   onNewEntry: () => void;
   onEntryPress: (entry: any) => void;
   onBack?: () => void;
+  onMenuPress?: () => void;
   navigation: any;
 }
 
@@ -34,13 +36,15 @@ interface UserStats {
 }
 
 const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats, isLoading }) => {
+  const { theme } = useTheme();
+
   if (isLoading) {
     return (
-      <View style={styles.statsContainer}>
+      <View style={[styles.statsContainer, { backgroundColor: theme.backgroundSecondary }]}>
         <View style={styles.statsRow}>
           {[1, 2, 3].map(i => (
-            <View key={i} style={[styles.statCard, styles.loadingCard]}>
-              <View style={styles.loadingText} />
+            <View key={i} style={[styles.statCard, styles.loadingCard, { backgroundColor: theme.surface, borderLeftColor: theme.backgroundTertiary }]}>
+              <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary }]} />
             </View>
           ))}
         </View>
@@ -49,21 +53,21 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
   }
 
   return (
-    <View style={styles.statsContainer}>
+    <View style={[styles.statsContainer, { backgroundColor: theme.backgroundSecondary }]}>
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.currentStreak}</Text>
-          <Text style={styles.statLabel}>Day Streak</Text>
+          <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.currentStreak}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Day Streak</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.totalEntries}</Text>
-          <Text style={styles.statLabel}>Entries</Text>
+          <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.totalEntries}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Entries</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.averageMood.toFixed(1)}</Text>
-          <Text style={styles.statLabel}>Avg Mood</Text>
+          <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.averageMood.toFixed(1)}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Avg Mood</Text>
         </View>
       </View>
     </View>
@@ -75,8 +79,10 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   onNewEntry,
   onEntryPress,
   onBack,
+  onMenuPress,
   navigation
 }) => {
+  const { theme } = useTheme();
   const [dayCards, setDayCards] = useState<DayCardData[]>([]);
   const [stats, setStats] = useState<UserStats>({
     totalEntries: 0,
@@ -151,9 +157,9 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       return (
         <View style={styles.loadingContainer}>
           {[1, 2, 3].map(i => (
-            <View key={i} style={[styles.dayCardLoading]}>
-              <View style={styles.loadingText} />
-              <View style={[styles.loadingText, { width: '60%', marginTop: 8 }]} />
+            <View key={i} style={[styles.dayCardLoading, { backgroundColor: theme.surface }]}>
+              <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary }]} />
+              <View style={[styles.loadingText, { width: '60%', marginTop: 8, backgroundColor: theme.backgroundTertiary }]} />
             </View>
           ))}
         </View>
@@ -164,12 +170,12 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       return (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateIcon}>📝</Text>
-          <Text style={styles.emptyStateTitle}>Start Your Journey</Text>
-          <Text style={styles.emptyStateDescription}>
+          <Text style={[styles.emptyStateTitle, { color: theme.textPrimary }]}>Start Your Journey</Text>
+          <Text style={[styles.emptyStateDescription, { color: theme.textSecondary }]}>
             Write your first journal entry to begin tracking your thoughts and growth.
           </Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleNewEntry}>
-            <Text style={styles.primaryButtonText}>Create First Entry</Text>
+          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry}>
+            <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create First Entry</Text>
           </TouchableOpacity>
         </View>
       );
@@ -186,8 +192,8 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
         ))}
 
         {!showMoreDays && dayCards.length >= 7 && (
-          <TouchableOpacity style={styles.showMoreButton} onPress={handleShowMore}>
-            <Text style={styles.showMoreText}>Show More</Text>
+          <TouchableOpacity style={[styles.showMoreButton, { borderColor: theme.primary }]} onPress={handleShowMore}>
+            <Text style={[styles.showMoreText, { color: theme.primary }]}>Show More</Text>
           </TouchableOpacity>
         )}
       </>
@@ -195,29 +201,41 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={colors.background} />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style="light" />
 
       <View style={styles.content}>
+        {/* Header with menu button */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={onMenuPress}
+          >
+            <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Dashboard</Text>
+          <View style={styles.menuButton} />
+        </View>
+
         <StatsHeader stats={stats} isLoading={isLoading} />
 
         <ScrollView
           style={styles.entriesContainer}
-          contentContainerStyle={styles.entriesContent}
+          contentContainerStyle={[styles.entriesContent, { paddingBottom: 100 }]}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
+              tintColor={theme.primary}
+              colors={[theme.primary]}
             />
           }
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.entriesHeader}>
-            <Text style={styles.entriesTitle}>Recent Days</Text>
-            <TouchableOpacity style={styles.newEntryButton} onPress={handleNewEntry}>
-              <Text style={styles.newEntryButtonText}>+ New</Text>
+            <Text style={[styles.entriesTitle, { color: theme.textPrimary }]}>Recent Days</Text>
+            <TouchableOpacity style={[styles.newEntryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry}>
+              <Text style={[styles.newEntryButtonText, { color: theme.white }]}>+ New</Text>
             </TouchableOpacity>
           </View>
 
@@ -233,15 +251,34 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  menuButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuIcon: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
 
   // Compact Stats Header (MyDiary Style)
   statsContainer: {
-    backgroundColor: colors.backgroundSecondary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm, // Made more compact
   },
@@ -257,12 +294,10 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 18, // Slightly smaller
     fontWeight: 'bold',
-    color: colors.textPrimary,
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 11,
-    color: colors.textSecondary,
     textAlign: 'center',
   },
 
@@ -285,13 +320,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   newEntryButton: {
-    backgroundColor: colors.primary,
     borderRadius: borderRadius.sm,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   newEntryButtonText: {
-    color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -300,7 +333,6 @@ const styles = StyleSheet.create({
   showMoreButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: borderRadius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
@@ -308,7 +340,6 @@ const styles = StyleSheet.create({
   },
   showMoreText: {
     ...typography.body,
-    color: colors.primary,
     fontWeight: '600',
   },
 
@@ -329,20 +360,17 @@ const styles = StyleSheet.create({
   },
   emptyStateDescription: {
     ...typography.body,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: spacing.lg,
     maxWidth: 280,
   },
   primaryButton: {
-    backgroundColor: colors.primary,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   primaryButtonText: {
-    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -350,21 +378,17 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dayCardLoading: {
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
   loadingCard: {
-    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     borderLeftWidth: 3,
-    borderLeftColor: colors.backgroundTertiary,
   },
   loadingText: {
     height: 16,
-    backgroundColor: colors.backgroundTertiary,
     borderRadius: 4,
     marginBottom: 8,
   },

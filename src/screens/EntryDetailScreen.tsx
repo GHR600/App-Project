@@ -7,7 +7,8 @@ import {
   StyleSheet,
   SafeAreaView
 } from 'react-native';
-import { colors, typography, components } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
+import { typography, components } from '../styles/designSystem';
 import { DatabaseJournalEntry } from '../config/supabase';
 import { AIInsightService, AIInsight } from '../services/aiInsightService';
 
@@ -24,6 +25,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
   onBack,
   onEdit
 }) => {
+  const { theme } = useTheme();
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(true);
 
@@ -89,60 +91,54 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
   };
 
   const getMoodColor = (rating: number | null | undefined) => {
-    if (!rating) return colors.gray500;
+    if (!rating) return theme.textMuted;
     switch (rating) {
-      case 1: return colors.error;
-      case 2: return colors.warning;
-      case 3: return colors.gray600;
-      case 4: return colors.success;
-      case 5: return colors.primary;
-      default: return colors.gray500;
+      case 1: return theme.error;
+      case 2: return theme.warning;
+      case 3: return theme.textSecondary;
+      case 4: return theme.success;
+      case 5: return theme.primary;
+      default: return theme.textMuted;
     }
   };
 
   const getMoodBadgeBgColor = (rating: number | null | undefined) => {
-    // Use RGBA for transparency instead of string concatenation
-    const color = getMoodColor(rating);
-    switch (color) {
-      case colors.error: return 'rgba(220, 38, 38, 0.125)';      // error (red-600)
-      case colors.warning: return 'rgba(251, 191, 36, 0.125)';   // warning (yellow-400)
-      case colors.gray600: return 'rgba(75, 85, 99, 0.125)';     // gray-600
-      case colors.success: return 'rgba(16, 185, 129, 0.125)';   // success (emerald-500)
-      case colors.primary: return 'rgba(59, 130, 246, 0.125)';   // primary (blue-500)
-      default: return 'rgba(107, 114, 128, 0.125)';              // gray-500
+    if (!rating) return theme.textMuted + '20';
+    switch (rating) {
+      case 1: return theme.error + '20';
+      case 2: return theme.warning + '20';
+      case 3: return theme.textSecondary + '20';
+      case 4: return theme.success + '20';
+      case 5: return theme.primary + '20';
+      default: return theme.textMuted + '20';
     }
-  };
-
-  const getPrimaryAlpha = (alpha: number) => {
-    // Helper for primary color with alpha (assumes blue-500)
-    return `rgba(59, 130, 246, ${alpha})`;
   };
 
   const wordCount = entry.word_count ?? (entry.content ? entry.content.split(' ').filter(word => word.length > 0).length : 0);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.cardBackground, borderBottomColor: theme.cardBorder }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Entry</Text>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Entry</Text>
         {onEdit && (
           <TouchableOpacity onPress={onEdit} style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit</Text>
+            <Text style={[styles.editButtonText, { color: theme.primary }]}>Edit</Text>
           </TouchableOpacity>
         )}
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.entryHeader}>
-          <Text style={styles.entryDate}>{formatDate(entry.created_at)}</Text>
-          <Text style={styles.entryTime}>{formatTime(entry.created_at)}</Text>
+        <View style={[styles.entryHeader, { backgroundColor: theme.cardBackground }]}>
+          <Text style={[styles.entryDate, { color: theme.textPrimary }]}>{formatDate(entry.created_at)}</Text>
+          <Text style={[styles.entryTime, { color: theme.textSecondary }]}>{formatTime(entry.created_at)}</Text>
         </View>
 
-        <View style={styles.entryMeta}>
+        <View style={[styles.entryMeta, { backgroundColor: theme.cardBackground }]}>
           <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Mood</Text>
+            <Text style={[styles.metaLabel, { color: theme.textSecondary }]}>Mood</Text>
             <View style={[styles.moodBadge, { backgroundColor: getMoodBadgeBgColor(entry.mood_rating ?? null) }]}>
               <Text style={[styles.moodText, { color: getMoodColor(entry.mood_rating ?? null) }]}>
                 {getMoodText(entry.mood_rating ?? null)}
@@ -151,43 +147,43 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
           </View>
 
           <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Word Count</Text>
-            <Text style={styles.metaValue}>{wordCount} words</Text>
+            <Text style={[styles.metaLabel, { color: theme.textSecondary }]}>Word Count</Text>
+            <Text style={[styles.metaValue, { color: theme.textPrimary }]}>{wordCount} words</Text>
           </View>
         </View>
 
-        <View style={styles.contentContainer}>
-          <Text style={styles.contentLabel}>Entry Content</Text>
-          <View style={styles.contentBox}>
-            <Text style={styles.contentText}>{entry.content}</Text>
+        <View style={[styles.contentContainer, { backgroundColor: theme.cardBackground }]}>
+          <Text style={[styles.contentLabel, { color: theme.textSecondary }]}>Entry Content</Text>
+          <View style={[styles.contentBox, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.contentText, { color: theme.textPrimary }]}>{entry.content}</Text>
           </View>
         </View>
 
         {entry.voice_memo_url && (
-          <View style={styles.voiceMemoContainer}>
-            <Text style={styles.voiceMemoLabel}>Voice Memo</Text>
+          <View style={[styles.voiceMemoContainer, { backgroundColor: theme.cardBackground }]}>
+            <Text style={[styles.voiceMemoLabel, { color: theme.textSecondary }]}>Voice Memo</Text>
             <View style={[
               styles.voiceMemoBox,
               {
-                backgroundColor: getPrimaryAlpha(0.0625), // 0.0625 ≈ 10/160
-                borderColor: getPrimaryAlpha(0.188),      // 0.188 ≈ 30/160
+                backgroundColor: theme.primary + '10',
+                borderColor: theme.primary + '30',
               }
             ]}>
-              <Text style={styles.voiceMemoText}>🎙️ Voice memo available</Text>
-              <Text style={styles.voiceMemoNote}>Voice playback not implemented yet</Text>
+              <Text style={[styles.voiceMemoText, { color: theme.primary }]}>🎙️ Voice memo available</Text>
+              <Text style={[styles.voiceMemoNote, { color: theme.textSecondary }]}>Voice playback not implemented yet</Text>
             </View>
           </View>
         )}
 
         {!loadingInsights && insights.length > 0 && (
-          <View style={styles.insightsContainer}>
-            <Text style={styles.insightsLabel}>AI Insights</Text>
+          <View style={[styles.insightsContainer, { backgroundColor: theme.cardBackground }]}>
+            <Text style={[styles.insightsLabel, { color: theme.textSecondary }]}>AI Insights</Text>
             {insights.map((insight) => (
-              <View key={insight.id} style={styles.insightCard}>
+              <View key={insight.id} style={[styles.insightCard, { backgroundColor: theme.surface, borderLeftColor: theme.primary }]}>
                 <View style={styles.insightHeader}>
                   <Text style={styles.insightIcon}>🧠</Text>
                   <View style={styles.insightMeta}>
-                    <Text style={styles.insightDate}>
+                    <Text style={[styles.insightDate, { color: theme.textSecondary }]}>
                       {insight.createdAt ? (() => {
                         const date = new Date(insight.createdAt);
                         return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
@@ -196,18 +192,18 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
                     {insight.isPremium && (
                       <Text style={[
                         styles.premiumBadge,
-                        { backgroundColor: getPrimaryAlpha(0.125) }
+                        { backgroundColor: theme.primary + '20', color: theme.primary }
                       ]}>PREMIUM</Text>
                     )}
                   </View>
                 </View>
-                <Text style={styles.insightText}>{insight.insight}</Text>
-                <View style={styles.followUpContainer}>
-                  <Text style={styles.followUpLabel}>Follow-up Question:</Text>
-                  <Text style={styles.followUpText}>{insight.followUpQuestion}</Text>
+                <Text style={[styles.insightText, { color: theme.textPrimary }]}>{insight.insight}</Text>
+                <View style={[styles.followUpContainer, { backgroundColor: theme.cardBackground }]}>
+                  <Text style={[styles.followUpLabel, { color: theme.textSecondary }]}>Follow-up Question:</Text>
+                  <Text style={[styles.followUpText, { color: theme.textPrimary }]}>{insight.followUpQuestion}</Text>
                 </View>
                 <View style={styles.confidenceContainer}>
-                  <Text style={styles.confidenceLabel}>
+                  <Text style={[styles.confidenceLabel, { color: theme.textMuted }]}>
                     Confidence: {insight.confidence ? Math.round(insight.confidence * 100) : 0}%
                   </Text>
                 </View>
@@ -216,12 +212,12 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
           </View>
         )}
 
-        <View style={styles.timestampContainer}>
-          <Text style={styles.timestampText}>
+        <View style={[styles.timestampContainer, { backgroundColor: theme.cardBackground }]}>
+          <Text style={[styles.timestampText, { color: theme.textSecondary }]}>
             Created: {entry.created_at ? new Date(entry.created_at).toLocaleString() : ''}
           </Text>
           {entry.updated_at && entry.updated_at !== entry.created_at && (
-            <Text style={styles.timestampText}>
+            <Text style={[styles.timestampText, { color: theme.textSecondary }]}>
               Updated: {new Date(entry.updated_at).toLocaleString()}
             </Text>
           )}
@@ -234,7 +230,6 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray100,
   },
   header: {
     flexDirection: 'row',
@@ -242,23 +237,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
   },
   backButton: {
     padding: 8,
     minWidth: 60,
   },
   backButtonText: {
-    color: colors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.gray900,
   },
   editButton: {
     padding: 8,
@@ -266,7 +257,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   editButtonText: {
-    color: colors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -279,22 +269,18 @@ const styles = StyleSheet.create({
   entryHeader: {
     alignItems: 'center',
     marginBottom: 24,
-    backgroundColor: colors.white,
     padding: 20,
     ...(components.card || {}),
   },
   entryDate: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.gray900,
     marginBottom: 4,
   },
   entryTime: {
     fontSize: 16,
-    color: colors.gray600,
   },
   entryMeta: {
-    backgroundColor: colors.white,
     padding: 20,
     marginBottom: 20,
     ...(components.card || {}),
@@ -305,7 +291,6 @@ const styles = StyleSheet.create({
   metaLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.gray600,
     marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -322,11 +307,9 @@ const styles = StyleSheet.create({
   },
   metaValue: {
     fontSize: 16,
-    color: colors.gray800,
     fontWeight: '500',
   },
   contentContainer: {
-    backgroundColor: colors.white,
     padding: 20,
     marginBottom: 20,
     ...(components.card || {}),
@@ -334,34 +317,27 @@ const styles = StyleSheet.create({
   contentLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.gray600,
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   contentBox: {
-    backgroundColor: colors.gray50,
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: colors.gray200,
   },
   contentText: {
     fontSize: 16,
     lineHeight: 24,
-    color: colors.gray800,
-    fontFamily: typography.body?.fontFamily ?? 'System',
   },
   voiceMemoContainer: {
-    backgroundColor: colors.white,
-  voiceMemoContainer: {
-    backgroundColor: colors.white,
     padding: 20,
     marginBottom: 20,
     ...(components.card || {}),
   },
+  voiceMemoLabel: {
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.gray600,
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -374,36 +350,30 @@ const styles = StyleSheet.create({
   },
   voiceMemoText: {
     fontSize: 16,
-    color: colors.primary,
     fontWeight: '600',
     marginBottom: 4,
   },
   voiceMemoNote: {
     fontSize: 12,
-    color: colors.gray600,
     fontStyle: 'italic',
   },
   insightsContainer: {
-    backgroundColor: colors.white,
-    borderRadius: components.card?.borderRadius ?? 12,
-  insightsContainer: {
-    backgroundColor: colors.white,
     padding: 20,
     marginBottom: 20,
     ...(components.card || {}),
   },
-    color: colors.gray600,
+  insightsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   insightCard: {
-    backgroundColor: colors.gray50,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
   },
   insightHeader: {
     flexDirection: 'row',
@@ -422,12 +392,10 @@ const styles = StyleSheet.create({
   },
   insightDate: {
     fontSize: 12,
-    color: colors.gray600,
   },
   premiumBadge: {
     fontSize: 10,
     fontWeight: '700',
-    color: colors.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -435,12 +403,10 @@ const styles = StyleSheet.create({
   insightText: {
     fontSize: 16,
     lineHeight: 24,
-    color: colors.gray800,
     marginBottom: 12,
     fontStyle: 'italic',
   },
   followUpContainer: {
-    backgroundColor: colors.white,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
@@ -448,13 +414,11 @@ const styles = StyleSheet.create({
   followUpLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.gray600,
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   followUpText: {
     fontSize: 14,
-    color: colors.gray700,
     lineHeight: 20,
   },
   confidenceContainer: {
@@ -462,17 +426,14 @@ const styles = StyleSheet.create({
   },
   confidenceLabel: {
     fontSize: 11,
-    color: colors.gray500,
     fontWeight: '500',
   },
   timestampContainer: {
-    backgroundColor: colors.white,
-    borderRadius: components.card?.borderRadius ?? 12,
-    padding: 16,
-  timestampContainer: {
-    backgroundColor: colors.white,
     padding: 16,
     ...(components.card || {}),
   },
+  timestampText: {
+    fontSize: 12,
+    marginBottom: 4,
   },
 });

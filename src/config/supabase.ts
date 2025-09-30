@@ -178,6 +178,8 @@ export interface DatabaseJournalEntry {
   created_at: string;
   updated_at: string;
   word_count: number;
+  title?: string;
+  entry_type?: 'journal' | 'note';
 }
 
 export interface DatabaseAIInsight {

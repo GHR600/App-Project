@@ -8,7 +8,8 @@ import {
   StyleSheet,
   SafeAreaView
 } from 'react-native';
-import { colors, typography, components } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
+import { typography, components } from '../styles/designSystem';
 import { AIInsightDisplay } from '../components/AIInsightDisplay';
 import { JournalService } from '../services/journalService';
 import { UserPreferencesService } from '../services/userPreferencesService';
@@ -30,6 +31,7 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
   userPreferences,
   onComplete
 }) => {
+  const { theme } = useTheme();
   const { user } = useAuth();
   const [entryText, setEntryText] = useState('');
   const [moodRating, setMoodRating] = useState<number | null>(null);
@@ -133,13 +135,13 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <View style={styles.welcomeSection}>
             <Text style={styles.welcomeIcon}>🎉</Text>
-            <Text style={styles.title}>You're almost ready!</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.textPrimary }]}>You're almost ready!</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Let's start with your first journal entry. This will help us provide you with a
               personalized insight and show you how our AI can support your reflection journey.
             </Text>
@@ -148,18 +150,19 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
 
         {!showInsight ? (
           <View style={styles.entrySection}>
-            <View style={styles.promptCard}>
-              <Text style={styles.promptTitle}>Today's Reflection</Text>
-              <Text style={styles.promptText}>{getOnboardingPrompt()}</Text>
+            <View style={[styles.promptCard, { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}>
+              <Text style={[styles.promptTitle, { color: theme.primary }]}>Today's Reflection</Text>
+              <Text style={[styles.promptText, { color: theme.textPrimary }]}>{getOnboardingPrompt()}</Text>
             </View>
 
-            <View style={styles.entryForm}>
+            <View style={[styles.entryForm, { backgroundColor: theme.cardBackground }]}>
               <View style={styles.textareaContainer}>
                 <TextInput
                   value={entryText}
                   onChangeText={setEntryText}
                   placeholder="Take your time and write whatever comes to mind. There's no right or wrong answer..."
-                  style={styles.textarea}
+                  placeholderTextColor={theme.textMuted}
+                  style={[styles.textarea, { backgroundColor: theme.inputBackground, borderColor: theme.inputBorder, color: theme.textPrimary }]}
                   multiline
                   numberOfLines={8}
                   textAlignVertical="top"
@@ -167,7 +170,7 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
               </View>
 
               <View style={styles.moodSection}>
-                <Text style={styles.moodTitle}>How are you feeling right now? (1-5)</Text>
+                <Text style={[styles.moodTitle, { color: theme.textPrimary }]}>How are you feeling right now? (1-5)</Text>
                 <View style={styles.moodButtons}>
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <TouchableOpacity
@@ -175,11 +178,14 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
                       onPress={() => setMoodRating(rating)}
                       style={[
                         styles.moodButton,
-                        moodRating === rating ? styles.moodButtonSelected : {}
+                        {
+                          backgroundColor: moodRating === rating ? theme.primary + '20' : theme.surface,
+                          borderColor: moodRating === rating ? theme.primary : theme.cardBorder
+                        }
                       ]}
                     >
                       <Text style={styles.moodEmoji}>{getMoodEmoji(rating)}</Text>
-                      <Text style={styles.moodLabel}>{rating}</Text>
+                      <Text style={[styles.moodLabel, { color: theme.textMuted }]}>{rating}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -191,10 +197,10 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
                   disabled={!entryText.trim() || isSaving}
                   style={[
                     styles.saveButton,
-                    (!entryText.trim() || isSaving) ? styles.saveButtonDisabled : {}
+                    { backgroundColor: (!entryText.trim() || isSaving) ? theme.cardBorder : theme.primary }
                   ]}
                 >
-                  <Text style={styles.saveButtonText}>
+                  <Text style={[styles.saveButtonText, { color: theme.white }]}>
                     {isSaving ? 'Saving...' : 'Get My First Insight ✨'}
                   </Text>
                 </TouchableOpacity>
@@ -204,8 +210,8 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
         ) : (
           <View style={styles.insightSection}>
             <View style={styles.insightHeader}>
-              <Text style={styles.insightTitle}>Here's your personalized insight!</Text>
-              <Text style={styles.insightSubtitle}>
+              <Text style={[styles.insightTitle, { color: theme.textPrimary }]}>Here's your personalized insight!</Text>
+              <Text style={[styles.insightSubtitle, { color: theme.textSecondary }]}>
                 This is an example of how our AI analyzes your writing to provide meaningful reflections.
               </Text>
             </View>
@@ -221,15 +227,15 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
 
             {insight && (
               <View style={styles.completionSection}>
-                <View style={styles.completionCard}>
+                <View style={[styles.completionCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
                   <Text style={styles.completionIcon}>🎯</Text>
-                  <Text style={styles.completionTitle}>You're all set!</Text>
-                  <Text style={styles.completionText}>
+                  <Text style={[styles.completionTitle, { color: theme.textPrimary }]}>You're all set!</Text>
+                  <Text style={[styles.completionText, { color: theme.textSecondary }]}>
                     You've completed your setup and received your first AI insight.
                     You have 2 more free insights this month, or upgrade to Premium for unlimited insights with deeper analysis.
                   </Text>
-                  <TouchableOpacity onPress={handleComplete} style={styles.completeButton}>
-                    <Text style={styles.completeButtonText}>Start Journaling</Text>
+                  <TouchableOpacity onPress={handleComplete} style={[styles.completeButton, { backgroundColor: theme.primary }]}>
+                    <Text style={[styles.completeButtonText, { color: theme.white }]}>Start Journaling</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -237,16 +243,16 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
 
             {/* Entry Preview */}
             {currentEntry && (
-              <View style={styles.entryPreview}>
-                <Text style={styles.previewTitle}>Your First Entry</Text>
-                <View style={styles.previewContent}>
-                  <Text style={styles.previewText}>{currentEntry.content}</Text>
+              <View style={[styles.entryPreview, { backgroundColor: theme.cardBackground }]}>
+                <Text style={[styles.previewTitle, { color: theme.textPrimary }]}>Your First Entry</Text>
+                <View style={[styles.previewContent, { backgroundColor: theme.surface }]}>
+                  <Text style={[styles.previewText, { color: theme.textSecondary }]}>{currentEntry.content}</Text>
                   {currentEntry.moodRating && (
                     <View style={styles.previewMood}>
                       <Text style={styles.previewMoodEmoji}>
                         {getMoodEmoji(currentEntry.moodRating)}
                       </Text>
-                      <Text style={styles.previewMoodText}>
+                      <Text style={[styles.previewMoodText, { color: theme.textMuted }]}>
                         Mood: {currentEntry.moodRating}/5
                       </Text>
                     </View>
@@ -264,7 +270,6 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray100 || '#f9fafb',
   },
   scrollContent: {
     flexGrow: 1,
@@ -285,17 +290,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontFamily: typography.heading.fontFamily,
     fontWeight: typography.heading.fontWeight as any,
     fontSize: typography.heading.fontSize,
-    color: colors.gray900,
     marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray600,
     lineHeight: 24,
     textAlign: 'center',
   },
@@ -305,8 +306,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   promptCard: {
-    backgroundColor: colors.primary + '20',
-    borderColor: colors.primary,
     borderWidth: 1,
     borderRadius: components.card.borderRadius,
     padding: 24,
@@ -314,22 +313,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   promptTitle: {
-    fontFamily: typography.body.fontFamily,
     fontWeight: 'bold',
     fontSize: typography.body.fontSize,
-    color: colors.primary,
     marginBottom: 12,
   },
   promptText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray800,
     lineHeight: 24,
     fontStyle: 'italic',
     textAlign: 'center',
   },
   entryForm: {
-    backgroundColor: colors.white,
     borderRadius: components.card.borderRadius,
     padding: 32,
     shadowColor: '#000',
@@ -347,12 +341,9 @@ const styles = StyleSheet.create({
   textarea: {
     padding: 16,
     borderRadius: 8,
-    borderColor: colors.gray300,
     borderWidth: 1,
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
     lineHeight: 24,
-    color: colors.gray800,
     minHeight: 150,
     textAlignVertical: 'top',
   },
@@ -360,10 +351,8 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   moodTitle: {
-    fontFamily: typography.body.fontFamily,
     fontWeight: 'bold',
     fontSize: typography.body.fontSize,
-    color: colors.gray900,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -379,44 +368,30 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderWidth: 2,
-    borderColor: colors.gray200,
     borderRadius: 8,
-    backgroundColor: colors.white,
     minWidth: 60,
-  },
-  moodButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '20',
   },
   moodEmoji: {
     fontSize: 24,
     marginBottom: 4,
   },
   moodLabel: {
-    fontFamily: typography.caption.fontFamily,
     fontSize: typography.caption.fontSize,
-    color: colors.gray600,
     fontWeight: 'bold',
   },
   actions: {
     alignItems: 'center',
   },
   saveButton: {
-    backgroundColor: colors.primary,
     borderRadius: components.button.borderRadius,
     height: components.button.height,
     paddingHorizontal: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  saveButtonDisabled: {
-    backgroundColor: colors.gray400,
-  },
   saveButtonText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
     fontWeight: 'bold',
-    color: colors.white,
   },
   insightSection: {
     maxWidth: 800,
@@ -431,26 +406,21 @@ const styles = StyleSheet.create({
     fontFamily: typography.heading.fontFamily,
     fontWeight: typography.heading.fontWeight as any,
     fontSize: typography.heading.fontSize,
-    color: colors.gray900,
     marginBottom: 8,
     textAlign: 'center',
   },
   insightSubtitle: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray600,
     textAlign: 'center',
   },
   completionSection: {
     marginTop: 32,
   },
   completionCard: {
-    backgroundColor: colors.white,
     borderRadius: components.card.borderRadius,
     padding: 32,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: colors.success,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -469,19 +439,15 @@ const styles = StyleSheet.create({
     fontFamily: typography.heading.fontFamily,
     fontWeight: typography.heading.fontWeight as any,
     fontSize: typography.body.fontSize,
-    color: colors.gray900,
     marginBottom: 12,
   },
   completionText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray600,
     marginBottom: 24,
     lineHeight: 24,
     textAlign: 'center',
   },
   completeButton: {
-    backgroundColor: colors.success,
     borderRadius: components.button.borderRadius,
     height: components.button.height,
     minWidth: 200,
@@ -489,13 +455,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   completeButtonText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
     fontWeight: 'bold',
-    color: colors.white,
   },
   entryPreview: {
-    backgroundColor: colors.white,
     borderRadius: components.card.borderRadius,
     padding: 20,
     marginTop: 24,
@@ -509,21 +472,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   previewTitle: {
-    fontFamily: typography.body.fontFamily,
     fontWeight: 'bold',
     fontSize: typography.body.fontSize,
-    color: colors.gray900,
     marginBottom: 12,
   },
   previewContent: {
     padding: 16,
-    backgroundColor: colors.gray500 || '#f9fafb',
     borderRadius: 8,
   },
   previewText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray700,
     marginBottom: 12,
     lineHeight: 24,
   },
@@ -536,9 +494,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   previewMoodText: {
-    fontFamily: typography.caption.fontFamily,
     fontSize: typography.caption.fontSize,
-    color: colors.gray600,
     fontWeight: 'bold',
   },
 });

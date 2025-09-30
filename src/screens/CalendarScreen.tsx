@@ -19,6 +19,7 @@ interface CalendarScreenProps {
   onDateSelect?: (date: Date) => void;
   onEntryPress?: (entry: any) => void;
   onNewEntry?: (date: Date) => void;
+  onMenuPress?: () => void;
 }
 
 interface CalendarDay {
@@ -38,7 +39,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   onBack,
   onDateSelect,
   onEntryPress,
-  onNewEntry
+  onNewEntry,
+  onMenuPress
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -185,13 +187,11 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+        <TouchableOpacity onPress={onMenuPress} style={styles.backButton}>
+          <Text style={styles.backButtonText}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Calendar</Text>
-        <TouchableOpacity style={styles.mediaViewButton}>
-          <Text style={styles.mediaViewText}>Media View</Text>
-        </TouchableOpacity>
+        <View style={styles.backButton} />
       </View>
 
       {/* Month Navigation */}

@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { colors, typography, components } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
+import { typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
 import { AIInsightService, AIInsight, JournalEntry, UserContext, ChatMessage } from '../services/aiInsightService';
 
@@ -40,6 +41,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   entryType: initialEntryType = 'journal',
   fromScreen
 }) => {
+  const { theme } = useTheme();
+
   // Entry content state
   const [title, setTitle] = useState('');
   const [entryText, setEntryText] = useState('');
@@ -60,6 +63,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentChatMessage, setCurrentChatMessage] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [initialInsight, setInitialInsight] = useState<string | null>(null);
+  const [hasGeneratedInitialInsight, setHasGeneratedInitialInsight] = useState(false);
 
   // Debug: Log whenever chatMessages state changes
   useEffect(() => {
@@ -76,8 +81,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     });
   }, [chatMessages, initialInsight]);
   const chatScrollViewRef = useRef<ScrollView>(null);
-  const [initialInsight, setInitialInsight] = useState<string | null>(null);
-  const [hasGeneratedInitialInsight, setHasGeneratedInitialInsight] = useState(false);
 
   // Summary state
   const [summary, setSummary] = useState<string | null>(null);
@@ -230,7 +233,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         // Ensure insight is displayed as clean text
         let insightText = insight.insight;
         if (typeof insightText === 'object' && insightText !== null) {
-          insightText = insightText.insight || insightText.text || JSON.stringify(insightText);
+          const insightObj = insightText as any;
+          insightText = insightObj.insight || insightObj.text || JSON.stringify(insightText);
         }
         if (typeof insightText !== 'string') {
           insightText = String(insightText);
@@ -466,21 +470,21 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Render Header (MyDiary style)
   const renderHeader = () => (
-    <View style={styles.header}>
+    <View style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}>
       <TouchableOpacity onPress={onBack} style={styles.closeButton}>
-        <Text style={styles.closeButtonText}>✕</Text>
+        <Text style={[styles.closeButtonText, { color: theme.textPrimary }]}>✕</Text>
       </TouchableOpacity>
       <View style={styles.headerCenter} />
       <View style={styles.headerRight}>
         <TouchableOpacity style={styles.menuButton}>
-          <Text style={styles.menuButtonText}>•••</Text>
+          <Text style={[styles.menuButtonText, { color: theme.textPrimary }]}>•••</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.saveButton, { opacity: entryText.trim() ? 1 : 0.5 }]}
+          style={[styles.saveButton, { backgroundColor: theme.primary, opacity: entryText.trim() ? 1 : 0.5 }]}
           onPress={handleSaveEntry}
           disabled={!entryText.trim() || isSaving}
         >
-          <Text style={styles.saveButtonText}>
+          <Text style={[styles.saveButtonText, { color: theme.white }]}>
             {isSaving ? 'SAVING...' : (mode === 'edit' ? 'UPDATE' : 'SAVE')}
           </Text>
         </TouchableOpacity>
@@ -492,7 +496,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const renderDateMoodRow = () => (
     <View style={styles.dateMoodRow}>
       <TouchableOpacity style={styles.dateSelector}>
-        <Text style={styles.dateSelectorText}>
+        <Text style={[styles.dateSelectorText, { color: theme.primaryLight }]}>
           {formatDate(selectedDate)} ▼
         </Text>
       </TouchableOpacity>
@@ -513,20 +517,21 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const renderEntryTypeSelector = () => {
     console.log('🎯 Rendering entry type selector, current type:', entryType);
     return (
-      <View style={styles.entryTypeContainer}>
-        <Text style={styles.entryTypeLabel}>Entry Type:</Text>
-        <View style={styles.entryTypePicker}>
+      <View style={[styles.entryTypeContainer, { borderColor: theme.primary, backgroundColor: theme.surface }]}>
+        <Text style={[styles.entryTypeLabel, { color: theme.primary }]}>Entry Type:</Text>
+        <View style={[styles.entryTypePicker, { backgroundColor: theme.backgroundTertiary }]}>
         <TouchableOpacity
           style={[
             styles.entryTypeOption,
-            entryType === 'journal' && styles.entryTypeOptionSelected
+            entryType === 'journal' && { backgroundColor: theme.primary }
           ]}
           onPress={() => setEntryType('journal')}
           disabled={!!savedEntry}
         >
           <Text style={[
             styles.entryTypeOptionText,
-            entryType === 'journal' && styles.entryTypeOptionTextSelected
+            { color: entryType === 'journal' ? theme.white : theme.textSecondary },
+            entryType === 'journal' && { fontWeight: '600' }
           ]}>
             📝 Journal Entry
           </Text>
@@ -534,14 +539,15 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         <TouchableOpacity
           style={[
             styles.entryTypeOption,
-            entryType === 'note' && styles.entryTypeOptionSelected
+            entryType === 'note' && { backgroundColor: theme.primary }
           ]}
           onPress={() => setEntryType('note')}
           disabled={!!savedEntry}
         >
           <Text style={[
             styles.entryTypeOptionText,
-            entryType === 'note' && styles.entryTypeOptionTextSelected
+            { color: entryType === 'note' ? theme.white : theme.textSecondary },
+            entryType === 'note' && { fontWeight: '600' }
           ]}>
             🗒️ Quick Note
           </Text>
@@ -555,27 +561,27 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const renderJournalSection = () => {
     console.log('📝 Rendering journal section');
     return (
-      <View style={styles.journalSection}>
+      <View style={[styles.journalSection, { backgroundColor: theme.surface }]}>
         {renderEntryTypeSelector()}
         <TextInput
-        style={styles.titleInput}
+        style={[styles.titleInput, { color: theme.textPrimary, borderBottomColor: theme.cardBorder }]}
         placeholder={entryType === 'journal' ? "What's on your mind?" : "Note title (optional)"}
-        placeholderTextColor={colors.placeholderText}
+        placeholderTextColor={theme.textMuted}
         value={title}
         onChangeText={setTitle}
         editable={!savedEntry}
       />
       <TextInput
-        style={styles.contentInput}
+        style={[styles.contentInput, { color: theme.textPrimary }]}
         multiline
         placeholder="Write more here..."
-        placeholderTextColor={colors.placeholderText}
+        placeholderTextColor={theme.textMuted}
         value={entryText}
         onChangeText={setEntryText}
         textAlignVertical="top"
         editable={!savedEntry}
       />
-      <View style={styles.formattingToolbar}>
+      <View style={[styles.formattingToolbar, { borderTopColor: theme.cardBorder }]}>
         <Text style={styles.toolbarIcon}>🎨</Text>
         <Text style={styles.toolbarIcon}>📷</Text>
         <Text style={styles.toolbarIcon}>⭐</Text>
@@ -592,11 +598,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const renderChatSection = () => {
   if (!savedEntry) {
     return (
-      <View style={styles.chatSection}>
+      <View style={[styles.chatSection, { backgroundColor: theme.surface }]}>
         <View style={styles.chatPlaceholder}>
           <Text style={styles.chatPlaceholderIcon}>💬</Text>
-          <Text style={styles.chatPlaceholderTitle}>Chat with AI</Text>
-          <Text style={styles.chatPlaceholderText}>
+          <Text style={[styles.chatPlaceholderTitle, { color: theme.textPrimary }]}>Chat with AI</Text>
+          <Text style={[styles.chatPlaceholderText, { color: theme.textSecondary }]}>
             Save your journal entry first to start chatting with AI.
           </Text>
         </View>
@@ -605,15 +611,15 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   }
 
   return (
-    <View style={styles.chatSection}>
+    <View style={[styles.chatSection, { backgroundColor: theme.surface }]}>
       {/* Initial AI Insight */}
       {initialInsight && (
-        <View style={styles.insightBubble}>
+        <View style={[styles.insightBubble, { borderColor: theme.primary }]}>
           <View style={styles.insightHeader}>
             <Text style={styles.insightIcon}>🤖</Text>
-            <Text style={styles.insightLabel}>AI INSIGHT</Text>
+            <Text style={[styles.insightLabel, { color: theme.primary }]}>AI INSIGHT</Text>
           </View>
-          <Text style={styles.insightText}>{initialInsight}</Text>
+          <Text style={[styles.insightText, { color: theme.textPrimary }]}>{initialInsight}</Text>
         </View>
       )}
 
@@ -635,7 +641,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           });
 
           return visibleMessages.length === 0 ? (
-            <Text style={styles.emptyStateText}>
+            <Text style={[styles.emptyStateText, { color: theme.textSecondary }]}>
               No messages yet. Start a conversation!
             </Text>
           ) : (
@@ -644,13 +650,15 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                 key={`${message.id}-${index}`}
                 style={[
                   styles.chatBubble,
-                  message.role === 'user' ? styles.userBubble : styles.claudeBubble
+                  message.role === 'user'
+                    ? [styles.userBubble, { backgroundColor: theme.primary }]
+                    : [styles.claudeBubble, { backgroundColor: theme.backgroundTertiary }]
                 ]}
               >
                 <Text
                   style={[
                     styles.chatBubbleText,
-                    message.role === 'user' ? styles.userBubbleText : styles.claudeBubbleText
+                    { color: message.role === 'user' ? theme.white : theme.textPrimary }
                   ]}
                 >
                   {message.role === 'assistant' ? '🤖 ' : '💬 '}
@@ -661,18 +669,18 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           );
         })()}
         {isChatLoading && (
-          <View style={styles.claudeBubble}>
-            <Text style={styles.claudeBubbleText}>🤖 Thinking...</Text>
+          <View style={[styles.claudeBubble, { backgroundColor: theme.backgroundTertiary }]}>
+            <Text style={[styles.claudeBubbleText, { color: theme.textPrimary }]}>🤖 Thinking...</Text>
           </View>
         )}
       </ScrollView>
 
       {/* Chat Input */}
-      <View style={styles.chatInputContainer}>
+      <View style={[styles.chatInputContainer, { borderTopColor: theme.cardBorder }]}>
         <TextInput
-          style={styles.chatInput}
+          style={[styles.chatInput, { backgroundColor: theme.inputBackground, color: theme.textPrimary }]}
           placeholder="Type response..."
-          placeholderTextColor={colors.placeholderText}
+          placeholderTextColor={theme.textMuted}
           value={currentChatMessage}
           onChangeText={setCurrentChatMessage}
           multiline
@@ -681,12 +689,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         <TouchableOpacity
           style={[
             styles.sendButton,
-            (!currentChatMessage.trim() || isChatLoading) && styles.sendButtonDisabled
+            { backgroundColor: (!currentChatMessage.trim() || isChatLoading) ? theme.textMuted : theme.primary }
           ]}
           onPress={handleSendChatMessage}
           disabled={!currentChatMessage.trim() || isChatLoading}
         >
-          <Text style={styles.sendButtonText}>Send</Text>
+          <Text style={[styles.sendButtonText, { color: theme.white }]}>Send</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -702,20 +710,20 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         <TouchableOpacity
           style={[
             styles.summariseButton,
-            isSummaryLoading && styles.summariseButtonDisabled
+            { borderColor: isSummaryLoading ? theme.textMuted : theme.primary }
           ]}
           onPress={handleGenerateSummary}
           disabled={isSummaryLoading}
         >
-          <Text style={styles.summariseButtonText}>
+          <Text style={[styles.summariseButtonText, { color: theme.primary }]}>
             {isSummaryLoading ? 'GENERATING...' : 'SUMMARISE'}
           </Text>
         </TouchableOpacity>
 
         {summary && (
-          <View style={styles.summaryDisplay}>
-            <Text style={styles.summaryTitle}>📋 Summary</Text>
-            <Text style={styles.summaryText}>{summary}</Text>
+          <View style={[styles.summaryDisplay, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.summaryTitle, { color: theme.primaryLight }]}>📋 Summary</Text>
+            <Text style={[styles.summaryText, { color: theme.textPrimary }]}>{summary}</Text>
           </View>
         )}
       </View>
@@ -733,8 +741,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={colors.background} />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style="light" />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -756,7 +764,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   flex: {
     flex: 1,
@@ -769,7 +776,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.backgroundSecondary,
   },
   closeButton: {
     width: 40,
@@ -779,7 +785,6 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 18,
-    color: colors.textPrimary,
     fontWeight: '600',
   },
   headerCenter: {
@@ -795,16 +800,13 @@ const styles = StyleSheet.create({
   },
   menuButtonText: {
     fontSize: 18,
-    color: colors.textPrimary,
   },
   saveButton: {
-    backgroundColor: colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
   },
   saveButtonText: {
-    color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -831,7 +833,6 @@ const styles = StyleSheet.create({
   },
   dateSelectorText: {
     fontSize: 16,
-    color: colors.primaryLight,
     fontWeight: '500',
   },
   moodSelector: {
@@ -843,7 +844,6 @@ const styles = StyleSheet.create({
 
   // Section A: Journal Entry
   journalSection: {
-    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -851,20 +851,16 @@ const styles = StyleSheet.create({
   entryTypeContainer: {
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: 8,
     padding: 12,
-    backgroundColor: colors.surface,
   },
   entryTypeLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.primary,
     marginBottom: 12,
   },
   entryTypePicker: {
     flexDirection: 'row',
-    backgroundColor: colors.backgroundTertiary,
     borderRadius: 8,
     padding: 4,
   },
@@ -876,29 +872,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   entryTypeOptionSelected: {
-    backgroundColor: colors.primary,
   },
   entryTypeOptionText: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.textSecondary,
   },
   entryTypeOptionTextSelected: {
-    color: colors.white,
     fontWeight: '600',
   },
   titleInput: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
     marginBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
     paddingBottom: 8,
   },
   contentInput: {
     fontSize: 16,
-    color: colors.textPrimary,
     minHeight: 150,
     textAlignVertical: 'top',
     lineHeight: 24,
@@ -909,7 +899,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
   },
   toolbarIcon: {
     fontSize: 18,
@@ -918,12 +907,10 @@ const styles = StyleSheet.create({
 
   // Section B: Chat Area
   chatSection: {
-    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
-    minHeight: 300, // Increased minimum height
-    // Removed maxHeight to allow full scrolling
+    minHeight: 300,
   },
   chatPlaceholder: {
     flex: 1,
@@ -938,13 +925,11 @@ const styles = StyleSheet.create({
   chatPlaceholderTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
     marginBottom: 8,
     textAlign: 'center',
   },
   chatPlaceholderText: {
     fontSize: 14,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 20,
@@ -952,7 +937,6 @@ const styles = StyleSheet.create({
   insightBubble: {
     backgroundColor: 'rgba(168, 85, 247, 0.2)',
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -969,18 +953,16 @@ const styles = StyleSheet.create({
   insightLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.primary,
     textTransform: 'uppercase',
   },
   insightText: {
     fontSize: 14,
-    color: colors.textPrimary,
     lineHeight: 20,
   },
   chatHistory: {
     flex: 1,
     marginBottom: 12,
-    maxHeight: 300, // Limit chat scroll area height
+    maxHeight: 300,
   },
   chatBubble: {
     marginBottom: 8,
@@ -991,12 +973,10 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: colors.primary,
     borderBottomRightRadius: 4,
   },
   claudeBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.backgroundTertiary,
     borderBottomLeftRadius: 4,
   },
   chatBubbleText: {
@@ -1004,40 +984,32 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   userBubbleText: {
-    color: colors.white,
   },
   claudeBubbleText: {
-    color: colors.textPrimary,
   },
   chatInputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
   },
   chatInput: {
     flex: 1,
-    backgroundColor: colors.inputBackground,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginRight: 8,
-    color: colors.textPrimary,
     fontSize: 14,
     maxHeight: 80,
   },
   sendButton: {
-    backgroundColor: colors.primary,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   sendButtonDisabled: {
-    backgroundColor: colors.textMuted,
   },
   sendButtonText: {
-    color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -1050,23 +1022,19 @@ const styles = StyleSheet.create({
   summariseButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
     marginBottom: 16,
   },
   summariseButtonDisabled: {
-    borderColor: colors.textMuted,
   },
   summariseButtonText: {
-    color: colors.primary,
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
   },
   summaryDisplay: {
-    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     width: '100%',
@@ -1074,17 +1042,14 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.primaryLight,
     marginBottom: 8,
   },
   summaryText: {
     fontSize: 14,
-    color: colors.textPrimary,
     lineHeight: 20,
   },
   emptyStateText: {
     fontSize: 14,
-    color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 20,

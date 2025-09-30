@@ -7,7 +7,8 @@ import {
   StyleSheet,
   SafeAreaView
 } from 'react-native';
-import { colors, typography, components } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
+import { typography, components } from '../styles/designSystem';
 
 interface OnboardingPreferencesScreenProps {
   onComplete: (preferences: OnboardingPreferences) => void;
@@ -22,6 +23,7 @@ export interface OnboardingPreferences {
 export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenProps> = ({
   onComplete
 }) => {
+  const { theme } = useTheme();
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [preferredTime, setPreferredTime] = useState('');
   const [personalityType, setPersonalityType] = useState('');
@@ -94,10 +96,10 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
   };
 
   const renderStep1 = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { backgroundColor: theme.cardBackground }]}>
       <View style={styles.stepHeader}>
-        <Text style={styles.stepTitle}>What would you like to focus on?</Text>
-        <Text style={styles.stepSubtitle}>
+        <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>What would you like to focus on?</Text>
+        <Text style={[styles.stepSubtitle, { color: theme.textSecondary }]}>
           Choose the areas of your life you'd like to explore through journaling.
           Select as many as feel relevant to you.
         </Text>
@@ -110,19 +112,22 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
             onPress={() => handleFocusAreaToggle(option.id)}
             style={[
               styles.optionCard,
-              focusAreas.includes(option.id) && styles.optionCardSelected
+              {
+                backgroundColor: focusAreas.includes(option.id) ? theme.primary : theme.surface,
+                borderColor: focusAreas.includes(option.id) ? theme.primary : theme.cardBorder
+              }
             ]}
           >
             <Text style={styles.optionIcon}>{option.icon}</Text>
-            <Text style={styles.optionLabel}>{option.label}</Text>
-            <Text style={styles.optionDescription}>{option.description}</Text>
+            <Text style={[styles.optionLabel, { color: focusAreas.includes(option.id) ? theme.white : theme.textPrimary }]}>{option.label}</Text>
+            <Text style={[styles.optionDescription, { color: focusAreas.includes(option.id) ? theme.white : theme.textSecondary }]}>{option.description}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {focusAreas.length > 0 && (
-        <View style={styles.selectedCount}>
-          <Text style={styles.selectedText}>
+        <View style={[styles.selectedCount, { backgroundColor: theme.primary + '20' }]}>
+          <Text style={[styles.selectedText, { color: theme.primary }]}>
             {focusAreas.length} area{focusAreas.length !== 1 ? 's' : ''} selected
           </Text>
         </View>
@@ -131,10 +136,10 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
   );
 
   const renderStep2 = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { backgroundColor: theme.cardBackground }]}>
       <View style={styles.stepHeader}>
-        <Text style={styles.stepTitle}>When do you prefer to journal?</Text>
-        <Text style={styles.stepSubtitle}>
+        <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>When do you prefer to journal?</Text>
+        <Text style={[styles.stepSubtitle, { color: theme.textSecondary }]}>
           Choose the time of day when you're most likely to reflect and write.
           We'll send gentle reminders to help you build a consistent habit.
         </Text>
@@ -147,13 +152,16 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
             onPress={() => setPreferredTime(option.id)}
             style={[
               styles.timeOptionCard,
-              preferredTime === option.id && styles.optionCardSelected
+              {
+                backgroundColor: preferredTime === option.id ? theme.primary : theme.surface,
+                borderColor: preferredTime === option.id ? theme.primary : theme.cardBorder
+              }
             ]}
           >
             <Text style={styles.timeOptionIcon}>{option.icon}</Text>
             <View style={styles.timeOptionContent}>
-              <Text style={styles.optionLabel}>{option.label}</Text>
-              <Text style={styles.optionDescription}>{option.description}</Text>
+              <Text style={[styles.optionLabel, { color: preferredTime === option.id ? theme.white : theme.textPrimary }]}>{option.label}</Text>
+              <Text style={[styles.optionDescription, { color: preferredTime === option.id ? theme.white : theme.textSecondary }]}>{option.description}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -162,10 +170,10 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
   );
 
   const renderStep3 = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { backgroundColor: theme.cardBackground }]}>
       <View style={styles.stepHeader}>
-        <Text style={styles.stepTitle}>How would you describe yourself?</Text>
-        <Text style={styles.stepSubtitle}>
+        <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>How would you describe yourself?</Text>
+        <Text style={[styles.stepSubtitle, { color: theme.textSecondary }]}>
           This helps us provide more personalized insights and prompts
           that match your thinking style and preferences.
         </Text>
@@ -178,13 +186,16 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
             onPress={() => setPersonalityType(option.id)}
             style={[
               styles.timeOptionCard,
-              personalityType === option.id && styles.optionCardSelected
+              {
+                backgroundColor: personalityType === option.id ? theme.primary : theme.surface,
+                borderColor: personalityType === option.id ? theme.primary : theme.cardBorder
+              }
             ]}
           >
             <Text style={styles.timeOptionIcon}>{option.icon}</Text>
             <View style={styles.timeOptionContent}>
-              <Text style={styles.optionLabel}>{option.label}</Text>
-              <Text style={styles.optionDescription}>{option.description}</Text>
+              <Text style={[styles.optionLabel, { color: personalityType === option.id ? theme.white : theme.textPrimary }]}>{option.label}</Text>
+              <Text style={[styles.optionDescription, { color: personalityType === option.id ? theme.white : theme.textSecondary }]}>{option.description}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -193,19 +204,19 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
+            <View style={[styles.progressBar, { backgroundColor: theme.cardBorder }]}>
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${(currentStep / 3) * 100}%` }
+                  { width: `${(currentStep / 3) * 100}%`, backgroundColor: theme.primary }
                 ]}
               />
             </View>
-            <Text style={styles.progressText}>
+            <Text style={[styles.progressText, { color: theme.textMuted }]}>
               Step {currentStep} of 3
             </Text>
           </View>
@@ -219,8 +230,8 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
 
         <View style={styles.actions}>
           {currentStep > 1 && (
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <Text style={styles.backButtonText}>← Back</Text>
+            <TouchableOpacity onPress={handleBack} style={[styles.backButton, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
+              <Text style={[styles.backButtonText, { color: theme.textSecondary }]}>← Back</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -228,10 +239,10 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
             disabled={!canProceed()}
             style={[
               styles.nextButton,
-              !canProceed() && styles.nextButtonDisabled
+              { backgroundColor: canProceed() ? theme.primary : theme.cardBorder }
             ]}
           >
-            <Text style={styles.nextButtonText}>
+            <Text style={[styles.nextButtonText, { color: theme.white }]}>
               {currentStep === 3 ? 'Complete Setup' : 'Next →'}
             </Text>
           </TouchableOpacity>
@@ -244,7 +255,6 @@ export const OnboardingPreferencesScreen: React.FC<OnboardingPreferencesScreenPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray500 || '#f9fafb',
   },
   scrollContent: {
     flexGrow: 1,
@@ -261,20 +271,16 @@ const styles = StyleSheet.create({
   progressBar: {
     width: '100%',
     height: 6,
-    backgroundColor: colors.gray200,
     borderRadius: 3,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   progressText: {
-    fontFamily: typography.caption.fontFamily,
     fontSize: typography.caption.fontSize,
-    color: colors.gray600,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -285,7 +291,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   stepContainer: {
-    backgroundColor: colors.white,
     borderRadius: components.card.borderRadius,
     padding: 40,
     marginBottom: 32,
@@ -303,17 +308,13 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   stepTitle: {
-    fontFamily: typography.heading.fontFamily,
     fontWeight: typography.heading.fontWeight as any,
     fontSize: typography.heading.fontSize,
-    color: colors.gray900,
     marginBottom: 12,
     textAlign: 'center',
   },
   stepSubtitle: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray600,
     lineHeight: 24,
     textAlign: 'center',
   },
@@ -327,9 +328,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   optionCard: {
-    backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: colors.gray200,
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
@@ -338,14 +337,8 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: 16,
   },
-  optionCardSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '20',
-  },
   timeOptionCard: {
-    backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: colors.gray200,
     borderRadius: 12,
     padding: 20,
     flexDirection: 'row',
@@ -365,28 +358,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionLabel: {
-    fontFamily: typography.body.fontFamily,
     fontWeight: 'bold',
     fontSize: typography.body.fontSize,
-    color: colors.gray900,
     marginBottom: 4,
   },
   optionDescription: {
-    fontFamily: typography.caption.fontFamily,
     fontSize: typography.caption.fontSize,
-    color: colors.gray600,
     lineHeight: 18,
   },
   selectedCount: {
     alignItems: 'center',
     padding: 12,
-    backgroundColor: colors.primary + '20',
     borderRadius: 8,
   },
   selectedText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.caption.fontSize,
-    color: colors.primary,
     fontWeight: 'bold',
   },
   actions: {
@@ -400,9 +386,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   backButton: {
-    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.gray300,
     borderRadius: components.button.borderRadius,
     height: components.button.height,
     paddingHorizontal: 20,
@@ -410,12 +394,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.gray600,
   },
   nextButton: {
-    backgroundColor: colors.primary,
     borderRadius: components.button.borderRadius,
     height: components.button.height,
     paddingHorizontal: 20,
@@ -425,12 +406,7 @@ const styles = StyleSheet.create({
     maxWidth: 200,
   },
   nextButtonText: {
-    fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
     fontWeight: 'bold',
-    color: colors.white,
-  },
-  nextButtonDisabled: {
-    backgroundColor: colors.gray400,
   },
 });

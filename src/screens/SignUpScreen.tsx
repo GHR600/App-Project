@@ -9,7 +9,8 @@ import {
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, components } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
+import { components } from '../styles/designSystem';
 import { useAuth } from '../contexts/AuthContext';
 
 interface SignUpScreenProps {
@@ -23,6 +24,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
   onSignInInstead,
   onBack
 }) => {
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -80,38 +82,39 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Back</Text>
+            <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           <View style={styles.hero}>
             <Text style={styles.icon}>📔</Text>
-            <Text style={styles.title}>Create Your Account</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.textPrimary }]}>Create Your Account</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Join thousands of people improving their mental wellbeing through mindful journaling
             </Text>
           </View>
 
-          <View style={styles.form}>
+          <View style={[styles.form, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             {error ? (
-              <View style={styles.errorContainer}>
+              <View style={[styles.errorContainer, { backgroundColor: theme.error + '20', borderColor: theme.error }]}>
                 <Text style={styles.errorIcon}>⚠️</Text>
-                <Text style={styles.errorText}>{error}</Text>
+                <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text>
               </View>
             ) : null}
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email Address</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Email Address</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter your email"
-                style={styles.input}
+                placeholderTextColor={theme.textMuted}
+                style={[styles.input, { backgroundColor: theme.inputBackground, borderColor: theme.inputBorder, color: theme.textPrimary }]}
                 editable={!isLoading}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -120,12 +123,13 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Password</Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Create a password (min. 6 characters)"
-                style={styles.input}
+                placeholderTextColor={theme.textMuted}
+                style={[styles.input, { backgroundColor: theme.inputBackground, borderColor: theme.inputBorder, color: theme.textPrimary }]}
                 editable={!isLoading}
                 secureTextEntry
                 autoCapitalize="none"
@@ -133,12 +137,13 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm Password</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Confirm Password</Text>
               <TextInput
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 placeholder="Confirm your password"
-                style={styles.input}
+                placeholderTextColor={theme.textMuted}
+                style={[styles.input, { backgroundColor: theme.inputBackground, borderColor: theme.inputBorder, color: theme.textPrimary }]}
                 editable={!isLoading}
                 secureTextEntry
                 autoCapitalize="none"
@@ -150,42 +155,42 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
               disabled={isLoading}
               style={[
                 styles.submitButton,
-                isLoading ? styles.submitButtonDisabled : {}
+                { backgroundColor: isLoading ? theme.textMuted : theme.primary }
               ]}
             >
-              <Text style={styles.submitButtonText}>
+              <Text style={[styles.submitButtonText, { color: theme.white }]}>
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>
+            <Text style={[styles.footerText, { color: theme.textSecondary }]}>
               Already have an account?{' '}
-              <Text onPress={onSignInInstead} style={styles.linkText}>
+              <Text onPress={onSignInInstead} style={[styles.linkText, { color: theme.primary }]}>
                 Sign in instead
               </Text>
             </Text>
           </View>
 
-          <View style={styles.benefits}>
-            <Text style={styles.benefitsTitle}>What you get for free:</Text>
+          <View style={[styles.benefits, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.benefitsTitle, { color: theme.textPrimary }]}>What you get for free:</Text>
             <View style={styles.benefitsList}>
               <View style={styles.benefitItem}>
                 <Text style={styles.benefitIcon}>✨</Text>
-                <Text style={styles.benefitText}>3 AI-powered insights per month</Text>
+                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>3 AI-powered insights per month</Text>
               </View>
               <View style={styles.benefitItem}>
                 <Text style={styles.benefitIcon}>📝</Text>
-                <Text style={styles.benefitText}>Unlimited journal entries</Text>
+                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Unlimited journal entries</Text>
               </View>
               <View style={styles.benefitItem}>
                 <Text style={styles.benefitIcon}>📊</Text>
-                <Text style={styles.benefitText}>Basic mood tracking</Text>
+                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Basic mood tracking</Text>
               </View>
               <View style={styles.benefitItem}>
                 <Text style={styles.benefitIcon}>🔒</Text>
-                <Text style={styles.benefitText}>Private and secure</Text>
+                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Private and secure</Text>
               </View>
             </View>
           </View>
@@ -198,7 +203,6 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray500 || '#f9fafb',
   },
   scrollContent: {
     flexGrow: 1,
@@ -213,9 +217,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   backButtonText: {
-    color: colors.primary,
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
+    fontSize: 16,
   },
   content: {
     maxWidth: 400,
@@ -232,23 +234,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontFamily: typography.heading.fontFamily,
-    fontWeight: typography.heading.fontWeight as any,
-    fontSize: typography.heading.fontSize,
-    color: colors.gray900,
+    fontWeight: '700',
+    fontSize: 28,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
-    color: colors.gray600,
+    fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',
   },
   form: {
-    backgroundColor: colors.white,
     borderRadius: components.card.borderRadius,
+    borderWidth: 1,
     padding: 32,
     marginBottom: 24,
     shadowColor: '#000',
@@ -261,8 +259,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   errorContainer: {
-    backgroundColor: colors.error + '20',
-    borderColor: colors.error,
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
@@ -275,9 +271,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   errorText: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: typography.caption.fontSize,
-    color: colors.error,
+    fontSize: 14,
     fontWeight: 'bold',
     flex: 1,
   },
@@ -285,56 +279,42 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.caption.fontSize,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: colors.gray700,
     marginBottom: 8,
   },
   input: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
-    borderColor: colors.gray300,
     borderWidth: 1,
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
-    color: colors.gray800,
+    fontSize: 16,
   },
   submitButton: {
-    backgroundColor: colors.primary,
     borderRadius: components.button.borderRadius,
     height: components.button.height,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  submitButtonDisabled: {
-    backgroundColor: colors.gray400,
-  },
   submitButtonText: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: colors.white,
   },
   footer: {
     alignItems: 'center',
     marginBottom: 32,
   },
   footerText: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
-    color: colors.gray600,
+    fontSize: 16,
     textAlign: 'center',
   },
   linkText: {
-    color: colors.primary,
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },
   benefits: {
-    backgroundColor: colors.white,
     borderRadius: components.card.borderRadius,
+    borderWidth: 1,
     padding: 24,
     shadowColor: '#000',
     shadowOffset: {
@@ -346,10 +326,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   benefitsTitle: {
-    fontFamily: typography.body.fontFamily,
     fontWeight: 'bold',
-    fontSize: typography.body.fontSize,
-    color: colors.gray900,
+    fontSize: 16,
     marginBottom: 16,
   },
   benefitsList: {
@@ -365,9 +343,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   benefitText: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.caption.fontSize,
-    color: colors.gray700,
+    fontSize: 14,
     flex: 1,
   },
 });
