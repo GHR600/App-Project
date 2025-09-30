@@ -35,9 +35,9 @@ const MainApp: React.FC = () => {
 
   const renderHomeScreen = () => (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.primary }]}>🧠 AI Journaling App</Text>
+      <Text style={[styles.title, { color: theme.primary }]}>📝 Journaling App</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-        {user ? `Welcome back, ${user.email}!` : 'Your AI-powered journaling companion'}
+        {user ? `Welcome back, ${user.email}!` : 'Your personal journaling companion'}
       </Text>
 
       <View style={styles.buttonContainer}>
@@ -295,7 +295,7 @@ const MainApp: React.FC = () => {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <Text style={[styles.title, { color: theme.primary }]}>🧠 AI Journaling App</Text>
+          <Text style={[styles.title, { color: theme.primary }]}>📝 Journaling App</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Loading...</Text>
         </View>
         <StatusBar style={isDark ? 'light' : 'dark'} />

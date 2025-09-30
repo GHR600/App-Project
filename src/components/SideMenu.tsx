@@ -87,7 +87,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             >
               {/* Header */}
               <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
-                <Text style={[styles.appTitle, { color: theme.primary }]}>🧠 AI Journal</Text>
+                <Text style={[styles.appTitle, { color: theme.primary }]}>📝 Journal</Text>
                 {user && (
                   <Text style={[styles.userEmail, { color: theme.textSecondary }]} numberOfLines={1}>
                     {user.email}

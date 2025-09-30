@@ -6,6 +6,7 @@ export const DATABASE_SCHEMA = {
   TABLES: {
     USERS: 'users',
     JOURNAL_ENTRIES: 'journal_entries',
+    NOTES: 'notes',
     AI_INSIGHTS: 'ai_insights',
     USER_PREFERENCES: 'user_preferences',
     CHAT_MESSAGES: 'chat_messages',
@@ -179,7 +180,6 @@ export interface DatabaseJournalEntry {
   updated_at: string;
   word_count: number;
   title?: string;
-  entry_type?: 'journal' | 'note';
 }
 
 export interface DatabaseAIInsight {
@@ -211,4 +211,14 @@ export interface DatabaseEntrySummary {
   summary_content: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface DatabaseNote {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  word_count: number;
 }

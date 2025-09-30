@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { colors } from '../styles/designSystem';
+import { useTheme } from '../contexts/ThemeContext';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
 
 interface CalendarScreenProps {
@@ -42,6 +42,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   onNewEntry,
   onMenuPress
 }) => {
+  const { theme, isDark } = useTheme();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [entriesMap, setEntriesMap] = useState<Map<string, JournalEntryWithInsights[]>>(new Map());
@@ -182,41 +183,41 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   const selectedEntries = entriesMap.get(selectedDate.toISOString().split('T')[0]) || [];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={colors.background} />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}>
         <TouchableOpacity onPress={onMenuPress} style={styles.backButton}>
-          <Text style={styles.backButtonText}>☰</Text>
+          <Text style={[styles.backButtonText, { color: theme.textPrimary }]}>☰</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Calendar</Text>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Calendar</Text>
         <View style={styles.backButton} />
       </View>
 
       {/* Month Navigation */}
-      <View style={styles.monthHeader}>
+      <View style={[styles.monthHeader, { backgroundColor: theme.backgroundSecondary, borderBottomColor: theme.cardBorder }]}>
         <View style={styles.monthNavigation}>
           <TouchableOpacity onPress={handlePreviousMonth} style={styles.navButton}>
-            <Text style={styles.navButtonText}>◀</Text>
+            <Text style={[styles.navButtonText, { color: theme.textPrimary }]}>◀</Text>
           </TouchableOpacity>
-          <Text style={styles.monthText}>{formatMonthYear(currentMonth)}</Text>
+          <Text style={[styles.monthText, { color: theme.textPrimary }]}>{formatMonthYear(currentMonth)}</Text>
           <TouchableOpacity onPress={handleNextMonth} style={styles.navButton}>
-            <Text style={styles.navButtonText}>▶</Text>
+            <Text style={[styles.navButtonText, { color: theme.textPrimary }]}>▶</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleTodayPress} style={styles.todayButton}>
-          <Text style={styles.todayButtonText}>TODAY</Text>
+        <TouchableOpacity onPress={handleTodayPress} style={[styles.todayButton, { backgroundColor: theme.primary }]}>
+          <Text style={[styles.todayButtonText, { color: theme.white }]}>TODAY</Text>
         </TouchableOpacity>
       </View>
 
       {/* Calendar Grid */}
-      <View style={styles.calendarContainer}>
+      <View style={[styles.calendarContainer, { backgroundColor: theme.backgroundSecondary }]}>
         {/* Day Headers */}
         <View style={styles.dayHeaders}>
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <View key={day} style={styles.dayHeader}>
-              <Text style={styles.dayHeaderText}>{day}</Text>
+              <Text style={[styles.dayHeaderText, { color: theme.textSecondary }]}>{day}</Text>
             </View>
           ))}
         </View>
@@ -228,23 +229,24 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
               key={index}
               style={[
                 styles.dayCell,
-                day.isSelected && styles.dayCellSelected,
-                day.isToday && !day.isSelected && styles.dayCellToday
+                day.isSelected && { ...styles.dayCellSelected, backgroundColor: theme.primary },
+                day.isToday && !day.isSelected && { ...styles.dayCellToday, borderColor: theme.primary }
               ]}
               onPress={() => handleDatePress(day.date)}
             >
               <Text
                 style={[
                   styles.dayText,
-                  !day.isCurrentMonth && styles.dayTextOtherMonth,
-                  day.isSelected && styles.dayTextSelected,
-                  day.isToday && !day.isSelected && styles.dayTextToday
+                  { color: theme.textPrimary },
+                  !day.isCurrentMonth && { color: theme.textMuted },
+                  day.isSelected && { color: theme.white, fontWeight: '600' },
+                  day.isToday && !day.isSelected && { color: theme.primary, fontWeight: '600' }
                 ]}
               >
                 {day.date.getDate()}
               </Text>
               {day.hasEntries && (
-                <View style={styles.entryIndicator} />
+                <View style={[styles.entryIndicator, { backgroundColor: theme.warning }]} />
               )}
             </TouchableOpacity>
           ))}
@@ -252,23 +254,23 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       </View>
 
       {/* Selected Date Info */}
-      <View style={styles.dateInfoPanel}>
-        <Text style={styles.selectedDateText}>{formatSelectedDate(selectedDate)}</Text>
+      <View style={[styles.dateInfoPanel, { backgroundColor: theme.surface }]}>
+        <Text style={[styles.selectedDateText, { color: theme.primaryLight }]}>{formatSelectedDate(selectedDate)}</Text>
 
         {selectedEntries.length === 0 ? (
-          <Text style={styles.noEntriesText}>No diaries on this day.</Text>
+          <Text style={[styles.noEntriesText, { color: theme.textMuted }]}>No diaries on this day.</Text>
         ) : (
           <ScrollView style={styles.entriesContainer} showsVerticalScrollIndicator={false}>
             {selectedEntries.map(entry => (
               <TouchableOpacity
                 key={entry.id}
-                style={styles.entryPreview}
+                style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
                 onPress={() => onEntryPress?.(entry)}
               >
-                <Text style={styles.entryPreviewText} numberOfLines={2}>
+                <Text style={[styles.entryPreviewText, { color: theme.textPrimary }]} numberOfLines={2}>
                   {entry.content}
                 </Text>
-                <Text style={styles.entryTime}>
+                <Text style={[styles.entryTime, { color: theme.textMuted }]}>
                   {new Date(entry.created_at).toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit',
@@ -282,8 +284,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       </View>
 
       {/* Floating Add Button */}
-      <TouchableOpacity style={styles.floatingButton} onPress={handleAddEntry}>
-        <Text style={styles.floatingButtonText}>+</Text>
+      <TouchableOpacity style={[styles.floatingButton, { backgroundColor: theme.primary }]} onPress={handleAddEntry}>
+        <Text style={[styles.floatingButtonText, { color: theme.white }]}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -292,7 +294,6 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
 
   // Header
@@ -302,7 +303,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.backgroundSecondary,
   },
   backButton: {
     width: 40,
@@ -312,13 +312,11 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: colors.textPrimary,
     fontWeight: '600',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   mediaViewButton: {
     paddingHorizontal: 8,
@@ -326,7 +324,6 @@ const styles = StyleSheet.create({
   },
   mediaViewText: {
     fontSize: 14,
-    color: colors.textSecondary,
   },
 
   // Month Navigation
@@ -336,9 +333,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: colors.backgroundSecondary,
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
   },
   monthNavigation: {
     flexDirection: 'row',
@@ -349,30 +344,25 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     fontSize: 18,
-    color: colors.textPrimary,
     fontWeight: '600',
   },
   monthText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textPrimary,
     marginHorizontal: 16,
   },
   todayButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: colors.primary,
     borderRadius: 6,
   },
   todayButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.white,
   },
 
   // Calendar
   calendarContainer: {
-    backgroundColor: colors.backgroundSecondary,
     margin: 16,
     borderRadius: 12,
     padding: 16,
@@ -389,7 +379,6 @@ const styles = StyleSheet.create({
   dayHeaderText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textSecondary,
   },
   calendarGrid: {
     flexDirection: 'row',
@@ -403,56 +392,41 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   dayCellSelected: {
-    backgroundColor: colors.white,
     borderRadius: CELL_SIZE / 2,
   },
   dayCellToday: {
     borderWidth: 2,
-    borderColor: colors.primary,
     borderRadius: CELL_SIZE / 2,
   },
   dayText: {
     fontSize: 16,
     fontWeight: '500',
-    color: colors.textPrimary,
   },
-  dayTextOtherMonth: {
-    color: colors.textMuted,
-  },
-  dayTextSelected: {
-    color: colors.textInverse,
-    fontWeight: '600',
-  },
-  dayTextToday: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
+  dayTextOtherMonth: {},
+  dayTextSelected: {},
+  dayTextToday: {},
   entryIndicator: {
     position: 'absolute',
     bottom: 8,
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.warning,
   },
 
   // Date Info Panel
   dateInfoPanel: {
     flex: 1,
     margin: 16,
-    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
   },
   selectedDateText: {
     fontSize: 18,
     fontWeight: '500',
-    color: colors.primaryLight,
     marginBottom: 16,
   },
   noEntriesText: {
     fontSize: 14,
-    color: colors.textMuted,
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 20,
@@ -461,22 +435,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   entryPreview: {
-    backgroundColor: colors.backgroundTertiary,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
     borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
   },
   entryPreviewText: {
     fontSize: 14,
-    color: colors.textPrimary,
     lineHeight: 20,
     marginBottom: 4,
   },
   entryTime: {
     fontSize: 12,
-    color: colors.textMuted,
   },
 
   // Floating Button
@@ -487,7 +457,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000000',
@@ -498,7 +467,6 @@ const styles = StyleSheet.create({
   },
   floatingButtonText: {
     fontSize: 24,
-    color: colors.white,
     fontWeight: '600',
   },
 });

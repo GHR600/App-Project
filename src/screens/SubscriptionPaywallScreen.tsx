@@ -7,53 +7,56 @@ import {
   ScrollView,
   SafeAreaView
 } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface SubscriptionPaywallScreenProps {
   onBack?: () => void;
 }
 
 export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps> = ({ onBack }) => {
+  const { theme } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundSecondary }]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Premium Subscription</Text>
+        <Text style={[styles.screenTitle, { color: theme.textPrimary }]}>Premium Subscription</Text>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
-        <Text style={styles.title}>💎 Unlock Premium Features</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>💎 Unlock Premium Features</Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Get personalized AI insights and advanced pattern recognition
         </Text>
 
         <View style={styles.featuresContainer}>
-          <View style={styles.feature}>
+          <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             <Text style={styles.featureIcon}>🧠</Text>
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Advanced AI Insights</Text>
-              <Text style={styles.featureDescription}>
+              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Advanced AI Insights</Text>
+              <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
                 Deep analysis of your journal patterns and personalized recommendations
               </Text>
             </View>
           </View>
 
-          <View style={styles.feature}>
+          <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             <Text style={styles.featureIcon}>📊</Text>
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Mood Pattern Recognition</Text>
-              <Text style={styles.featureDescription}>
+              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Mood Pattern Recognition</Text>
+              <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
                 Track emotional trends and identify triggers over time
               </Text>
             </View>
           </View>
 
-          <View style={styles.feature}>
+          <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             <Text style={styles.featureIcon}>🎯</Text>
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Personalized Prompts</Text>
-              <Text style={styles.featureDescription}>
+              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Personalized Prompts</Text>
+              <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
                 Tailored reflection questions based on your focus areas
               </Text>
             </View>
@@ -61,30 +64,30 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
         </View>
 
         <View style={styles.pricingContainer}>
-          <View style={styles.planCard}>
-            <View style={styles.popularBadge}>
-              <Text style={styles.popularText}>Most Popular</Text>
+          <View style={[styles.planCard, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+            <View style={[styles.popularBadge, { backgroundColor: theme.primary }]}>
+              <Text style={[styles.popularText, { color: theme.white }]}>Most Popular</Text>
             </View>
-            <Text style={styles.planTitle}>Yearly Plan</Text>
-            <Text style={styles.price}>$99/year</Text>
-            <Text style={styles.savings}>Save 62%</Text>
-            <TouchableOpacity style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Start Free Trial</Text>
+            <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Yearly Plan</Text>
+            <Text style={[styles.price, { color: theme.textPrimary }]}>$99/year</Text>
+            <Text style={[styles.savings, { color: theme.success }]}>Save 62%</Text>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.primary }]}>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>Start Free Trial</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.planCard}>
-            <Text style={styles.planTitle}>Weekly Plan</Text>
-            <Text style={styles.price}>$4.99/week</Text>
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Try Premium</Text>
+          <View style={[styles.planCard, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Weekly Plan</Text>
+            <Text style={[styles.price, { color: theme.textPrimary }]}>$4.99/week</Text>
+            <TouchableOpacity style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: 'transparent' }]}>
+              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Try Premium</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={styles.trialInfo}>7-day free trial • Cancel anytime</Text>
+        <Text style={[styles.trialInfo, { color: theme.textSecondary }]}>7-day free trial • Cancel anytime</Text>
         <TouchableOpacity style={styles.restoreButton}>
-          <Text style={styles.restoreText}>Restore Purchases</Text>
+          <Text style={[styles.restoreText, { color: theme.primary }]}>Restore Purchases</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -94,7 +97,6 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
@@ -107,13 +109,11 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    color: '#2563eb',
     fontWeight: '500',
   },
   screenTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
   },
   scrollContainer: {
     flex: 1,
@@ -122,13 +122,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 22,
@@ -140,9 +138,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 20,
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 12,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -160,12 +158,10 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 4,
   },
   featureDescription: {
     fontSize: 14,
-    color: '#6b7280',
     lineHeight: 20,
   },
   pricingContainer: {
@@ -173,8 +169,8 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   planCard: {
-    backgroundColor: 'white',
     borderRadius: 12,
+    borderWidth: 1,
     padding: 24,
     alignItems: 'center',
     position: 'relative',
@@ -187,50 +183,41 @@ const styles = StyleSheet.create({
   popularBadge: {
     position: 'absolute',
     top: -10,
-    backgroundColor: '#2563eb',
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
   },
   popularText: {
-    color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
   },
   planTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 8,
     marginTop: 12,
   },
   price: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
     marginBottom: 4,
   },
   savings: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#10b981',
     marginBottom: 20,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
     borderRadius: 12,
     padding: 16,
     width: '100%',
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
-    borderColor: '#2563eb',
     borderWidth: 2,
     borderRadius: 12,
     padding: 16,
@@ -238,13 +225,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#2563eb',
     fontSize: 16,
     fontWeight: '600',
   },
   trialInfo: {
     fontSize: 14,
-    color: '#6b7280',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -253,7 +238,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   restoreText: {
-    color: '#2563eb',
     fontSize: 14,
     textDecorationLine: 'underline',
   },

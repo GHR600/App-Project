@@ -26,7 +26,6 @@ interface JournalEntryScreenProps {
   initialDate?: Date;
   mode?: 'create' | 'edit';
   entryId?: string;
-  entryType?: 'journal' | 'note';
   fromScreen?: 'DayDetail' | 'Dashboard';
 }
 
@@ -38,7 +37,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   initialDate,
   mode = 'create',
   entryId,
-  entryType: initialEntryType = 'journal',
   fromScreen
 }) => {
   const { theme } = useTheme();
@@ -52,8 +50,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     }
     return new Date();
   });
-  const [selectedMood, setSelectedMood] = useState<string>('😐'); // Emoji string instead of number
-  const [entryType, setEntryType] = useState<'journal' | 'note'>(initialEntryType);
+  const [selectedMood, setSelectedMood] = useState<string>('😐');
 
   // Flow state
   const [isSaving, setIsSaving] = useState(false);
@@ -188,8 +185,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         const result = await JournalService.updateEntry(userId, entryId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
-          title: title.trim() || undefined,
-          entryType: entryType
+          title: title.trim() || undefined
         });
         entry = result.entry;
         error = result.error;
@@ -198,8 +194,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         const result = await JournalService.createEntry(userId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
-          title: title.trim() || undefined,
-          entryType: entryType
+          title: title.trim() || undefined
         });
         entry = result.entry;
         error = result.error;
@@ -468,27 +463,16 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     });
   };
 
-  // Render Header (MyDiary style)
+  // Render Header
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}>
       <TouchableOpacity onPress={onBack} style={styles.closeButton}>
         <Text style={[styles.closeButtonText, { color: theme.textPrimary }]}>✕</Text>
       </TouchableOpacity>
-      <View style={styles.headerCenter} />
-      <View style={styles.headerRight}>
-        <TouchableOpacity style={styles.menuButton}>
-          <Text style={[styles.menuButtonText, { color: theme.textPrimary }]}>•••</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: theme.primary, opacity: entryText.trim() ? 1 : 0.5 }]}
-          onPress={handleSaveEntry}
-          disabled={!entryText.trim() || isSaving}
-        >
-          <Text style={[styles.saveButtonText, { color: theme.white }]}>
-            {isSaving ? 'SAVING...' : (mode === 'edit' ? 'UPDATE' : 'SAVE')}
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.headerCenter}>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Journal Entry</Text>
       </View>
+      <View style={styles.headerRight} />
     </View>
   );
 
@@ -513,84 +497,44 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     </View>
   );
 
-  // Entry Type Selector Component
-  const renderEntryTypeSelector = () => {
-    console.log('🎯 Rendering entry type selector, current type:', entryType);
-    return (
-      <View style={[styles.entryTypeContainer, { borderColor: theme.primary, backgroundColor: theme.surface }]}>
-        <Text style={[styles.entryTypeLabel, { color: theme.primary }]}>Entry Type:</Text>
-        <View style={[styles.entryTypePicker, { backgroundColor: theme.backgroundTertiary }]}>
-        <TouchableOpacity
-          style={[
-            styles.entryTypeOption,
-            entryType === 'journal' && { backgroundColor: theme.primary }
-          ]}
-          onPress={() => setEntryType('journal')}
-          disabled={!!savedEntry}
-        >
-          <Text style={[
-            styles.entryTypeOptionText,
-            { color: entryType === 'journal' ? theme.white : theme.textSecondary },
-            entryType === 'journal' && { fontWeight: '600' }
-          ]}>
-            📝 Journal Entry
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.entryTypeOption,
-            entryType === 'note' && { backgroundColor: theme.primary }
-          ]}
-          onPress={() => setEntryType('note')}
-          disabled={!!savedEntry}
-        >
-          <Text style={[
-            styles.entryTypeOptionText,
-            { color: entryType === 'note' ? theme.white : theme.textSecondary },
-            entryType === 'note' && { fontWeight: '600' }
-          ]}>
-            🗒️ Quick Note
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-    );
-  };
-
   // Section A: Journal Entry Area
   const renderJournalSection = () => {
-    console.log('📝 Rendering journal section');
     return (
       <View style={[styles.journalSection, { backgroundColor: theme.surface }]}>
-        {renderEntryTypeSelector()}
         <TextInput
-        style={[styles.titleInput, { color: theme.textPrimary, borderBottomColor: theme.cardBorder }]}
-        placeholder={entryType === 'journal' ? "What's on your mind?" : "Note title (optional)"}
-        placeholderTextColor={theme.textMuted}
-        value={title}
-        onChangeText={setTitle}
-        editable={!savedEntry}
-      />
-      <TextInput
-        style={[styles.contentInput, { color: theme.textPrimary }]}
-        multiline
-        placeholder="Write more here..."
-        placeholderTextColor={theme.textMuted}
-        value={entryText}
-        onChangeText={setEntryText}
-        textAlignVertical="top"
-        editable={!savedEntry}
-      />
-      <View style={[styles.formattingToolbar, { borderTopColor: theme.cardBorder }]}>
-        <Text style={styles.toolbarIcon}>🎨</Text>
-        <Text style={styles.toolbarIcon}>📷</Text>
-        <Text style={styles.toolbarIcon}>⭐</Text>
-        <Text style={styles.toolbarIcon}>😊</Text>
-        <Text style={styles.toolbarIcon}>Tt</Text>
-        <Text style={styles.toolbarIcon}>📝</Text>
-        <Text style={styles.toolbarIcon}>🏷️</Text>
+          style={[styles.titleInput, { color: theme.textPrimary, borderBottomColor: theme.cardBorder }]}
+          placeholder="What's on your mind?"
+          placeholderTextColor={theme.textMuted}
+          value={title}
+          onChangeText={setTitle}
+          editable={!savedEntry}
+        />
+        <TextInput
+          style={[styles.contentInput, { color: theme.textPrimary }]}
+          multiline
+          placeholder="Write your thoughts here..."
+          placeholderTextColor={theme.textMuted}
+          value={entryText}
+          onChangeText={setEntryText}
+          textAlignVertical="top"
+          editable={!savedEntry}
+        />
+        <TouchableOpacity
+          style={[
+            styles.saveButtonBottom,
+            {
+              backgroundColor: theme.primary,
+              opacity: entryText.trim() ? 1 : 0.5
+            }
+          ]}
+          onPress={handleSaveEntry}
+          disabled={!entryText.trim() || isSaving || !!savedEntry}
+        >
+          <Text style={[styles.saveButtonText, { color: theme.white }]}>
+            {isSaving ? 'SAVING...' : (mode === 'edit' ? 'UPDATE ENTRY' : 'SAVE ENTRY')}
+          </Text>
+        </TouchableOpacity>
       </View>
-    </View>
     );
   };
 
@@ -789,22 +733,15 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuButton: {
-    marginRight: 12,
-    padding: 8,
-  },
-  menuButtonText: {
-    fontSize: 18,
-  },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    width: 40,
   },
   saveButtonText: {
     fontSize: 14,
@@ -848,38 +785,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
-  entryTypeContainer: {
-    marginBottom: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-  },
-  entryTypeLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  entryTypePicker: {
-    flexDirection: 'row',
-    borderRadius: 8,
-    padding: 4,
-  },
-  entryTypeOption: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  entryTypeOptionSelected: {
-  },
-  entryTypeOptionText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  entryTypeOptionTextSelected: {
-    fontWeight: '600',
-  },
   titleInput: {
     fontSize: 18,
     fontWeight: '600',
@@ -889,20 +794,17 @@ const styles = StyleSheet.create({
   },
   contentInput: {
     fontSize: 16,
-    minHeight: 150,
+    minHeight: 200,
     textAlignVertical: 'top',
     lineHeight: 24,
     marginBottom: 16,
   },
-  formattingToolbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  toolbarIcon: {
-    fontSize: 18,
-    padding: 8,
+  saveButtonBottom: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
   },
 
   // Section B: Chat Area

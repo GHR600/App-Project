@@ -6,7 +6,6 @@ export interface CreateJournalEntryData {
   moodRating?: number;
   voiceMemoUrl?: string;
   title?: string;
-  entryType?: 'journal' | 'note';
 }
 
 export interface UpdateJournalEntryData {
@@ -14,7 +13,6 @@ export interface UpdateJournalEntryData {
   moodRating?: number;
   voiceMemoUrl?: string;
   title?: string;
-  entryType?: 'journal' | 'note';
 }
 
 export interface JournalEntryWithWordCount extends DatabaseJournalEntry {
@@ -75,41 +73,37 @@ export class JournalService {
     }
   }
 
-  // Create a new journal entry
+  // Create a new journal entry (one per day)
   static async createEntry(userId: string, data: CreateJournalEntryData): Promise<{
     entry: DatabaseJournalEntry | null;
     error: any;
   }> {
     try {
       // Check if journal entry already exists for today
-      if (data.entryType === 'journal') {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: existingJournal, error: queryError } = await supabase
-          .from('journal_entries')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('entry_type', 'journal')
-          .gte('created_at', `${today}T00:00:00.000Z`)
-          .lt('created_at', `${today}T23:59:59.999Z`);
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existingEntry, error: queryError } = await supabase
+        .from('journal_entries')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('created_at', `${today}T00:00:00.000Z`)
+        .lt('created_at', `${today}T23:59:59.999Z`);
 
-        if (queryError) {
-          console.error('Error checking existing journal entries:', queryError);
-          return { entry: null, error: 'Failed to check existing entries. Please try again.' };
-        }
-
-        if (existingJournal && existingJournal.length > 0) {
-          return { entry: null, error: 'You can only have one journal entry per day. You can add notes instead.' };
-        }
+      if (queryError) {
+        console.error('Error checking existing journal entries:', queryError);
+        return { entry: null, error: 'Failed to check existing entries. Please try again.' };
       }
 
-      // Prepare insert data with all fields now that database is updated
+      if (existingEntry && existingEntry.length > 0) {
+        return { entry: null, error: 'You already have an entry for today. You can edit it or wait until tomorrow.' };
+      }
+
+      // Prepare insert data
       const insertData = {
         user_id: userId,
         content: data.content,
         mood_rating: data.moodRating,
         voice_memo_url: data.voiceMemoUrl,
-        title: data.title,
-        entry_type: data.entryType || 'note'
+        title: data.title
       };
 
       const { data: entry, error } = await supabase

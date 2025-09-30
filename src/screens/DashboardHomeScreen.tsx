@@ -38,12 +38,36 @@ interface UserStats {
 const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats, isLoading }) => {
   const { theme } = useTheme();
 
+  const getStreakEmoji = (streak: number) => {
+    if (streak === 0) return '📝';
+    if (streak < 3) return '🔥';
+    if (streak < 7) return '🔥🔥';
+    if (streak < 14) return '🔥🔥🔥';
+    if (streak < 30) return '⭐';
+    if (streak < 100) return '🏆';
+    return '👑';
+  };
+
+  const getStreakMessage = (streak: number) => {
+    if (streak === 0) return 'Start your streak!';
+    if (streak === 1) return 'Great start!';
+    if (streak < 3) return 'Keep it up!';
+    if (streak < 7) return 'On fire!';
+    if (streak < 14) return 'Impressive!';
+    if (streak < 30) return 'Amazing streak!';
+    if (streak < 100) return 'Legendary!';
+    return 'Master journaler!';
+  };
+
   if (isLoading) {
     return (
       <View style={[styles.statsContainer, { backgroundColor: theme.backgroundSecondary }]}>
+        <View style={styles.streakBanner}>
+          <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary, width: '60%', height: 24 }]} />
+        </View>
         <View style={styles.statsRow}>
           {[1, 2, 3].map(i => (
-            <View key={i} style={[styles.statCard, styles.loadingCard, { backgroundColor: theme.surface, borderLeftColor: theme.backgroundTertiary }]}>
+            <View key={i} style={[styles.statCard, styles.loadingCard, { backgroundColor: theme.surface }]}>
               <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary }]} />
             </View>
           ))}
@@ -54,18 +78,32 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
 
   return (
     <View style={[styles.statsContainer, { backgroundColor: theme.backgroundSecondary }]}>
+      {/* Streak Banner */}
+      <View style={[styles.streakBanner, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
+        <Text style={[styles.streakEmoji]}>{getStreakEmoji(stats.currentStreak)}</Text>
+        <View style={styles.streakInfo}>
+          <Text style={[styles.streakNumber, { color: theme.primary }]}>
+            {stats.currentStreak} Day Streak
+          </Text>
+          <Text style={[styles.streakMessage, { color: theme.textSecondary }]}>
+            {getStreakMessage(stats.currentStreak)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Stats Row */}
       <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.currentStreak}</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Day Streak</Text>
-        </View>
-
-        <View style={styles.statCard}>
+        <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
           <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.totalEntries}</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Entries</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Total Entries</Text>
         </View>
 
-        <View style={styles.statCard}>
+        <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+          <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.entriesThisMonth}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>This Month</Text>
+        </View>
+
+        <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
           <Text style={[styles.statNumber, { color: theme.textPrimary }]}>{stats.averageMood.toFixed(1)}</Text>
           <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Avg Mood</Text>
         </View>
@@ -234,9 +272,6 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
         >
           <View style={styles.entriesHeader}>
             <Text style={[styles.entriesTitle, { color: theme.textPrimary }]}>Recent Days</Text>
-            <TouchableOpacity style={[styles.newEntryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry}>
-              <Text style={[styles.newEntryButtonText, { color: theme.white }]}>+ New</Text>
-            </TouchableOpacity>
           </View>
 
           {renderDayCards()}
@@ -280,19 +315,45 @@ const styles = StyleSheet.create({
   // Compact Stats Header (MyDiary Style)
   statsContainer: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm, // Made more compact
+    paddingVertical: spacing.md,
+  },
+  streakBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+  },
+  streakEmoji: {
+    fontSize: 36,
+    marginRight: spacing.md,
+  },
+  streakInfo: {
+    flex: 1,
+  },
+  streakNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  streakMessage: {
+    fontSize: 13,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    gap: spacing.sm,
   },
   statCard: {
     alignItems: 'center',
     flex: 1,
+    padding: spacing.sm,
+    borderRadius: 8,
   },
   statNumber: {
-    fontSize: 18, // Slightly smaller
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 2,
   },
