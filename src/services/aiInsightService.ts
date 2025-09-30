@@ -1,5 +1,5 @@
-// AI Insight Service - Server-only client for consolidated AI architecture
-// All AI calls go through the server to ensure consistent prompts and security
+// AI Insight Service - Integrated with AI Context System
+// Uses Claude API directly with comprehensive context from all notes and entries
 
 export interface JournalEntry {
   id: string;
@@ -37,6 +37,7 @@ export interface ChatMessage {
 import { API_CONFIG } from '../utils/env';
 import { supabase } from '../config/supabase';
 import { buildChatPrompt } from '../config/prompts';
+import { generateAIInsightWithRetry } from './aiService';
 
 export class AIInsightService {
   private static readonly API_BASE_URL = API_CONFIG.baseUrl;
@@ -474,7 +475,7 @@ export class AIInsightService {
     const startTime = Date.now();
     const requestId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    console.log(`📱 [${requestId}] Starting server-side insight generation:`, {
+    console.log(`📱 [${requestId}] Generating AI insight with full context:`, {
       entryId: entry.id,
       contentLength: entry.content.length,
       moodRating: entry.moodRating,
@@ -482,108 +483,46 @@ export class AIInsightService {
     });
 
     try {
-      // Get auth token for server communication
-      const authToken = await this.getAuthToken();
-
-      // Try server call first (with or without auth token)
-      try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json'
-        };
-
-        if (authToken) {
-          headers['Authorization'] = `Bearer ${authToken}`;
-        } else {
-          console.log(`📱 [${requestId}] No auth token, trying server without auth`);
-        }
-
-        // Call server endpoint for AI insight generation
-        const apiUrl = `${this.API_BASE_URL}/api/ai/insight`;
-        console.log(`📱 [${requestId}] Making API call to:`, apiUrl);
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers,
-        body: JSON.stringify({
-          content: entry.content,
-          moodRating: entry.moodRating,
-          userPreferences: {
-            focusAreas: userContext.focusAreas,
-            personalityType: 'supportive'
-          },
-          recentEntries: recentEntries.map(e => ({ content: e.content })),
-          subscriptionStatus: userContext.subscriptionStatus
-        })
+      // Use new AI service with full context
+      const aiResponse = await generateAIInsightWithRetry({
+        userId: entry.userId,
+        currentEntryId: entry.id,
+        currentEntryContent: entry.content,
+        currentEntryMood: entry.moodRating
       });
 
-      if (!response.ok) {
-        // If it's an auth error, log it and fall back to mock
-        if (response.status === 401) {
-          console.log(`📱 [${requestId}] Server auth failed, falling back to mock insights`);
-          throw new Error('Authentication failed - using fallback');
-        }
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Server returned error');
+      if (aiResponse.error) {
+        console.error(`📱 [${requestId}] AI insight generation error:`, aiResponse.error);
+        throw new Error(aiResponse.error);
       }
 
       const totalDuration = Date.now() - startTime;
-      console.log(`📱 [${requestId}] Server insight success! Duration: ${totalDuration}ms`);
-      console.log(`📱 [${requestId}] Server response structure:`, {
-        hasInsight: !!result.insight,
-        insightType: typeof result.insight,
-        insightLength: result.insight?.length,
-        insightPreview: typeof result.insight === 'string' ? result.insight.substring(0, 100) : JSON.stringify(result.insight).substring(0, 100)
-      });
+      console.log(`📱 [${requestId}] AI insight success! Duration: ${totalDuration}ms`);
 
-      // Ensure insight is always a string, not an object
-      let insightText = result.insight;
-      if (typeof insightText === 'object' && insightText !== null) {
-        // If it's an object, try to extract the text field or stringify it
-        insightText = insightText.insight || insightText.text || JSON.stringify(insightText);
-      }
-      if (typeof insightText !== 'string') {
-        insightText = String(insightText);
-      }
-
-      const insight = {
-        id: `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        insight: insightText,
-        followUpQuestion: result.followUpQuestion,
-        confidence: result.confidence,
+      const insight: AIInsight = {
+        id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        insight: aiResponse.insight,
+        followUpQuestion: 'How does this insight resonate with you?',
+        confidence: 0.85,
         createdAt: new Date().toISOString(),
         isPremium: userContext.subscriptionStatus === 'premium'
       };
 
-      console.log(`📱 [${requestId}] Final insight object:`, {
-        insightType: typeof insight.insight,
-        insightLength: insight.insight?.length,
-        insightPreview: typeof insight.insight === 'string' ? insight.insight.substring(0, 100) : JSON.stringify(insight.insight).substring(0, 100)
+      console.log(`📱 [${requestId}] Final insight:`, {
+        insightLength: insight.insight.length,
+        insightPreview: insight.insight.substring(0, 100)
       });
 
-        return insight;
-
-      } catch (serverError) {
-        console.error(`📱 [${requestId}] Server call failed:`, {
-          error: serverError,
-          message: serverError instanceof Error ? serverError.message : 'Unknown error',
-          apiUrl: `${this.API_BASE_URL}/api/ai/insight`
-        });
-        // Fall through to mock insights below
-      }
+      return insight;
 
     } catch (error) {
       const totalDuration = Date.now() - startTime;
-      console.error(`📱 [${requestId}] Failed to generate server insight after ${totalDuration}ms:`, error);
-    }
+      console.error(`📱 [${requestId}] Failed to generate AI insight after ${totalDuration}ms:`, error);
 
-    // If we reach here, fall back to mock insights
-    const totalDuration = Date.now() - startTime;
-    console.log(`📱 [${requestId}] Using mock insights after ${totalDuration}ms`);
-    return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
+      // Fall back to mock insight
+      console.log(`📱 [${requestId}] Using fallback mock insight`);
+      return this.generateMockInsight(entry, userContext, userContext.subscriptionStatus === 'premium');
+    }
   }
 
   /**

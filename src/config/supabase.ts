@@ -45,12 +45,15 @@ CREATE TABLE user_preferences (
 CREATE TABLE journal_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
   content TEXT NOT NULL,
   mood_rating INTEGER CHECK (mood_rating >= 1 AND mood_rating <= 5),
   voice_memo_url TEXT,
+  title TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  word_count INTEGER GENERATED ALWAYS AS (array_length(string_to_array(content, ' '), 1)) STORED
+  word_count INTEGER GENERATED ALWAYS AS (array_length(string_to_array(content, ' '), 1)) STORED,
+  UNIQUE(user_id, date)
 );
 
 -- AI insights table
@@ -87,6 +90,18 @@ CREATE TABLE entry_summaries (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Notes table
+CREATE TABLE notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  category TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  word_count INTEGER GENERATED ALWAYS AS (array_length(string_to_array(content, ' '), 1)) STORED
+);
+
 -- Row Level Security (RLS) Policies
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
@@ -94,6 +109,7 @@ ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_insights ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE entry_summaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 
 -- Users can only access their own data
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
@@ -120,14 +136,21 @@ CREATE POLICY "Users can insert own summaries" ON entry_summaries FOR INSERT WIT
 CREATE POLICY "Users can update own summaries" ON entry_summaries FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own summaries" ON entry_summaries FOR DELETE USING (auth.uid() = user_id);
 
+CREATE POLICY "Users can view own notes" ON notes FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own notes" ON notes FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own notes" ON notes FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own notes" ON notes FOR DELETE USING (auth.uid() = user_id);
+
 -- Indexes for performance
 CREATE INDEX idx_journal_entries_user_id_created_at ON journal_entries(user_id, created_at DESC);
+CREATE INDEX idx_journal_entries_user_id_date ON journal_entries(user_id, date DESC);
 CREATE INDEX idx_ai_insights_user_id_created_at ON ai_insights(user_id, created_at DESC);
 CREATE INDEX idx_user_preferences_user_id ON user_preferences(user_id);
 CREATE INDEX idx_chat_messages_user_id_journal_entry_id ON chat_messages(user_id, journal_entry_id);
 CREATE INDEX idx_chat_messages_timestamp ON chat_messages(timestamp DESC);
 CREATE INDEX idx_entry_summaries_user_id ON entry_summaries(user_id);
 CREATE INDEX idx_entry_summaries_journal_entry_id ON entry_summaries(journal_entry_id);
+CREATE INDEX idx_notes_user_id_created_at ON notes(user_id, created_at DESC);
 
 -- Functions for updating timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -144,6 +167,7 @@ CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferen
 CREATE TRIGGER update_journal_entries_updated_at BEFORE UPDATE ON journal_entries FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_chat_messages_updated_at BEFORE UPDATE ON chat_messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_entry_summaries_updated_at BEFORE UPDATE ON entry_summaries FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_notes_updated_at BEFORE UPDATE ON notes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 `;
 
 // Type definitions for database tables
@@ -173,13 +197,14 @@ export interface UserPreferences {
 export interface DatabaseJournalEntry {
   id: string;
   user_id: string;
+  date: string;
   content: string;
   mood_rating?: number;
   voice_memo_url?: string;
+  title?: string;
   created_at: string;
   updated_at: string;
   word_count: number;
-  title?: string;
 }
 
 export interface DatabaseAIInsight {
@@ -218,6 +243,7 @@ export interface DatabaseNote {
   user_id: string;
   title: string;
   content: string;
+  category?: string;
   created_at: string;
   updated_at: string;
   word_count: number;
