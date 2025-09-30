@@ -1,5 +1,5 @@
 // Re-export the supabase client from services
-export { supabase } from '../services/supabaseClient';
+export { supabase, isSupabaseConfigured, ensureSupabaseReady } from '../services/supabaseClient';
 
 // Database Schema Configuration
 export const DATABASE_SCHEMA = {

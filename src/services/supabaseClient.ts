@@ -17,24 +17,29 @@ if (!isValid) {
   console.error('   Please check your environment variables.');
 }
 
-// Create the Supabase client (even with placeholders for development)
+// Create the Supabase client - only if valid configuration
 let supabaseClient: SupabaseClient | null = null;
 
-try {
-  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  });
-  console.log('✅ Supabase client created successfully');
-} catch (error) {
-  console.error('❌ Failed to create Supabase client:', error);
+if (isValid) {
+  try {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
+    console.log('✅ Supabase client created successfully');
+  } catch (error) {
+    console.error('❌ Failed to create Supabase client:', error);
+  }
+} else {
+  console.warn('⚠️  Skipping Supabase client creation due to invalid configuration');
+  console.warn('   App will run in demo mode without database features');
 }
 
-// Export the client (may be null if creation failed)
-export const supabase = supabaseClient!;
+// Export the client (will be null if not configured)
+export const supabase = supabaseClient;
 
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = (): boolean => {
@@ -60,6 +65,6 @@ if (isDevelopment()) {
     console.warn('⚠️  Supabase Configuration Issues:');
     errors.forEach(error => console.warn(`   - ${error}`));
     console.warn('   Please check your .env.local file or environment variables.');
-    console.warn('   The app will use placeholder values for development.');
+    console.warn('   The app will run in demo mode without database features.');
   }
 }

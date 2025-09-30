@@ -142,6 +142,11 @@ export class AuthService {
   // Get current session
   static async getCurrentSession(): Promise<Session | null> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available - returning null session');
+        return null;
+      }
+
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -158,6 +163,20 @@ export class AuthService {
 
   // Listen to auth state changes
   static onAuthStateChange(callback: (user: AuthUser | null, session: Session | null) => void) {
+    if (!supabase) {
+      console.warn('⚠️  Supabase client not available - returning mock subscription');
+      // Return a mock subscription object to prevent errors
+      return {
+        data: {
+          subscription: {
+            unsubscribe: () => {
+              console.log('Mock subscription unsubscribe called');
+            }
+          }
+        }
+      };
+    }
+
     return supabase.auth.onAuthStateChange((event, session) => {
       const user = session?.user ? {
         id: session.user.id,
