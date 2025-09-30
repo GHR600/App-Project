@@ -175,11 +175,11 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     // Navigate directly to the journal entry for that day
     // If there's an existing entry, open it in edit mode
     // If no entry exists, create a new one for that date
-    const hasJournalEntry = dayData.journalEntry !== null;
+    const hasJournalEntry = dayData.journalEntry !== null && dayData.journalEntry !== undefined;
 
     navigation.navigate('JournalEntry', {
       mode: hasJournalEntry ? 'edit' : 'create',
-      entryId: hasJournalEntry ? dayData.journalEntry.id : undefined,
+      entryId: hasJournalEntry && dayData.journalEntry ? dayData.journalEntry.id : undefined,
       initialDate: dayData.date,
       fromScreen: 'Dashboard'
     });
@@ -287,18 +287,6 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           {renderDayCards()}
         </ScrollView>
       </View>
-
-      <BottomNavigation
-        activeTab="home"
-        onTabPress={(tab) => {
-          if (tab === 'calendar' && onNavigateToCalendar) {
-            onNavigateToCalendar();
-          } else if (tab === 'stats' && onNavigateToStats) {
-            onNavigateToStats();
-          }
-        }}
-        onNewEntry={handleNewEntry}
-      />
     </SafeAreaView>
   );
 };

@@ -4,6 +4,7 @@ import { JournalEntry, DayCardData } from '../types';
 export class EntryService {
   /**
    * Group entries by day and create DayCardData objects
+   * Since we now have one entry per day, journalEntry is the main entry
    */
   static groupEntriesByDay(entries: JournalEntry[]): DayCardData[] {
     const dayGroups: { [key: string]: JournalEntry[] } = {};
@@ -19,11 +20,11 @@ export class EntryService {
 
     // Convert to DayCardData array
     const dayCards: DayCardData[] = Object.entries(dayGroups).map(([date, dayEntries]) => {
-      // Separate journal entries from notes
-      const journalEntry = dayEntries.find(entry => entry.entry_type === 'journal');
-      const notes = dayEntries
-        .filter(entry => entry.entry_type === 'note')
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Sort entries by created_at (most recent first)
+      const sortedEntries = dayEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      // Take the first (most recent) entry as the main journal entry
+      const journalEntry = sortedEntries[0] || undefined;
 
       // Calculate dominant mood
       const moodRatings = dayEntries
@@ -40,8 +41,6 @@ export class EntryService {
       let previewText = '';
       if (journalEntry) {
         previewText = journalEntry.title || journalEntry.content.substring(0, 100);
-      } else if (notes.length > 0) {
-        previewText = notes[0].title || notes[0].content.substring(0, 100);
       }
 
       if (previewText.length > 100) {
@@ -50,9 +49,9 @@ export class EntryService {
 
       return {
         date,
-        entries: dayEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+        entries: sortedEntries,
         journalEntry,
-        notes: notes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+        notes: [], // No longer using separate notes
         dominantMood,
         previewText,
         totalEntries: dayEntries.length,
@@ -100,7 +99,7 @@ export class EntryService {
         user_id: entry.user_id,
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: entry.entry_type || 'note', // Default to 'note' for any legacy entries
+        entry_type: 'journal', // All entries are now journal type
         title: entry.title,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
@@ -141,7 +140,7 @@ export class EntryService {
         user_id: entry.user_id,
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: entry.entry_type || 'note',
+        entry_type: 'journal', // All entries are now journal type
         title: entry.title,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
@@ -168,7 +167,6 @@ export class EntryService {
         .from('journal_entries')
         .select('id')
         .eq('user_id', userId)
-        .eq('entry_type', 'journal')
         .gte('created_at', `${date}T00:00:00.000Z`)
         .lt('created_at', `${date}T23:59:59.999Z`);
 

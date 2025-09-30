@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -14,6 +14,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onNewEntry,
 }) => {
   const { theme } = useTheme();
+  const [pressedButton, setPressedButton] = useState<'calendar' | 'stats' | null>(null);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.surface }]}>
@@ -22,14 +23,16 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         <TouchableOpacity
           style={[
             styles.navButton,
-            activeTab === 'calendar' && { backgroundColor: theme.primaryLight }
+            pressedButton === 'calendar' && { backgroundColor: theme.primaryLight }
           ]}
+          onPressIn={() => setPressedButton('calendar')}
+          onPressOut={() => setPressedButton(null)}
           onPress={() => onTabPress('calendar')}
         >
-          <Text style={[styles.icon, { color: activeTab === 'calendar' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.icon, { color: pressedButton === 'calendar' ? theme.primary : theme.textSecondary }]}>
             ☷
           </Text>
-          <Text style={[styles.label, { color: activeTab === 'calendar' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.label, { color: pressedButton === 'calendar' ? theme.primary : theme.textSecondary }]}>
             Calendar
           </Text>
         </TouchableOpacity>
@@ -48,14 +51,16 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         <TouchableOpacity
           style={[
             styles.navButton,
-            activeTab === 'stats' && { backgroundColor: theme.primaryLight }
+            pressedButton === 'stats' && { backgroundColor: theme.primaryLight }
           ]}
+          onPressIn={() => setPressedButton('stats')}
+          onPressOut={() => setPressedButton(null)}
           onPress={() => onTabPress('stats')}
         >
-          <Text style={[styles.icon, { color: activeTab === 'stats' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.icon, { color: pressedButton === 'stats' ? theme.primary : theme.textSecondary }]}>
             ⚊
           </Text>
-          <Text style={[styles.label, { color: activeTab === 'stats' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.label, { color: pressedButton === 'stats' ? theme.primary : theme.textSecondary }]}>
             Stats
           </Text>
         </TouchableOpacity>

@@ -100,11 +100,14 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
             setTitle(entry.title || '');
             setEntryText(entry.content);
             setSelectedMood(getMoodEmoji(entry.mood_rating || 3));
-            setEntryType(entry.entry_type || 'note');
             setSavedEntry(entry);
+          } else if (error) {
+            console.error('Error loading entry for editing:', error);
+            Alert.alert('Error', 'Failed to load entry. Please try again.');
           }
         } catch (error) {
-          console.error('Error loading entry for editing:', error);
+          console.error('Unexpected error loading entry for editing:', error);
+          Alert.alert('Error', 'Failed to load entry. Please try again.');
         }
       }
     };
