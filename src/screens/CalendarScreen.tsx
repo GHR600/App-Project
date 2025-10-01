@@ -189,10 +189,6 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
     onDateSelect?.(date);
   };
 
-  const handleAddEntry = () => {
-    onNewEntry?.(selectedDate);
-  };
-
   // Load entries when month changes
   useEffect(() => {
     loadEntriesForMonth(currentMonth);
@@ -211,7 +207,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   });
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Header */}
@@ -239,135 +235,137 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Calendar Grid */}
-      <View style={[styles.calendarContainer, { backgroundColor: theme.backgroundSecondary }]}>
-        {/* Day Headers */}
-        <View style={styles.dayHeaders}>
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <View key={day} style={styles.dayHeader}>
-              <Text style={[styles.dayHeaderText, { color: theme.textSecondary }]}>{day}</Text>
-            </View>
-          ))}
-        </View>
+      {/* Single ScrollView for entire content */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        {/* Calendar Grid */}
+        <View style={[styles.calendarContainer, { backgroundColor: theme.backgroundSecondary }]}>
+          {/* Day Headers */}
+          <View style={styles.dayHeaders}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <View key={day} style={styles.dayHeader}>
+                <Text style={[styles.dayHeaderText, { color: theme.textSecondary }]}>{day}</Text>
+              </View>
+            ))}
+          </View>
 
-        {/* Calendar Days */}
-        <View style={styles.calendarGrid}>
-          {calendarDays.map((day, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.dayCell,
-                day.isSelected && { ...styles.dayCellSelected, backgroundColor: theme.primary },
-                day.isToday && !day.isSelected && { ...styles.dayCellToday, borderColor: theme.primary }
-              ]}
-              onPress={() => handleDatePress(day.date)}
-            >
-              <Text
+          {/* Calendar Days */}
+          <View style={styles.calendarGrid}>
+            {calendarDays.map((day, index) => (
+              <TouchableOpacity
+                key={index}
                 style={[
-                  styles.dayText,
-                  { color: theme.textPrimary },
-                  !day.isCurrentMonth && { color: theme.textMuted },
-                  day.isSelected && { color: theme.white, fontWeight: '600' },
-                  day.isToday && !day.isSelected && { color: theme.primary, fontWeight: '600' }
+                  styles.dayCell,
+                  day.isSelected && { ...styles.dayCellSelected, backgroundColor: theme.primary },
+                  day.isToday && !day.isSelected && { ...styles.dayCellToday, borderColor: theme.primary }
                 ]}
+                onPress={() => handleDatePress(day.date)}
               >
-                {day.date.getDate()}
-              </Text>
-              {day.hasEntries && (
-                <View style={[styles.entryIndicator, { backgroundColor: theme.warning }]} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Selected Date Info */}
-      <View style={[styles.dateInfoPanel, { backgroundColor: theme.surface }]}>
-        <Text style={[styles.selectedDateText, { color: theme.primaryLight }]}>{formatSelectedDate(selectedDate)}</Text>
-
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading entries...</Text>
-          </View>
-        ) : selectedEntries.length === 0 ? (
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateIcon}>📝</Text>
-            <Text style={[styles.noEntriesText, { color: theme.textSecondary }]}>No entry for this date</Text>
-            <Text style={[styles.noEntriesSubtext, { color: theme.textMuted }]}>
-              Tap the + button to create one
-            </Text>
-          </View>
-        ) : (
-          <ScrollView style={styles.entriesContainer} showsVerticalScrollIndicator={false}>
-            {selectedEntries.map(entry => {
-              const getTagColor = (tag: string): string => {
-                const colors: { [key: string]: string } = {
-                  'journal': '#8B5CF6',
-                  'note': '#10B981',
-                  'thought': '#3B82F6',
-                  'idea': '#F59E0B',
-                  'goal': '#EF4444',
-                  'gratitude': '#EC4899'
-                };
-                return colors[tag.toLowerCase()] || '#6B7280';
-              };
-
-              return (
-                <TouchableOpacity
-                  key={entry.id}
-                  style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
-                  onPress={() => onEntryPress?.(entry)}
+                <Text
+                  style={[
+                    styles.dayText,
+                    { color: theme.textPrimary },
+                    !day.isCurrentMonth && { color: theme.textMuted },
+                    day.isSelected && { color: theme.white, fontWeight: '600' },
+                    day.isToday && !day.isSelected && { color: theme.primary, fontWeight: '600' }
+                  ]}
                 >
-                  {entry.title && (
-                    <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
-                      {entry.title}
-                    </Text>
-                  )}
-                  <Text style={[styles.entryPreviewText, { color: theme.textSecondary }]} numberOfLines={3}>
-                    {entry.content}
-                  </Text>
+                  {day.date.getDate()}
+                </Text>
+                {day.hasEntries && (
+                  <View style={[styles.entryIndicator, { backgroundColor: theme.warning }]} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
-                  {/* Tags */}
-                  {entry.tags && entry.tags.length > 0 && (
-                    <View style={styles.entryTags}>
-                      {entry.tags.map((tag, index) => (
-                        <View
-                          key={index}
-                          style={[styles.tagChip, { backgroundColor: getTagColor(tag) + '20' }]}
-                        >
-                          <Text style={[styles.tagText, { color: getTagColor(tag) }]}>
-                            {tag}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
+        {/* Selected Date Info */}
+        <View style={[styles.dateInfoPanel, { backgroundColor: theme.surface }]}>
+          <Text style={[styles.selectedDateText, { color: theme.primaryLight }]}>{formatSelectedDate(selectedDate)}</Text>
 
-                  <View style={styles.entryMeta}>
-                    <Text style={[styles.entryTime, { color: theme.textMuted }]}>
-                      {new Date(entry.created_at).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </Text>
-                    {entry.mood_rating && (
-                      <Text style={styles.entryMood}>
-                        {[null, '😢', '😕', '😐', '😊', '😄'][entry.mood_rating] || '😐'}
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading entries...</Text>
+            </View>
+          ) : selectedEntries.length === 0 ? (
+            <View style={styles.emptyStateContainer}>
+              <Text style={styles.emptyStateIcon}>📝</Text>
+              <Text style={[styles.noEntriesText, { color: theme.textSecondary }]}>No entry for this date</Text>
+              <Text style={[styles.noEntriesSubtext, { color: theme.textMuted }]}>
+                Tap the + button to create one
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.entriesListContainer}>
+              {selectedEntries.map(entry => {
+                const getTagColor = (tag: string): string => {
+                  const colors: { [key: string]: string } = {
+                    'journal': '#8B5CF6',
+                    'note': '#10B981',
+                    'thought': '#3B82F6',
+                    'idea': '#F59E0B',
+                    'goal': '#EF4444',
+                    'gratitude': '#EC4899'
+                  };
+                  return colors[tag.toLowerCase()] || '#6B7280';
+                };
+
+                return (
+                  <TouchableOpacity
+                    key={entry.id}
+                    style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
+                    onPress={() => onEntryPress?.(entry)}
+                  >
+                    {entry.title && (
+                      <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
+                        {entry.title}
                       </Text>
                     )}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        )}
-      </View>
+                    <Text style={[styles.entryPreviewText, { color: theme.textSecondary }]} numberOfLines={3}>
+                      {entry.content}
+                    </Text>
 
-      {/* Floating Add Button */}
-      <TouchableOpacity style={[styles.floatingButton, { backgroundColor: theme.primary }]} onPress={handleAddEntry}>
-        <Text style={[styles.floatingButtonText, { color: theme.white }]}>+</Text>
-      </TouchableOpacity>
+                    {/* Tags */}
+                    {entry.tags && entry.tags.length > 0 && (
+                      <View style={styles.entryTags}>
+                        {entry.tags.map((tag, index) => (
+                          <View
+                            key={index}
+                            style={[styles.tagChip, { backgroundColor: getTagColor(tag) + '20' }]}
+                          >
+                            <Text style={[styles.tagText, { color: getTagColor(tag) }]}>
+                              {tag}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                    <View style={styles.entryMeta}>
+                      <Text style={[styles.entryTime, { color: theme.textMuted }]}>
+                        {new Date(entry.created_at).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </Text>
+                      {entry.mood_rating && (
+                        <Text style={styles.entryMood}>
+                          {[null, '😢', '😕', '😐', '😊', '😄'][entry.mood_rating] || '😐'}
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -442,11 +440,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+
   // Calendar
   calendarContainer: {
-    margin: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
   },
   dayHeaders: {
     flexDirection: 'row',
@@ -467,17 +474,17 @@ const styles = StyleSheet.create({
   },
   dayCell: {
     width: CELL_SIZE,
-    height: CELL_SIZE,
+    height: CELL_SIZE * 0.9,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
   dayCellSelected: {
-    borderRadius: CELL_SIZE / 2,
+    borderRadius: (CELL_SIZE * 0.9) / 2,
   },
   dayCellToday: {
     borderWidth: 2,
-    borderRadius: CELL_SIZE / 2,
+    borderRadius: (CELL_SIZE * 0.9) / 2,
   },
   dayText: {
     fontSize: 16,
@@ -488,16 +495,16 @@ const styles = StyleSheet.create({
   dayTextToday: {},
   entryIndicator: {
     position: 'absolute',
-    bottom: 8,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    bottom: 6,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
 
   // Date Info Panel
   dateInfoPanel: {
-    flex: 1,
-    margin: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
     borderRadius: 12,
     padding: 16,
   },
@@ -507,15 +514,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   loadingContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 40,
   },
   loadingText: {
     fontSize: 14,
   },
   emptyStateContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 40,
@@ -534,8 +540,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  entriesContainer: {
-    flex: 1,
+  entriesListContainer: {
+    paddingBottom: 16,
   },
   entryPreview: {
     borderRadius: 8,
@@ -578,26 +584,5 @@ const styles = StyleSheet.create({
   },
   entryMood: {
     fontSize: 18,
-  },
-
-  // Floating Button
-  floatingButton: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  floatingButtonText: {
-    fontSize: 24,
-    fontWeight: '600',
   },
 });

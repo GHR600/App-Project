@@ -78,7 +78,7 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
   }
 
   return (
-    <View style={[styles.statsContainer, { backgroundColor: theme.backgroundSecondary }]}>
+    <View style={styles.statsContainer}>
       {/* Streak Banner */}
       <View style={[styles.streakBanner, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
         <Text style={[styles.streakEmoji]}>{getStreakEmoji(stats.currentStreak)}</Text>
@@ -408,7 +408,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
 
       <View style={styles.content}>
         {/* Top Bar with Menu and Search */}
-        <View style={[styles.topBar, { backgroundColor: theme.backgroundSecondary }]}>
+        <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.menuButton}
             onPress={onMenuPress}
@@ -458,7 +458,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
 
         <ScrollView
           style={styles.entriesContainer}
-          contentContainerStyle={[styles.entriesContent, { paddingBottom: 100 }]}
+          contentContainerStyle={styles.entriesContent}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   entriesContent: {
     padding: spacing.md,
     paddingTop: 0,
-    paddingBottom: 100,
+    paddingBottom: 80,
   },
 
   // Show More Button

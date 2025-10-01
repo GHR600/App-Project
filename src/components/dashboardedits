@@ -1,0 +1,60 @@
+---
+
+### 4. Dashboard - Remove Gaps & Transparency Issues
+**File:** `src/screens/DashboardHomeScreen.tsx`
+
+**Issues:**
+- Opaque grey box around menu button, search bar, and stats
+- Gap between android buttons and bottom of scrolling window
+- Gap at top of dashboard screen
+
+**Instrcutions for Claude Code:**
+In src/screens/DashboardHomeScreen.tsx, fix these layout issues:
+
+TRANSPARENT BACKGROUND:
+
+Find the View/container that wraps the menu button, search bar, and stats section
+Remove backgroundColor or set to 'transparent'
+If there's a headerContainer or topSection style, make it fully transparent
+
+
+REMOVE BOTTOM GAP:
+
+The ScrollView should extend all the way to the bottom navigation
+Remove any bottom padding/margin from ScrollView contentContainerStyle
+Remove any bottom spacer View components
+Set ScrollView style to flex: 1
+Ensure contentContainerStyle has paddingBottom only for the bottom navigation height (~70-80px)
+
+
+REMOVE TOP GAP:
+
+Dashboard should start from the top of screen (below status bar)
+Remove top padding/margin from main container
+Ensure SafeAreaView or container doesn't add unnecessary top spacing
+The screen should use paddingTop: StatusBar.currentHeight or insets.top at most
+
+
+The goal is an edge-to-edge feel with content flowing from top to bottom with only necessary safe area padding
+
+
+----------------------------------
+In src/screens/CalendarScreen.tsx, restructure the entire layout:
+
+CURRENT PROBLEM: Calendar is fixed at top with a separate scrollable entries section below, causing layout conflicts and poor UX.
+
+NEW STRUCTURE NEEDED:
+1. Single ScrollView wrapping the ENTIRE screen content (calendar + entries + everything)
+2. Remove all nested ScrollViews - only ONE top-level ScrollView for the whole page
+3. Calendar grid should be a static component inside this ScrollView (scrolls with page)
+4. Entries list should be static components after the calendar (scrolls with page)
+5. Everything scrolls together naturally
+
+LAYOUT SPECIFICATIONS:
+- Use edge-to-edge layout: remove unnecessary padding, only use SafeAreaView insets where needed
+- Remove flex: 1 from inner containers that prevent scrolling
+- Calendar grid: reduce height by ~10% (adjust calendarGridHeight or similar dimension)
+- Single ScrollView should have: flex: 1, contentContainerStyle with paddingBottom for bottom nav clearance
+- Remove position: 'absolute' from any floating elements that interfere with scrolling
+
+GOAL: When user scrolls down, calendar moves up naturally and entries come into view - one continuous scrollable experience like a typical mobile app feed.

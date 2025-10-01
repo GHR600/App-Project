@@ -80,6 +80,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [savedEntry, setSavedEntry] = useState<any>(null);
 
+  // Track original content to detect changes
+  const [originalTitle, setOriginalTitle] = useState('');
+  const [originalContent, setOriginalContent] = useState('');
+  const [originalMood, setOriginalMood] = useState<string>('😐');
+  const [originalTags, setOriginalTags] = useState<string[]>([]);
+
   // Chat state
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentChatMessage, setCurrentChatMessage] = useState('');
@@ -135,11 +141,22 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
               created_at: entry.created_at,
               title: entry.title
             });
-            setTitle(entry.title || '');
-            setEntryText(entry.content);
-            setSelectedMood(getMoodEmoji(entry.mood_rating || 3));
-            setSelectedTags(entry.tags || []);
+            const loadedTitle = entry.title || '';
+            const loadedContent = entry.content;
+            const loadedMood = getMoodEmoji(entry.mood_rating || 3);
+            const loadedTags = entry.tags || [];
+
+            setTitle(loadedTitle);
+            setEntryText(loadedContent);
+            setSelectedMood(loadedMood);
+            setSelectedTags(loadedTags);
             setSavedEntry(entry);
+
+            // Store original values for change detection
+            setOriginalTitle(loadedTitle);
+            setOriginalContent(loadedContent);
+            setOriginalMood(loadedMood);
+            setOriginalTags(loadedTags);
           } else if (error) {
             console.error('❌ Error loading entry for editing:', error);
             Alert.alert('Error', 'Failed to load entry. Please try again.');
@@ -264,6 +281,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       }
 
       setSavedEntry(entry);
+
+      // Store original values after saving (for change detection on updates)
+      setOriginalTitle(title.trim());
+      setOriginalContent(entryText.trim());
+      setOriginalMood(selectedMood);
+      setOriginalTags([...selectedTags]);
 
       // Convert to AIInsight format
       const journalEntry: JournalEntry = {
@@ -595,7 +618,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                 isSelected && { backgroundColor: theme.primary, borderColor: theme.primary }
               ]}
               onPress={() => toggleTag(tag.value)}
-              disabled={!!savedEntry}
             >
               <Text style={styles.tagIcon}>{tag.icon}</Text>
               <Text style={[
@@ -621,45 +643,58 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                 style={[styles.customTagChip, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
               >
                 <Text style={[styles.customTagText, { color: theme.primary }]}>🏷️ {tag}</Text>
-                {!savedEntry && (
-                  <TouchableOpacity onPress={() => removeTag(tag)} style={styles.removeTagButton}>
-                    <Text style={[styles.removeTagText, { color: theme.primary }]}>×</Text>
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity onPress={() => removeTag(tag)} style={styles.removeTagButton}>
+                  <Text style={[styles.removeTagText, { color: theme.primary }]}>×</Text>
+                </TouchableOpacity>
               </View>
             ))}
         </View>
       )}
 
       {/* Custom Tag Input */}
-      {!savedEntry && (
-        <View style={styles.customTagInputContainer}>
-          <TextInput
-            style={[styles.customTagInput, { color: theme.textPrimary, borderColor: theme.cardBorder }]}
-            placeholder="Add custom tag..."
-            placeholderTextColor={theme.textMuted}
-            value={customTagInput}
-            onChangeText={setCustomTagInput}
-            onSubmitEditing={addCustomTag}
-            returnKeyType="done"
-          />
-          <TouchableOpacity
-            style={[
-              styles.addTagButton,
-              { backgroundColor: theme.primary, opacity: customTagInput.trim() ? 1 : 0.5 }
-            ]}
-            onPress={addCustomTag}
-            disabled={!customTagInput.trim()}
-          >
-            <Text style={[styles.addTagButtonText, { color: theme.white }]}>+</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.customTagInputContainer}>
+        <TextInput
+          style={[styles.customTagInput, { color: theme.textPrimary, borderColor: theme.cardBorder }]}
+          placeholder="Add custom tag..."
+          placeholderTextColor={theme.textMuted}
+          value={customTagInput}
+          onChangeText={setCustomTagInput}
+          onSubmitEditing={addCustomTag}
+          returnKeyType="done"
+        />
+        <TouchableOpacity
+          style={[
+            styles.addTagButton,
+            { backgroundColor: theme.primary, opacity: customTagInput.trim() ? 1 : 0.5 }
+          ]}
+          onPress={addCustomTag}
+          disabled={!customTagInput.trim()}
+        >
+          <Text style={[styles.addTagButtonText, { color: theme.white }]}>+</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   // Section A: Journal Entry Area
   const renderJournalSection = () => {
+    // Check if content has changed from original
+    const hasContentChanged = savedEntry && (
+      title.trim() !== originalTitle ||
+      entryText.trim() !== originalContent ||
+      selectedMood !== originalMood ||
+      JSON.stringify([...selectedTags].sort()) !== JSON.stringify([...originalTags].sort())
+    );
+
+    // Determine button state
+    const isNewEntry = !savedEntry;
+    const canSave = entryText.trim() && (isNewEntry || hasContentChanged);
+    const buttonText = isSaving
+      ? 'SAVING...'
+      : isNewEntry
+        ? 'SAVE ENTRY'
+        : 'UPDATE ENTRY';
+
     return (
       <View style={[styles.journalSection, { backgroundColor: theme.surface }]}>
         <TextInput
@@ -668,7 +703,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           placeholderTextColor={theme.textMuted}
           value={title}
           onChangeText={setTitle}
-          editable={!savedEntry}
         />
 
         {renderTagSelector()}
@@ -681,21 +715,20 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           value={entryText}
           onChangeText={setEntryText}
           textAlignVertical="top"
-          editable={!savedEntry}
         />
         <TouchableOpacity
           style={[
             styles.saveButtonBottom,
             {
               backgroundColor: theme.primary,
-              opacity: entryText.trim() ? 1 : 0.5
+              opacity: canSave ? 1 : 0.5
             }
           ]}
           onPress={handleSaveEntry}
-          disabled={!entryText.trim() || isSaving || !!savedEntry}
+          disabled={!canSave || isSaving}
         >
           <Text style={[styles.saveButtonText, { color: theme.white }]}>
-            {isSaving ? 'SAVING...' : (mode === 'edit' ? 'UPDATE ENTRY' : 'SAVE ENTRY')}
+            {buttonText}
           </Text>
         </TouchableOpacity>
       </View>
