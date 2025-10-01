@@ -36,7 +36,8 @@
       "Bash(find:*)",
       "Bash(npm run typecheck:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(npx supabase:*)"
     ],
     "deny": [],
     "ask": []
