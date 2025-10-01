@@ -6,17 +6,16 @@ import {
   TouchableOpacity,
   RefreshControl,
   StyleSheet,
-  Alert
+  Alert,
+  TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../contexts/ThemeContext';
 import { typography, spacing, borderRadius } from '../styles/designSystem';
 import { BottomNavigation } from '../components/BottomNavigation';
-import { DayCard } from '../components/DayCard';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
-import { EntryService } from '../services/entryService';
-import { DayCardData } from '../types';
+import { JournalEntry } from '../types';
 
 interface DashboardHomeScreenProps {
   userId: string;
@@ -125,7 +124,11 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   navigation
 }) => {
   const { theme } = useTheme();
-  const [dayCards, setDayCards] = useState<DayCardData[]>([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   const [stats, setStats] = useState<UserStats>({
     totalEntries: 0,
     currentStreak: 0,
@@ -135,11 +138,12 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showMoreDays, setShowMoreDays] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ENTRIES_PER_PAGE = 20;
 
   const loadData = useCallback(async () => {
     try {
-      // Load user stats (keep existing functionality)
+      // Load user stats
       const { stats: userStats, error: statsError } = await JournalService.getUserStats(userId);
       if (statsError) {
         console.error('Error loading stats:', statsError);
@@ -147,15 +151,20 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
         setStats(userStats);
       }
 
-      // Load day-based entries
-      const limit = showMoreDays ? 14 : 7; // Show 7 initially, 14 when "Show More" is pressed
-      const { dayCards: userDayCards, error: dayCardsError } = await EntryService.getEntriesGroupedByDay(userId, limit);
+      // Load all entries (sorted by created_at, most recent first)
+      const { entries: userEntries, error: entriesError } = await JournalService.getUserEntries(userId, {
+        limit: 100, // Load more entries
+        offset: 0,
+        orderBy: 'created_at',
+        ascending: false
+      });
 
-      if (dayCardsError) {
-        console.error('Error loading day cards:', dayCardsError);
+      if (entriesError) {
+        console.error('Error loading entries:', entriesError);
         Alert.alert('Error', 'Failed to load your journal entries. Please try again.');
       } else {
-        setDayCards(userDayCards);
+        setEntries(userEntries);
+        setFilteredEntries(userEntries);
       }
     } catch (error) {
       console.error('Unexpected error loading dashboard data:', error);
@@ -163,7 +172,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [userId, showMoreDays]);
+  }, [userId]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -171,23 +180,61 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     setIsRefreshing(false);
   }, [loadData]);
 
-  const handleDayPress = (dayData: DayCardData) => {
-    // Navigate directly to the journal entry for that day
-    // If there's an existing entry, open it in edit mode
-    // If no entry exists, create a new one for that date
-    const hasJournalEntry = dayData.journalEntry !== null && dayData.journalEntry !== undefined;
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms debounce delay
 
-    console.log('📆 Dashboard: Day pressed:', {
-      date: dayData.date,
-      hasEntry: hasJournalEntry,
-      entryId: hasJournalEntry && dayData.journalEntry ? dayData.journalEntry.id : 'none',
-      mode: hasJournalEntry ? 'edit' : 'create'
-    });
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
+  // Combined filter effect (search + tag filter)
+  useEffect(() => {
+    let filtered = entries;
+
+    // Apply tag filter
+    if (selectedTagFilter) {
+      filtered = filtered.filter(entry =>
+        entry.tags?.includes(selectedTagFilter)
+      );
+    }
+
+    // Apply search filter
+    if (debouncedSearchQuery.trim() !== '') {
+      const query = debouncedSearchQuery.toLowerCase();
+      filtered = filtered.filter(entry => {
+        const contentMatch = entry.content.toLowerCase().includes(query);
+        const titleMatch = entry.title?.toLowerCase().includes(query);
+        const tagsMatch = entry.tags?.some(tag => tag.toLowerCase().includes(query));
+        return contentMatch || titleMatch || tagsMatch;
+      });
+    }
+
+    setFilteredEntries(filtered);
+    setCurrentPage(1); // Reset to first page on filter change
+  }, [debouncedSearchQuery, selectedTagFilter, entries]);
+
+  const handleTagClick = (tag: string) => {
+    if (selectedTagFilter === tag) {
+      setSelectedTagFilter(null); // Deselect if clicking same tag
+    } else {
+      setSelectedTagFilter(tag);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    setSelectedTagFilter(null);
+  };
+
+  const hasActiveFilters = debouncedSearchQuery.trim() !== '' || selectedTagFilter !== null;
+
+  const handleEntryPress = (entry: JournalEntry) => {
     navigation.navigate('JournalEntry', {
-      mode: hasJournalEntry ? 'edit' : 'create',
-      entryId: hasJournalEntry && dayData.journalEntry ? dayData.journalEntry.id : undefined,
-      initialDate: dayData.date,
+      mode: 'edit',
+      entryId: entry.id,
       fromScreen: 'Dashboard'
     });
   };
@@ -200,20 +247,60 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
   };
 
   const handleShowMore = () => {
-    setShowMoreDays(true);
+    setCurrentPage(prev => prev + 1);
+  };
+
+  const getMoodEmoji = (rating?: number): string => {
+    if (!rating) return '';
+    switch (rating) {
+      case 1: return '😢';
+      case 2: return '😕';
+      case 3: return '😐';
+      case 4: return '😊';
+      case 5: return '😄';
+      default: return '😐';
+    }
+  };
+
+  const formatTimestamp = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+  };
+
+  const getTagColor = (tag: string): string => {
+    const colors: { [key: string]: string } = {
+      'journal': '#8B5CF6',
+      'note': '#10B981',
+      'thought': '#3B82F6',
+      'idea': '#F59E0B',
+      'goal': '#EF4444',
+      'gratitude': '#EC4899'
+    };
+    return colors[tag.toLowerCase()] || '#6B7280';
   };
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const renderDayCards = () => {
+  const renderEntries = () => {
     if (isLoading) {
       return (
         <View style={styles.loadingContainer}>
           {[1, 2, 3].map(i => (
-            <View key={i} style={[styles.dayCardLoading, { backgroundColor: theme.surface }]}>
-              <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary }]} />
+            <View key={i} style={[styles.entryCard, { backgroundColor: theme.surface }]}>
+              <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary, width: '40%' }]} />
+              <View style={[styles.loadingText, { backgroundColor: theme.backgroundTertiary, marginTop: 8 }]} />
               <View style={[styles.loadingText, { width: '60%', marginTop: 8, backgroundColor: theme.backgroundTertiary }]} />
             </View>
           ))}
@@ -221,32 +308,92 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       );
     }
 
-    if (dayCards.length === 0) {
+    if (filteredEntries.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateIcon}>📝</Text>
-          <Text style={[styles.emptyStateTitle, { color: theme.textPrimary }]}>Start Your Journey</Text>
-          <Text style={[styles.emptyStateDescription, { color: theme.textSecondary }]}>
-            Write your first journal entry to begin tracking your thoughts and growth.
+          <Text style={styles.emptyStateIcon}>{searchQuery ? '🔍' : '📝'}</Text>
+          <Text style={[styles.emptyStateTitle, { color: theme.textPrimary }]}>
+            {searchQuery ? 'No Results Found' : 'Start Your Journey'}
           </Text>
-          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry}>
-            <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create First Entry</Text>
-          </TouchableOpacity>
+          <Text style={[styles.emptyStateDescription, { color: theme.textSecondary }]}>
+            {searchQuery
+              ? 'Try adjusting your search terms'
+              : 'Write your first journal entry to begin tracking your thoughts and growth.'}
+          </Text>
+          {!searchQuery && (
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry}>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create First Entry</Text>
+            </TouchableOpacity>
+          )}
         </View>
       );
     }
 
+    const displayedEntries = filteredEntries.slice(0, currentPage * ENTRIES_PER_PAGE);
+    const hasMore = filteredEntries.length > displayedEntries.length;
+
     return (
       <>
-        {dayCards.map((dayData) => (
-          <DayCard
-            key={dayData.date}
-            dayData={dayData}
-            onPress={() => handleDayPress(dayData)}
-          />
+        {displayedEntries.map((entry) => (
+          <TouchableOpacity
+            key={entry.id}
+            style={[styles.entryCard, { backgroundColor: theme.surface }]}
+            onPress={() => handleEntryPress(entry)}
+            activeOpacity={0.7}
+          >
+            {/* Header: Timestamp and Mood */}
+            <View style={styles.entryHeader}>
+              <Text style={[styles.entryTimestamp, { color: theme.textSecondary }]}>
+                {formatTimestamp(entry.created_at)}
+              </Text>
+              {entry.mood_rating && (
+                <Text style={styles.entryMood}>{getMoodEmoji(entry.mood_rating)}</Text>
+              )}
+            </View>
+
+            {/* Title (if exists) */}
+            {entry.title && (
+              <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
+                {entry.title}
+              </Text>
+            )}
+
+            {/* Content Preview */}
+            <Text style={[styles.entryContent, { color: theme.textSecondary }]} numberOfLines={3}>
+              {entry.content}
+            </Text>
+
+            {/* Tags */}
+            {entry.tags && entry.tags.length > 0 && (
+              <View style={styles.entryTags}>
+                {entry.tags.map((tag, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.tagChip,
+                      {
+                        backgroundColor: getTagColor(tag) + (selectedTagFilter === tag ? '40' : '20'),
+                        borderWidth: selectedTagFilter === tag ? 2 : 0,
+                        borderColor: getTagColor(tag)
+                      }
+                    ]}
+                    onPress={(e) => {
+                      e.stopPropagation(); // Prevent entry card from being clicked
+                      handleTagClick(tag);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.tagText, { color: getTagColor(tag) }]}>
+                      {tag}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </TouchableOpacity>
         ))}
 
-        {!showMoreDays && dayCards.length >= 7 && (
+        {hasMore && (
           <TouchableOpacity style={[styles.showMoreButton, { borderColor: theme.primary }]} onPress={handleShowMore}>
             <Text style={[styles.showMoreText, { color: theme.primary }]}>Show More</Text>
           </TouchableOpacity>
@@ -260,13 +407,52 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       <StatusBar style="light" />
 
       <View style={styles.content}>
-        {/* Menu button - floating in top left */}
-        <TouchableOpacity
-          style={[styles.floatingMenuButton, { backgroundColor: theme.surface }]}
-          onPress={onMenuPress}
-        >
-          <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
-        </TouchableOpacity>
+        {/* Top Bar with Menu and Search */}
+        <View style={[styles.topBar, { backgroundColor: theme.backgroundSecondary }]}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={onMenuPress}
+          >
+            <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
+          </TouchableOpacity>
+
+          <View style={[styles.searchBar, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.searchIcon, { color: theme.textSecondary }]}>🔍</Text>
+            <TextInput
+              style={[styles.searchInput, { color: theme.textPrimary }]}
+              placeholder="Search all entries..."
+              placeholderTextColor={theme.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery !== '' && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Active Filters Bar */}
+        {hasActiveFilters && (
+          <View style={[styles.filtersContainer, { backgroundColor: theme.backgroundSecondary }]}>
+            <View style={styles.filtersBar}>
+              {selectedTagFilter && (
+                <View style={[styles.activeFilterChip, { backgroundColor: getTagColor(selectedTagFilter) + '30' }]}>
+                  <Text style={[styles.activeFilterText, { color: getTagColor(selectedTagFilter) }]}>
+                    {selectedTagFilter}
+                  </Text>
+                  <TouchableOpacity onPress={() => setSelectedTagFilter(null)} style={styles.removeFilterButton}>
+                    <Text style={[styles.removeFilterText, { color: getTagColor(selectedTagFilter) }]}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              <TouchableOpacity onPress={handleClearFilters} style={[styles.clearFiltersButton, { backgroundColor: theme.error + '15' }]}>
+                <Text style={[styles.clearFiltersText, { color: theme.error }]}>Clear all filters</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         <StatsHeader stats={stats} isLoading={isLoading} />
 
@@ -283,7 +469,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           }
           showsVerticalScrollIndicator={false}
         >
-          {renderDayCards()}
+          {renderEntries()}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -297,24 +483,21 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  floatingMenuButton: {
-    position: 'absolute',
-    top: 8,
-    left: 16,
+
+  // Top Bar with Menu and Search
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
+  },
+  menuButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   menuIcon: {
     fontSize: 24,
@@ -325,7 +508,6 @@ const styles = StyleSheet.create({
   statsContainer: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    paddingTop: 60, // Add padding to account for floating menu button
   },
   streakBanner: {
     flexDirection: 'row',
@@ -372,14 +554,132 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // Search Bar
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  searchIcon: {
+    fontSize: 18,
+    marginRight: spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: spacing.xs,
+  },
+  clearButton: {
+    padding: spacing.xs,
+  },
+  clearButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  // Filters Container
+  filtersContainer: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  filtersBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  activeFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  activeFilterText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  removeFilterButton: {
+    marginLeft: 2,
+  },
+  removeFilterText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  clearFiltersButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  clearFiltersText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // Entry Cards
+  entryCard: {
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  entryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  entryTimestamp: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  entryMood: {
+    fontSize: 20,
+  },
+  entryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  entryContent: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: spacing.sm,
+  },
+  entryTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  tagChip: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
   // Entries Section
   entriesContainer: {
     flex: 1,
   },
   entriesContent: {
     padding: spacing.md,
-    paddingTop: 0, // No padding at top - connects directly to stats
-    paddingBottom: 100, // Space for bottom navigation
+    paddingTop: 0,
+    paddingBottom: 100,
   },
 
   // Show More Button
@@ -430,19 +730,8 @@ const styles = StyleSheet.create({
   loadingContainer: {
     gap: spacing.sm,
   },
-  dayCardLoading: {
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  loadingCard: {
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 3,
-  },
   loadingText: {
     height: 16,
     borderRadius: 4,
-    marginBottom: 8,
   },
 });

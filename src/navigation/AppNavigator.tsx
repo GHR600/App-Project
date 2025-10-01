@@ -27,7 +27,6 @@ export type RootStackParamList = {
     prompt?: string;
     mode?: 'create' | 'edit';
     initialDate?: string;
-    entryType?: 'journal' | 'note';
     fromScreen?: 'DayDetail' | 'Dashboard';
   };
   EntryDetail: {

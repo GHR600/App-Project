@@ -18,7 +18,7 @@ const MENU_WIDTH = Math.min(280, width * 0.8);
 interface SideMenuProps {
   visible: boolean;
   onClose: () => void;
-  onNavigate: (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => void;
+  onNavigate: (screen: 'account' | 'settings' | 'calendar' | 'stats') => void;
 }
 
 export const SideMenu: React.FC<SideMenuProps> = ({
@@ -47,7 +47,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
     }
   }, [visible]);
 
-  const handleNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => {
+  const handleNavigate = (screen: 'account' | 'settings' | 'calendar' | 'stats') => {
     onNavigate(screen);
     onClose();
   };
@@ -58,7 +58,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({
   };
 
   const mainMenuItems = [
-    { key: 'notes' as const, icon: '✎', label: 'Notes', onPress: () => handleNavigate('notes') },
     { key: 'calendar' as const, icon: '☷', label: 'Calendar', onPress: () => handleNavigate('calendar') },
     { key: 'stats' as const, icon: '⚊', label: 'Stats', onPress: () => handleNavigate('stats') },
   ];

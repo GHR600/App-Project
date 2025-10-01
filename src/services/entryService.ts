@@ -23,10 +23,7 @@ export class EntryService {
       // Sort entries by created_at (most recent first)
       const sortedEntries = dayEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      // Take the first (most recent) entry as the main journal entry
-      const journalEntry = sortedEntries[0] || undefined;
-
-      // Calculate dominant mood
+      // Calculate dominant mood from all entries
       const moodRatings = dayEntries
         .map(entry => entry.mood_rating)
         .filter(rating => rating !== null && rating !== undefined);
@@ -37,10 +34,11 @@ export class EntryService {
 
       const dominantMood = EntryService.getMoodEmoji(avgMood);
 
-      // Generate preview text
+      // Generate preview text from most recent entry
       let previewText = '';
-      if (journalEntry) {
-        previewText = journalEntry.title || journalEntry.content.substring(0, 100);
+      if (sortedEntries.length > 0) {
+        const mostRecent = sortedEntries[0];
+        previewText = mostRecent.title || mostRecent.content.substring(0, 100);
       }
 
       if (previewText.length > 100) {
@@ -50,8 +48,6 @@ export class EntryService {
       return {
         date,
         entries: sortedEntries,
-        journalEntry,
-        notes: [], // No longer using separate notes
         dominantMood,
         previewText,
         totalEntries: dayEntries.length,

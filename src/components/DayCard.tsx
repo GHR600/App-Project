@@ -31,35 +31,23 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
     }
   };
 
-  const renderEntryTags = () => {
-    const tags: string[] = [];
+  const renderEntrySummary = () => {
+    const summaries: string[] = [];
 
-    if (dayData.journalEntry) {
-      // Show main journal entry
-      const entryTags = dayData.journalEntry.tags || [];
-      const isJournal = entryTags.includes('journal');
-      const icon = isJournal ? '📝' : '🗒️';
-      tags.push(`${icon} Main Entry`);
+    // Show first entry with icon
+    if (dayData.entries.length > 0) {
+      const firstEntry = dayData.entries[0];
+      const icon = '📝';
+      const title = firstEntry.title || 'Entry';
+      summaries.push(`${icon} ${title}`);
     }
 
-    dayData.notes.forEach((note, index) => {
-      if (index < 2) { // Show max 2 note titles
-        const noteTags = note.tags || [];
-        const icon = noteTags.includes('note') ? '🗒️' : '📝';
-        const title = note.title || `Entry ${index + 1}`;
-        tags.push(`${icon} ${title}`);
-      }
-    });
-
-    return tags.slice(0, 3); // Max 3 tags total
-  };
-
-  const getAdditionalEntriesText = () => {
-    const additionalCount = dayData.totalEntries - 1; // Excluding the main one shown
-    if (additionalCount > 0) {
-      return `+ ${additionalCount} more ${additionalCount === 1 ? 'entry' : 'entries'}`;
+    // Show additional entries count
+    if (dayData.entries.length > 1) {
+      summaries.push(`+ ${dayData.entries.length - 1} more ${dayData.entries.length - 1 === 1 ? 'entry' : 'entries'}`);
     }
-    return null;
+
+    return summaries;
   };
 
   return (
@@ -73,18 +61,12 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
         {dayData.previewText}
       </Text>
 
-      {getAdditionalEntriesText() && (
-        <Text style={styles.additionalText}>
-          {getAdditionalEntriesText()}
-        </Text>
-      )}
-
       <View style={styles.separator} />
 
       <View style={styles.tagsContainer}>
-        {renderEntryTags().map((tag, index) => (
+        {renderEntrySummary().map((summary, index) => (
           <Text key={index} style={styles.tagText} numberOfLines={1}>
-            {tag}
+            {summary}
           </Text>
         ))}
       </View>

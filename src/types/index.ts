@@ -14,11 +14,9 @@ export interface JournalEntry {
 // Day-based data structures for the new homepage
 export interface DayCardData {
   date: string;           // ISO date string
-  entries: JournalEntry[];
-  journalEntry?: JournalEntry;    // The main journal entry
-  notes: JournalEntry[];          // Additional notes
+  entries: JournalEntry[];        // All entries for this day
   dominantMood: string;           // Emoji representation
-  previewText: string;            // First journal title or note titles
+  previewText: string;            // Preview from most recent entry
   totalEntries: number;
 }
 

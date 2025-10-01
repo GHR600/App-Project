@@ -1,9 +1,18 @@
+import Constants from 'expo-constants';
 import { buildAIContext, AIContext, formatAIContextAsText } from './aiContextService';
 import { DatabaseJournalEntry } from '../config/supabase';
 
-const ANTHROPIC_API_KEY = process.env.REACT_APP_ANTHROPIC_API_KEY;
+const ANTHROPIC_API_KEY = Constants.expoConfig?.extra?.anthropicApiKey || process.env.REACT_APP_ANTHROPIC_API_KEY;
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
+
+// Debug logging for API key configuration
+console.log('🔑 Anthropic API Key Configuration:', {
+  hasExpoConfigKey: !!Constants.expoConfig?.extra?.anthropicApiKey,
+  hasProcessEnvKey: !!process.env.REACT_APP_ANTHROPIC_API_KEY,
+  hasKey: !!ANTHROPIC_API_KEY,
+  keyPrefix: ANTHROPIC_API_KEY ? ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'not set'
+});
 
 // Truncation limits to stay within API token limits
 const MAX_CONTENT_LENGTH = 2000; // Max characters per entry/note content
@@ -82,7 +91,7 @@ function buildAIPrompt(context: AIContext): string {
     prompt += ':\n\n';
 
     truncatedEntries.forEach((entry, index) => {
-      prompt += `ENTRY ${index + 1} - ${entry.date}\n`;
+      prompt += `ENTRY ${index + 1} - ${entry.created_at}\n`;
       if (entry.title) {
         prompt += `Title: ${entry.title}\n`;
       }
@@ -100,7 +109,7 @@ function buildAIPrompt(context: AIContext): string {
   // CURRENT ENTRY SECTION (always include full content for current entry being analyzed)
   if (context.currentEntry) {
     prompt += '=== CURRENT ENTRY (BEING ANALYZED) ===\n\n';
-    prompt += `Date: ${context.currentEntry.date}\n`;
+    prompt += `Date: ${context.currentEntry.created_at}\n`;
     if (context.currentEntry.title) {
       prompt += `Title: ${context.currentEntry.title}\n`;
     }

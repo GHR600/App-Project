@@ -299,36 +299,67 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
           </View>
         ) : (
           <ScrollView style={styles.entriesContainer} showsVerticalScrollIndicator={false}>
-            {selectedEntries.map(entry => (
-              <TouchableOpacity
-                key={entry.id}
-                style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
-                onPress={() => onEntryPress?.(entry)}
-              >
-                {entry.title && (
-                  <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
-                    {entry.title}
-                  </Text>
-                )}
-                <Text style={[styles.entryPreviewText, { color: theme.textSecondary }]} numberOfLines={3}>
-                  {entry.content}
-                </Text>
-                <View style={styles.entryMeta}>
-                  <Text style={[styles.entryTime, { color: theme.textMuted }]}>
-                    {new Date(entry.created_at).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
-                  </Text>
-                  {entry.mood_rating && (
-                    <Text style={styles.entryMood}>
-                      {[null, '😢', '😕', '😐', '😊', '😄'][entry.mood_rating] || '😐'}
+            {selectedEntries.map(entry => {
+              const getTagColor = (tag: string): string => {
+                const colors: { [key: string]: string } = {
+                  'journal': '#8B5CF6',
+                  'note': '#10B981',
+                  'thought': '#3B82F6',
+                  'idea': '#F59E0B',
+                  'goal': '#EF4444',
+                  'gratitude': '#EC4899'
+                };
+                return colors[tag.toLowerCase()] || '#6B7280';
+              };
+
+              return (
+                <TouchableOpacity
+                  key={entry.id}
+                  style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
+                  onPress={() => onEntryPress?.(entry)}
+                >
+                  {entry.title && (
+                    <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
+                      {entry.title}
                     </Text>
                   )}
-                </View>
-              </TouchableOpacity>
-            ))}
+                  <Text style={[styles.entryPreviewText, { color: theme.textSecondary }]} numberOfLines={3}>
+                    {entry.content}
+                  </Text>
+
+                  {/* Tags */}
+                  {entry.tags && entry.tags.length > 0 && (
+                    <View style={styles.entryTags}>
+                      {entry.tags.map((tag, index) => (
+                        <View
+                          key={index}
+                          style={[styles.tagChip, { backgroundColor: getTagColor(tag) + '20' }]}
+                        >
+                          <Text style={[styles.tagText, { color: getTagColor(tag) }]}>
+                            {tag}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  <View style={styles.entryMeta}>
+                    <Text style={[styles.entryTime, { color: theme.textMuted }]}>
+                      {new Date(entry.created_at).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </Text>
+                    {entry.mood_rating && (
+                      <Text style={styles.entryMood}>
+                        {[null, '😢', '😕', '😐', '😊', '😄'][entry.mood_rating] || '😐'}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         )}
       </View>
@@ -521,6 +552,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 8,
+  },
+  entryTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  tagChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   entryMeta: {
     flexDirection: 'row',

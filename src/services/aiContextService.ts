@@ -47,15 +47,14 @@ export async function getRecentEntries(userId: string, days?: number): Promise<{
       .select('*')
       .eq('user_id', userId);
 
-    // If days is specified, filter by date
+    // If days is specified, filter by created_at
     if (days !== undefined && days !== null) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      const cutoffDateString = cutoffDate.toISOString().split('T')[0];
-      query = query.gte('date', cutoffDateString);
+      query = query.gte('created_at', cutoffDate.toISOString());
     }
 
-    const { data, error } = await query.order('date', { ascending: false });
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching entries:', error);
@@ -169,7 +168,7 @@ export function formatAIContextAsText(context: AIContext): string {
   // Current Entry
   if (context.currentEntry) {
     text += '## Current Entry\n';
-    text += `Date: ${context.currentEntry.date}\n`;
+    text += `Date: ${context.currentEntry.created_at}\n`;
     if (context.currentEntry.title) {
       text += `Title: ${context.currentEntry.title}\n`;
     }
@@ -183,7 +182,7 @@ export function formatAIContextAsText(context: AIContext): string {
   if (context.allEntries.length > 0) {
     text += `## All Journal Entries (${context.allEntries.length} total)\n\n`;
     context.allEntries.forEach((entry, index) => {
-      text += `### Entry ${index + 1} - ${entry.date}\n`;
+      text += `### Entry ${index + 1} - ${entry.created_at}\n`;
       if (entry.title) {
         text += `Title: ${entry.title}\n`;
       }

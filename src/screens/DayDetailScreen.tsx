@@ -122,76 +122,47 @@ export const DayDetailScreen: React.FC<DayDetailScreenProps> = ({ route, navigat
     </View>
   );
 
-  const renderJournalEntry = () => {
-    if (!dayData.journalEntry) return null;
+  const renderEntries = () => {
+    if (!dayData.entries || dayData.entries.length === 0) return null;
 
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>MAIN JOURNAL ENTRY</Text>
-        <TouchableOpacity
-          style={styles.entryCard}
-          onPress={() => handleEntryPress(dayData.journalEntry!)}
-        >
-          <View style={styles.entryHeader}>
-            <Text style={styles.entryIcon}>📝</Text>
-            <Text style={styles.entryTime}>
-              {formatTime(dayData.journalEntry.created_at)}
-            </Text>
-            <Text style={styles.entryMood}>
-              {getMoodEmoji(dayData.journalEntry.mood_rating)}
-            </Text>
-          </View>
-
-          {dayData.journalEntry.title && (
-            <Text style={styles.entryTitle} numberOfLines={2}>
-              {dayData.journalEntry.title}
-            </Text>
-          )}
-
-          <Text style={styles.entryContent} numberOfLines={3}>
-            {dayData.journalEntry.content}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderNotes = () => {
-    if (dayData.notes.length === 0) return null;
-
-    // Sort notes by created_at descending (newest first)
-    const sortedNotes = [...dayData.notes].sort((a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-
-    return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>NOTES OF THE DAY</Text>
-        {sortedNotes.map((note) => (
+        <Text style={styles.sectionTitle}>ENTRIES ({dayData.entries.length})</Text>
+        {dayData.entries.map((entry) => (
           <TouchableOpacity
-            key={note.id}
+            key={entry.id}
             style={styles.entryCard}
-            onPress={() => handleEntryPress(note)}
+            onPress={() => handleEntryPress(entry)}
           >
             <View style={styles.entryHeader}>
-              <Text style={styles.entryIcon}>🗒️</Text>
+              <Text style={styles.entryIcon}>📝</Text>
               <Text style={styles.entryTime}>
-                {formatTime(note.created_at)}
+                {formatTime(entry.created_at)}
               </Text>
               <Text style={styles.entryMood}>
-                {getMoodEmoji(note.mood_rating)}
+                {getMoodEmoji(entry.mood_rating)}
               </Text>
             </View>
 
-            {note.title && (
-              <Text style={styles.entryTitle} numberOfLines={1}>
-                {note.title}
+            {entry.title && (
+              <Text style={styles.entryTitle} numberOfLines={2}>
+                {entry.title}
               </Text>
             )}
 
-            <Text style={styles.entryContent} numberOfLines={2}>
-              {note.content}
+            <Text style={styles.entryContent} numberOfLines={3}>
+              {entry.content}
             </Text>
+
+            {entry.tags && entry.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {entry.tags.map((tag, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </TouchableOpacity>
         ))}
       </View>
@@ -223,8 +194,7 @@ export const DayDetailScreen: React.FC<DayDetailScreenProps> = ({ route, navigat
           />
         }
       >
-        {renderJournalEntry()}
-        {renderNotes()}
+        {renderEntries()}
         {renderAddEntryButton()}
       </ScrollView>
 
@@ -341,5 +311,24 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.primary,
     fontWeight: '600',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  tag: {
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  tagText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 12,
   },
 });
