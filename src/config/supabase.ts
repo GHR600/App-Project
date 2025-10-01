@@ -1,5 +1,7 @@
+console.log('1️⃣ LOADING: supabase.ts');
 // Re-export the supabase client from services
 export { supabase, isSupabaseConfigured, ensureSupabaseReady } from '../services/supabaseClient';
+console.log('1️⃣ LOADED: supabase.ts - exports complete');
 
 // Database Schema Configuration
 export const DATABASE_SCHEMA = {

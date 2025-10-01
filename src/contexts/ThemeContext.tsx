@@ -1,6 +1,10 @@
+console.log('3️⃣ LOADING: ThemeContext.tsx');
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+console.log('3️⃣ React imported in ThemeContext.tsx');
 import AsyncStorage from '@react-native-async-storage/async-storage';
+console.log('3️⃣ AsyncStorage imported');
 import { Appearance } from 'react-native';
+console.log('3️⃣ Appearance imported');
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -161,7 +165,12 @@ const darkTheme: ThemeColors = {
   gray900: '#0f172a',
 };
 
+console.log('3️⃣ Creating ThemeContext with React.createContext...');
+console.log('3️⃣ React object:', React);
+console.log('3️⃣ createContext function:', createContext);
+console.log('3️⃣ typeof createContext:', typeof createContext);
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+console.log('3️⃣ ThemeContext created successfully:', ThemeContext);
 
 const THEME_STORAGE_KEY = '@theme_mode';
 

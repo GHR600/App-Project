@@ -1,5 +1,8 @@
+console.log('4️⃣ LOADING: App.tsx');
 import React, { useState, useEffect, useCallback } from 'react';
+console.log('4️⃣ React imported in App.tsx');
 import { StatusBar } from 'expo-status-bar';
+console.log('4️⃣ StatusBar imported');
 import {
   StyleSheet,
   Text,

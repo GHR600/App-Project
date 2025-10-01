@@ -1,5 +1,8 @@
+console.log('5️⃣ LOADING: authService.ts');
 import { supabase } from '../config/supabase';
+console.log('5️⃣ supabase imported:', supabase);
 import { User, Session, AuthError } from '@supabase/supabase-js';
+console.log('5️⃣ @supabase/supabase-js types imported');
 
 export interface AuthUser {
   id: string;
