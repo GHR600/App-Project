@@ -1,5 +1,3 @@
-console.log('6️⃣ LOADING: aiInsightService.ts');
-
 // AI Insight Service - Integrated with AI Context System
 // Uses Claude API directly with comprehensive context from all notes and entries
 
@@ -36,19 +34,10 @@ export interface ChatMessage {
   isInitialInsight?: boolean;
 }
 
-console.log('6️⃣ About to import API_CONFIG from env...');
 import { API_CONFIG } from '../utils/env';
-console.log('6️⃣ API_CONFIG imported:', API_CONFIG);
-console.log('6️⃣ About to import supabase from config/supabase...');
 import { supabase } from '../config/supabase';
-console.log('6️⃣ supabase imported:', supabase);
-console.log('6️⃣ About to import buildChatPrompt...');
 import { buildChatPrompt } from '../config/prompts';
-console.log('6️⃣ buildChatPrompt imported');
-console.log('6️⃣ About to import generateAIInsightWithRetry...');
 import { generateAIInsightWithRetry } from './aiService';
-console.log('6️⃣ generateAIInsightWithRetry imported');
-console.log('6️⃣ LOADED: aiInsightService.ts - all imports complete');
 
 export class AIInsightService {
   private static readonly API_BASE_URL = API_CONFIG.baseUrl;

@@ -39,6 +39,7 @@ Refactor the app to use a unified entry system instead of separating journal and
    - Tappable tags that filter to show all entries with that tag
    - Optional tag selector during entry creation (not required)
    - Store tags as array in database
+   
 
 7. CLEANUP:
    - Remove all references to "entry type", "journal vs notes", or separate note sections

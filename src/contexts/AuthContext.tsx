@@ -1,10 +1,6 @@
-console.log('2️⃣ LOADING: AuthContext.tsx');
 import React, { createContext, useContext, useEffect, useState } from 'react';
-console.log('2️⃣ React imported in AuthContext.tsx');
 import { Session } from '@supabase/supabase-js';
-console.log('2️⃣ Session imported from @supabase/supabase-js');
 import { AuthService, AuthUser } from '../services/authService';
-console.log('2️⃣ AuthService imported');
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -16,12 +12,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: any }>;
 }
 
-console.log('2️⃣ Creating AuthContext with React.createContext...');
-console.log('2️⃣ React object:', React);
-console.log('2️⃣ createContext function:', createContext);
-console.log('2️⃣ typeof createContext:', typeof createContext);
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-console.log('2️⃣ AuthContext created successfully:', AuthContext);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

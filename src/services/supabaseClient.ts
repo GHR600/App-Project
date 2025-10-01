@@ -1,35 +1,8 @@
-console.log('🔧 [supabaseClient.ts] Starting to load...');
-
-let createClient: any;
-let SupabaseClient: any;
-
-try {
-  console.log('🔧 [supabaseClient.ts] Attempting to import @supabase/supabase-js...');
-  const supabaseModule = require('@supabase/supabase-js');
-  console.log('🔧 [supabaseClient.ts] Module imported:', supabaseModule);
-  console.log('🔧 [supabaseClient.ts] Module keys:', Object.keys(supabaseModule));
-
-  createClient = supabaseModule.createClient;
-  SupabaseClient = supabaseModule.SupabaseClient;
-
-  console.log('🔧 [supabaseClient.ts] createClient type:', typeof createClient);
-  console.log('🔧 [supabaseClient.ts] createClient value:', createClient);
-} catch (error) {
-  console.error('❌ [supabaseClient.ts] Failed to import @supabase/supabase-js:', error);
-  console.error('❌ [supabaseClient.ts] Error stack:', error instanceof Error ? error.stack : 'No stack');
-}
-
-console.log('🔧 [supabaseClient.ts] About to import from env...');
-
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CONFIG, validateEnvironment, isDevelopment } from '../utils/env';
-
-console.log('🔧 [supabaseClient.ts] env imports successful');
-console.log('🔧 [supabaseClient.ts] SUPABASE_CONFIG:', SUPABASE_CONFIG);
 
 // Supabase configuration from environment
 const { url: supabaseUrl, anonKey: supabaseAnonKey } = SUPABASE_CONFIG;
-
-console.log('🔧 [supabaseClient.ts] Destructured config - url:', supabaseUrl, 'key:', supabaseAnonKey?.substring(0, 20) + '...');
 
 // Validate configuration before creating client
 console.log('🔧 Initializing Supabase client...');
@@ -45,39 +18,24 @@ if (!isValid) {
 }
 
 // Create the Supabase client - only if valid configuration
-let supabaseClient: any | null = null;
+let supabaseClient: SupabaseClient | null = null;
 
-if (isValid && createClient) {
+if (isValid) {
   try {
-    console.log('🔧 [supabaseClient.ts] Config is valid, calling createClient...');
-    console.log('🔧 [supabaseClient.ts] createClient type:', typeof createClient);
-
-    if (typeof createClient !== 'function') {
-      throw new Error(`createClient is not a function, it's a ${typeof createClient}`);
-    }
-
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: false
       }
     });
     console.log('✅ Supabase client created successfully');
-    console.log('✅ Client type:', typeof supabaseClient);
   } catch (error) {
     console.error('❌ Failed to create Supabase client:', error);
-    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
   }
 } else {
-  if (!isValid) {
-    console.warn('⚠️  Skipping Supabase client creation due to invalid configuration');
-    console.warn('   App will run in demo mode without database features');
-  }
-  if (!createClient) {
-    console.error('❌ createClient function is not available from @supabase/supabase-js');
-    console.error('❌ This may indicate a problem with the package installation');
-  }
+  console.warn('⚠️  Skipping Supabase client creation due to invalid configuration');
+  console.warn('   App will run in demo mode without database features');
 }
 
 // Export the client (will be null if not configured)
