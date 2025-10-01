@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TouchableOpacity, StyleSheet, Text, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface BottomNavigationProps {
@@ -16,29 +16,64 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const { theme } = useTheme();
   const [pressedButton, setPressedButton] = useState<'calendar' | 'stats' | null>(null);
 
+  // Pulsating animation for center button halo
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.3,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseAnimation.start();
+    return () => pulseAnimation.stop();
+  }, [pulseAnim]);
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.surface }]}>
-      <View style={[styles.navBar, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+    <View style={styles.container}>
+      <View style={styles.navBar}>
         {/* Calendar Button */}
         <TouchableOpacity
           style={[
-            styles.navButton,
-            pressedButton === 'calendar' && { backgroundColor: theme.primaryLight }
+            styles.sideButton,
+            { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
+            pressedButton === 'calendar' && { backgroundColor: 'rgba(255, 255, 255, 0.25)' }
           ]}
           onPressIn={() => setPressedButton('calendar')}
           onPressOut={() => setPressedButton(null)}
           onPress={() => onTabPress('calendar')}
         >
-          <Text style={[styles.icon, { color: pressedButton === 'calendar' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.icon, { color: theme.white }]}>
             ☷
           </Text>
-          <Text style={[styles.label, { color: pressedButton === 'calendar' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.label, { color: theme.white }]}>
             Calendar
           </Text>
         </TouchableOpacity>
 
-        {/* New Entry Button (Center) */}
+        {/* New Entry Button (Center) with Pulsating Halo */}
         <View style={styles.centerButtonContainer}>
+          <Animated.View
+            style={[
+              styles.halo,
+              {
+                transform: [{ scale: pulseAnim }],
+                opacity: pulseAnim.interpolate({
+                  inputRange: [1, 1.3],
+                  outputRange: [0.4, 0],
+                }),
+              },
+            ]}
+          />
           <TouchableOpacity
             style={[styles.centerButton, { backgroundColor: theme.primary }]}
             onPress={onNewEntry}
@@ -50,17 +85,18 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         {/* Stats Button */}
         <TouchableOpacity
           style={[
-            styles.navButton,
-            pressedButton === 'stats' && { backgroundColor: theme.primaryLight }
+            styles.sideButton,
+            { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
+            pressedButton === 'stats' && { backgroundColor: 'rgba(255, 255, 255, 0.25)' }
           ]}
           onPressIn={() => setPressedButton('stats')}
           onPressOut={() => setPressedButton(null)}
           onPress={() => onTabPress('stats')}
         >
-          <Text style={[styles.icon, { color: pressedButton === 'stats' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.icon, { color: theme.white }]}>
             ⚊
           </Text>
-          <Text style={[styles.label, { color: pressedButton === 'stats' ? theme.primary : theme.textSecondary }]}>
+          <Text style={[styles.label, { color: theme.white }]}>
             Stats
           </Text>
         </TouchableOpacity>
@@ -75,47 +111,52 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 34, // Increased padding to avoid Android system buttons
+    paddingBottom: 74,
     paddingTop: 8,
     paddingHorizontal: 16,
+    backgroundColor: 'transparent',
   },
   navBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 1,
+    backgroundColor: 'transparent',
+  },
+  sideButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  navButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginHorizontal: 4,
+    shadowRadius: 4,
+    elevation: 8,
   },
   icon: {
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: 16,
+    marginBottom: 2,
   },
   label: {
-    fontSize: 11,
+    fontSize: 8,
     fontWeight: '500',
   },
   centerButtonContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: 20,
+  },
+  halo: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   centerButton: {
     width: 60,

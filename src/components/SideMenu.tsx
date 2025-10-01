@@ -57,12 +57,15 @@ export const SideMenu: React.FC<SideMenuProps> = ({
     onClose();
   };
 
-  const menuItems = [
-    { key: 'account' as const, icon: '👤', label: 'Account', onPress: () => handleNavigate('account') },
-    { key: 'settings' as const, icon: '⚙️', label: 'Settings', onPress: () => handleNavigate('settings') },
-    { key: 'notes' as const, icon: '📝', label: 'Notes', onPress: () => handleNavigate('notes') },
-    { key: 'calendar' as const, icon: '📅', label: 'Calendar', onPress: () => handleNavigate('calendar') },
-    { key: 'stats' as const, icon: '📊', label: 'Stats', onPress: () => handleNavigate('stats') },
+  const mainMenuItems = [
+    { key: 'notes' as const, icon: '✎', label: 'Notes', onPress: () => handleNavigate('notes') },
+    { key: 'calendar' as const, icon: '☷', label: 'Calendar', onPress: () => handleNavigate('calendar') },
+    { key: 'stats' as const, icon: '⚊', label: 'Stats', onPress: () => handleNavigate('stats') },
+  ];
+
+  const accountMenuItems = [
+    { key: 'settings' as const, icon: '⚙', label: 'Settings', onPress: () => handleNavigate('settings') },
+    { key: 'account' as const, icon: '◉', label: 'Account', onPress: () => handleNavigate('account') },
   ];
 
   return (
@@ -87,7 +90,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             >
               {/* Header */}
               <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
-                <Text style={[styles.appTitle, { color: theme.primary }]}>📝 Journal</Text>
+                <Text style={[styles.appTitle, { color: theme.primary }]}>✎ Journal</Text>
                 {user && (
                   <Text style={[styles.userEmail, { color: theme.textSecondary }]} numberOfLines={1}>
                     {user.email}
@@ -97,13 +100,29 @@ export const SideMenu: React.FC<SideMenuProps> = ({
 
               {/* Menu Items */}
               <View style={styles.menuItems}>
-                {menuItems.map((item) => (
+                {/* Main Menu Section */}
+                {mainMenuItems.map((item) => (
                   <TouchableOpacity
                     key={item.key}
                     style={[styles.menuItem, { borderBottomColor: theme.cardBorder }]}
                     onPress={item.onPress}
                   >
-                    <Text style={styles.menuIcon}>{item.icon}</Text>
+                    <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>{item.icon}</Text>
+                    <Text style={[styles.menuLabel, { color: theme.textPrimary }]}>{item.label}</Text>
+                  </TouchableOpacity>
+                ))}
+
+                {/* Separator */}
+                <View style={[styles.separator, { backgroundColor: theme.cardBorder }]} />
+
+                {/* Account Menu Section */}
+                {accountMenuItems.map((item) => (
+                  <TouchableOpacity
+                    key={item.key}
+                    style={[styles.menuItem, { borderBottomColor: theme.cardBorder }]}
+                    onPress={item.onPress}
+                  >
+                    <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>{item.icon}</Text>
                     <Text style={[styles.menuLabel, { color: theme.textPrimary }]}>{item.label}</Text>
                   </TouchableOpacity>
                 ))}
@@ -171,13 +190,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 22,
     marginRight: 16,
     width: 28,
+    textAlign: 'center',
+    opacity: 0.85,
   },
   menuLabel: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  separator: {
+    height: 1,
+    marginVertical: 12,
+    marginHorizontal: 20,
   },
   footer: {
     padding: 20,

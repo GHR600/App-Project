@@ -189,7 +189,6 @@ const MainApp: React.FC = () => {
             onPaywallRequired={() => setCurrentScreen('subscription')}
             mode={journalParams.mode}
             entryId={journalParams.entryId}
-            entryType={journalParams.entryType}
             fromScreen={journalParams.fromScreen}
             initialDate={journalParams.initialDate}
           />
@@ -252,14 +251,20 @@ const MainApp: React.FC = () => {
             onMenuPress={() => setMenuVisible(true)}
             onDateSelect={(date) => console.log('Date selected:', date)}
             onEntryPress={(entry) => {
-              setSelectedEntry(entry);
-              setCurrentScreen('entryDetail');
+              // Navigate to edit the entry
+              (window as any).journalEntryParams = {
+                mode: 'edit',
+                entryId: entry.id,
+                fromScreen: 'Calendar',
+                initialDate: new Date(entry.created_at).toISOString().split('T')[0]
+              };
+              setCurrentScreen('journal');
             }}
             onNewEntry={(date) => {
               (window as any).journalEntryParams = {
                 mode: 'create',
                 fromScreen: 'Calendar',
-                initialDate: date
+                initialDate: date.toISOString().split('T')[0]
               };
               setCurrentScreen('journal');
             }}

@@ -110,8 +110,15 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   const loadEntriesForMonth = useCallback(async (month: Date) => {
     setIsLoading(true);
     try {
+      // Get first and last day of the month
       const startDate = new Date(month.getFullYear(), month.getMonth(), 1);
       const endDate = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+
+      console.log('📅 Calendar: Loading entries for month:', {
+        month: month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+      });
 
       const { entries, error } = await JournalService.getUserEntriesInDateRange(
         userId,
@@ -135,6 +142,12 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
           newEntriesMap.set(dateKey, []);
         }
         newEntriesMap.get(dateKey)!.push(entry);
+      });
+
+      console.log('📋 Calendar: Entries grouped by date:', {
+        totalEntries: entries.length,
+        uniqueDates: newEntriesMap.size,
+        dates: Array.from(newEntriesMap.keys())
       });
 
       setEntriesMap(newEntriesMap);
@@ -166,6 +179,12 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   };
 
   const handleDatePress = (date: Date) => {
+    console.log('📆 Calendar: Date pressed:', {
+      date: date.toISOString(),
+      dateKey: date.toISOString().split('T')[0],
+      hasEntries: entriesMap.has(date.toISOString().split('T')[0]),
+      entriesCount: (entriesMap.get(date.toISOString().split('T')[0]) || []).length
+    });
     setSelectedDate(date);
     onDateSelect?.(date);
   };
@@ -180,7 +199,16 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   }, [currentMonth, loadEntriesForMonth]);
 
   const calendarDays = generateCalendarData(currentMonth);
-  const selectedEntries = entriesMap.get(selectedDate.toISOString().split('T')[0]) || [];
+  const selectedDateKey = selectedDate.toISOString().split('T')[0];
+  const selectedEntries = entriesMap.get(selectedDateKey) || [];
+
+  console.log('🔍 Calendar render:', {
+    selectedDate: selectedDate.toISOString(),
+    selectedDateKey,
+    selectedEntriesCount: selectedEntries.length,
+    entriesMapSize: entriesMap.size,
+    entriesMapKeys: Array.from(entriesMap.keys())
+  });
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -257,8 +285,18 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       <View style={[styles.dateInfoPanel, { backgroundColor: theme.surface }]}>
         <Text style={[styles.selectedDateText, { color: theme.primaryLight }]}>{formatSelectedDate(selectedDate)}</Text>
 
-        {selectedEntries.length === 0 ? (
-          <Text style={[styles.noEntriesText, { color: theme.textMuted }]}>No diaries on this day.</Text>
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading entries...</Text>
+          </View>
+        ) : selectedEntries.length === 0 ? (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateIcon}>📝</Text>
+            <Text style={[styles.noEntriesText, { color: theme.textSecondary }]}>No entry for this date</Text>
+            <Text style={[styles.noEntriesSubtext, { color: theme.textMuted }]}>
+              Tap the + button to create one
+            </Text>
+          </View>
         ) : (
           <ScrollView style={styles.entriesContainer} showsVerticalScrollIndicator={false}>
             {selectedEntries.map(entry => (
@@ -267,16 +305,28 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                 style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
                 onPress={() => onEntryPress?.(entry)}
               >
-                <Text style={[styles.entryPreviewText, { color: theme.textPrimary }]} numberOfLines={2}>
+                {entry.title && (
+                  <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
+                    {entry.title}
+                  </Text>
+                )}
+                <Text style={[styles.entryPreviewText, { color: theme.textSecondary }]} numberOfLines={3}>
                   {entry.content}
                 </Text>
-                <Text style={[styles.entryTime, { color: theme.textMuted }]}>
-                  {new Date(entry.created_at).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                  })}
-                </Text>
+                <View style={styles.entryMeta}>
+                  <Text style={[styles.entryTime, { color: theme.textMuted }]}>
+                    {new Date(entry.created_at).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </Text>
+                  {entry.mood_rating && (
+                    <Text style={styles.entryMood}>
+                      {[null, '😢', '😕', '😐', '😊', '😄'][entry.mood_rating] || '😐'}
+                    </Text>
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -425,11 +475,33 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 16,
   },
-  noEntriesText: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
     fontSize: 14,
-    fontStyle: 'italic',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  noEntriesText: {
+    fontSize: 16,
+    fontWeight: '500',
     textAlign: 'center',
-    marginTop: 20,
+    marginBottom: 8,
+  },
+  noEntriesSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
   },
   entriesContainer: {
     flex: 1,
@@ -440,13 +512,26 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderLeftWidth: 3,
   },
+  entryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
   entryPreviewText: {
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: 8,
+  },
+  entryMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   entryTime: {
     fontSize: 12,
+  },
+  entryMood: {
+    fontSize: 18,
   },
 
   // Floating Button

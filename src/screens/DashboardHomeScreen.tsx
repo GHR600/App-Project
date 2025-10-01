@@ -177,6 +177,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     // If no entry exists, create a new one for that date
     const hasJournalEntry = dayData.journalEntry !== null && dayData.journalEntry !== undefined;
 
+    console.log('📆 Dashboard: Day pressed:', {
+      date: dayData.date,
+      hasEntry: hasJournalEntry,
+      entryId: hasJournalEntry && dayData.journalEntry ? dayData.journalEntry.id : 'none',
+      mode: hasJournalEntry ? 'edit' : 'create'
+    });
+
     navigation.navigate('JournalEntry', {
       mode: hasJournalEntry ? 'edit' : 'create',
       entryId: hasJournalEntry && dayData.journalEntry ? dayData.journalEntry.id : undefined,
@@ -253,17 +260,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       <StatusBar style="light" />
 
       <View style={styles.content}>
-        {/* Header with menu button */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={onMenuPress}
-          >
-            <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Dashboard</Text>
-          <View style={styles.menuButton} />
-        </View>
+        {/* Menu button - floating in top left */}
+        <TouchableOpacity
+          style={[styles.floatingMenuButton, { backgroundColor: theme.surface }]}
+          onPress={onMenuPress}
+        >
+          <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
+        </TouchableOpacity>
 
         <StatsHeader stats={stats} isLoading={isLoading} />
 
@@ -280,10 +283,6 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           }
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.entriesHeader}>
-            <Text style={[styles.entriesTitle, { color: theme.textPrimary }]}>Recent Days</Text>
-          </View>
-
           {renderDayCards()}
         </ScrollView>
       </View>
@@ -298,25 +297,27 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-  },
-  menuButton: {
+  floatingMenuButton: {
+    position: 'absolute',
+    top: 8,
+    left: 16,
     width: 44,
     height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   menuIcon: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
 
@@ -324,6 +325,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
+    paddingTop: 60, // Add padding to account for floating menu button
   },
   streakBanner: {
     flexDirection: 'row',
@@ -376,26 +378,8 @@ const styles = StyleSheet.create({
   },
   entriesContent: {
     padding: spacing.md,
-    paddingBottom: 100, // Space for FAB
-  },
-  entriesHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  entriesTitle: {
-    ...typography.h3,
-    fontWeight: '600',
-  },
-  newEntryButton: {
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  newEntryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+    paddingTop: 0, // No padding at top - connects directly to stats
+    paddingBottom: 100, // Space for bottom navigation
   },
 
   // Show More Button

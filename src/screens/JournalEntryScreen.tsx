@@ -23,7 +23,7 @@ interface JournalEntryScreenProps {
   onPaywallRequired?: () => void;
   onEntryComplete?: (entry: any, insight?: any) => void;
   onBack?: () => void;
-  initialDate?: Date;
+  initialDate?: Date | string; // Accept both Date object and ISO date string
   mode?: 'create' | 'edit';
   entryId?: string;
   fromScreen?: 'DayDetail' | 'Dashboard';
@@ -45,8 +45,19 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   const [title, setTitle] = useState('');
   const [entryText, setEntryText] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => {
-    if (initialDate && initialDate instanceof Date && !isNaN(initialDate.getTime())) {
-      return initialDate;
+    // Handle initialDate as either Date object or string
+    if (initialDate) {
+      if (initialDate instanceof Date && !isNaN(initialDate.getTime())) {
+        return initialDate;
+      }
+      if (typeof initialDate === 'string') {
+        // Parse ISO date string (YYYY-MM-DD) and create date at noon local time
+        // This avoids timezone issues when converting to/from ISO strings
+        const parsedDate = new Date(initialDate + 'T12:00:00');
+        if (!isNaN(parsedDate.getTime())) {
+          return parsedDate;
+        }
+      }
     }
     return new Date();
   });
@@ -92,23 +103,39 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Load existing entry data if in edit mode
   useEffect(() => {
+    console.log('📝 JournalEntryScreen mounted:', {
+      mode,
+      entryId,
+      initialDate,
+      selectedDate: selectedDate.toISOString(),
+      selectedDateString: selectedDate.toISOString().split('T')[0]
+    });
+
     const loadExistingEntry = async () => {
       if (mode === 'edit' && entryId) {
+        console.log('📖 Loading existing entry:', entryId);
         try {
           const { entry, error } = await JournalService.getEntry(userId, entryId);
           if (!error && entry) {
+            console.log('✅ Entry loaded successfully:', {
+              id: entry.id,
+              created_at: entry.created_at,
+              title: entry.title
+            });
             setTitle(entry.title || '');
             setEntryText(entry.content);
             setSelectedMood(getMoodEmoji(entry.mood_rating || 3));
             setSavedEntry(entry);
           } else if (error) {
-            console.error('Error loading entry for editing:', error);
+            console.error('❌ Error loading entry for editing:', error);
             Alert.alert('Error', 'Failed to load entry. Please try again.');
           }
         } catch (error) {
-          console.error('Unexpected error loading entry for editing:', error);
+          console.error('❌ Unexpected error loading entry for editing:', error);
           Alert.alert('Error', 'Failed to load entry. Please try again.');
         }
+      } else {
+        console.log('📝 Create mode - no entry to load');
       }
     };
 
@@ -193,14 +220,23 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         entry = result.entry;
         error = result.error;
       } else {
-        // Create new entry
+        // Create new entry with the selected date
+        const dateString = selectedDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+        console.log('📅 Creating entry for date:', dateString);
+        console.log('📅 Selected date object:', selectedDate);
         const result = await JournalService.createEntry(userId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
-          title: title.trim() || undefined
+          title: title.trim() || undefined,
+          date: dateString
         });
         entry = result.entry;
         error = result.error;
+        if (error) {
+          console.log('❌ Error creating entry:', error);
+        } else {
+          console.log('✅ Entry created successfully for date:', dateString);
+        }
       }
 
       if (error) {

@@ -6,6 +6,7 @@ export interface CreateJournalEntryData {
   moodRating?: number;
   voiceMemoUrl?: string;
   title?: string;
+  date?: string; // ISO date string (YYYY-MM-DD) - if not provided, uses today
 }
 
 export interface UpdateJournalEntryData {
@@ -43,6 +44,15 @@ export class JournalService {
     error: any;
   }> {
     try {
+      // Format dates to ensure we get full day coverage
+      // Start at 00:00:00 of startDate and end at 23:59:59.999 of endDate
+      const startDateStr = startDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
+      const endDateObj = new Date(endDate);
+      endDateObj.setHours(23, 59, 59, 999);
+      const endDateStr = endDateObj.toISOString();
+
+      console.log('📅 Fetching entries in date range:', { startDateStr, endDateStr, userId });
+
       const { data: entries, error } = await supabase
         .from('journal_entries')
         .select(`
@@ -57,13 +67,22 @@ export class JournalService {
           )
         `)
         .eq('user_id', userId)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
+        .gte('created_at', startDateStr)
+        .lte('created_at', endDateStr)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching entries in date range:', error);
+        console.error('❌ Error fetching entries in date range:', error);
         return { entries: [], error };
+      }
+
+      console.log('✅ Fetched', entries?.length || 0, 'entries in date range');
+      if (entries && entries.length > 0) {
+        console.log('📝 Entry dates:', entries.map(e => ({
+          id: e.id,
+          created_at: e.created_at,
+          date: new Date(e.created_at).toISOString().split('T')[0]
+        })));
       }
 
       return { entries: entries || [], error: null };
@@ -79,14 +98,27 @@ export class JournalService {
     error: any;
   }> {
     try {
-      // Check if journal entry already exists for today
-      const today = new Date().toISOString().split('T')[0];
+      // Use provided date or default to today
+      const targetDate = data.date || new Date().toISOString().split('T')[0];
+      console.log('🆕 JournalService.createEntry called:', {
+        targetDate,
+        providedDate: data.date,
+        userId
+      });
+
+      // Check if journal entry already exists for the target date
       const { data: existingEntry, error: queryError } = await supabase
         .from('journal_entries')
         .select('id')
         .eq('user_id', userId)
-        .gte('created_at', `${today}T00:00:00.000Z`)
-        .lt('created_at', `${today}T23:59:59.999Z`);
+        .gte('created_at', `${targetDate}T00:00:00.000Z`)
+        .lt('created_at', `${targetDate}T23:59:59.999Z`);
+
+      console.log('🔍 Checked for existing entry:', {
+        targetDate,
+        existingCount: existingEntry?.length || 0,
+        hasError: !!queryError
+      });
 
       if (queryError) {
         console.error('Error checking existing journal entries:', queryError);
@@ -94,16 +126,21 @@ export class JournalService {
       }
 
       if (existingEntry && existingEntry.length > 0) {
-        return { entry: null, error: 'You already have an entry for today. You can edit it or wait until tomorrow.' };
+        const isToday = targetDate === new Date().toISOString().split('T')[0];
+        const message = isToday
+          ? 'You already have an entry for today. You can edit it or wait until tomorrow.'
+          : `You already have an entry for ${targetDate}. Please edit that entry instead.`;
+        return { entry: null, error: message };
       }
 
-      // Prepare insert data
+      // Prepare insert data with specific date timestamp
       const insertData = {
         user_id: userId,
         content: data.content,
         mood_rating: data.moodRating,
         voice_memo_url: data.voiceMemoUrl,
-        title: data.title
+        title: data.title,
+        created_at: `${targetDate}T12:00:00.000Z` // Set to noon UTC for the target date
       };
 
       const { data: entry, error } = await supabase
