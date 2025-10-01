@@ -1,10 +1,10 @@
-// Journal entry types
+// Unified entry types (previously journal entries and notes)
 export interface JournalEntry {
   id: string;
   user_id: string;
   content: string;
   mood_rating?: number;
-  entry_type: 'journal' | 'note';
+  tags?: string[];  // Optional tags array (e.g., ['journal'], ['note'], ['work', 'personal'])
   title?: string;
   created_at: string;
   updated_at: string;
@@ -32,6 +32,6 @@ export interface JournalEntryScreenParams {
   mode: 'create' | 'edit';
   entryId?: string;
   initialDate?: string;
-  entryType?: 'journal' | 'note';
+  initialTags?: string[];  // Optional initial tags for new entries
   fromScreen?: 'DayDetail' | 'Dashboard';
 }

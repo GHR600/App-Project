@@ -4,7 +4,7 @@ import { JournalEntry, DayCardData } from '../types';
 export class EntryService {
   /**
    * Group entries by day and create DayCardData objects
-   * Since we now have one entry per day, journalEntry is the main entry
+   * Multiple entries per day are supported - the most recent is shown as the main entry
    */
   static groupEntriesByDay(entries: JournalEntry[]): DayCardData[] {
     const dayGroups: { [key: string]: JournalEntry[] } = {};
@@ -99,7 +99,7 @@ export class EntryService {
         user_id: entry.user_id,
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: 'journal', // All entries are now journal type
+        tags: entry.tags || [],
         title: entry.title,
         created_at: entry.created_at,
         updated_at: entry.updated_at,
@@ -140,7 +140,7 @@ export class EntryService {
         user_id: entry.user_id,
         content: entry.content,
         mood_rating: entry.mood_rating,
-        entry_type: 'journal', // All entries are now journal type
+        tags: entry.tags || [],
         title: entry.title,
         created_at: entry.created_at,
         updated_at: entry.updated_at,

@@ -63,6 +63,19 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   });
   const [selectedMood, setSelectedMood] = useState<string>('😐');
 
+  // Tag selection state
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTagInput, setCustomTagInput] = useState('');
+
+  // Preset tags with icons
+  const presetTags = [
+    { label: 'Journal', icon: '📝', value: 'journal' },
+    { label: 'Thought', icon: '💭', value: 'thought' },
+    { label: 'Idea', icon: '💡', value: 'idea' },
+    { label: 'Goal', icon: '🎯', value: 'goal' },
+    { label: 'Gratitude', icon: '✨', value: 'gratitude' },
+  ];
+
   // Flow state
   const [isSaving, setIsSaving] = useState(false);
   const [savedEntry, setSavedEntry] = useState<any>(null);
@@ -125,6 +138,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
             setTitle(entry.title || '');
             setEntryText(entry.content);
             setSelectedMood(getMoodEmoji(entry.mood_rating || 3));
+            setSelectedTags(entry.tags || []);
             setSavedEntry(entry);
           } else if (error) {
             console.error('❌ Error loading entry for editing:', error);
@@ -215,7 +229,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         const result = await JournalService.updateEntry(userId, entryId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
-          title: title.trim() || undefined
+          title: title.trim() || undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined
         });
         entry = result.entry;
         error = result.error;
@@ -224,11 +239,13 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         const dateString = selectedDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
         console.log('📅 Creating entry for date:', dateString);
         console.log('📅 Selected date object:', selectedDate);
+        console.log('🏷️ Selected tags:', selectedTags);
         const result = await JournalService.createEntry(userId, {
           content: entryText.trim(),
           moodRating: getMoodRating(selectedMood),
           title: title.trim() || undefined,
-          date: dateString
+          date: dateString,
+          tags: selectedTags.length > 0 ? selectedTags : undefined
         });
         entry = result.entry;
         error = result.error;
@@ -236,6 +253,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           console.log('❌ Error creating entry:', error);
         } else {
           console.log('✅ Entry created successfully for date:', dateString);
+          console.log('✅ Tags saved:', selectedTags);
         }
       }
 
@@ -489,6 +507,29 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     }
   };
 
+  // Tag selection helpers
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      } else {
+        return [...prev, tag];
+      }
+    });
+  };
+
+  const addCustomTag = () => {
+    const trimmedTag = customTagInput.trim().toLowerCase();
+    if (trimmedTag && !selectedTags.includes(trimmedTag)) {
+      setSelectedTags(prev => [...prev, trimmedTag]);
+      setCustomTagInput('');
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setSelectedTags(prev => prev.filter(t => t !== tag));
+  };
+
   // Mood selection helpers
   const moodEmojis = ['😢', '😕', '😐', '😊', '😄'];
 
@@ -536,6 +577,87 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     </View>
   );
 
+  // Render Tag Selector
+  const renderTagSelector = () => (
+    <View style={styles.tagSection}>
+      <Text style={[styles.tagSectionLabel, { color: theme.textSecondary }]}>Tags (optional)</Text>
+
+      {/* Preset Tags */}
+      <View style={styles.presetTagsContainer}>
+        {presetTags.map(tag => {
+          const isSelected = selectedTags.includes(tag.value);
+          return (
+            <TouchableOpacity
+              key={tag.value}
+              style={[
+                styles.tagChip,
+                { borderColor: theme.cardBorder },
+                isSelected && { backgroundColor: theme.primary, borderColor: theme.primary }
+              ]}
+              onPress={() => toggleTag(tag.value)}
+              disabled={!!savedEntry}
+            >
+              <Text style={styles.tagIcon}>{tag.icon}</Text>
+              <Text style={[
+                styles.tagLabel,
+                { color: theme.textPrimary },
+                isSelected && { color: theme.white, fontWeight: '600' }
+              ]}>
+                {tag.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Custom Tags */}
+      {selectedTags.filter(tag => !presetTags.some(p => p.value === tag)).length > 0 && (
+        <View style={styles.customTagsContainer}>
+          {selectedTags
+            .filter(tag => !presetTags.some(p => p.value === tag))
+            .map(tag => (
+              <View
+                key={tag}
+                style={[styles.customTagChip, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
+              >
+                <Text style={[styles.customTagText, { color: theme.primary }]}>🏷️ {tag}</Text>
+                {!savedEntry && (
+                  <TouchableOpacity onPress={() => removeTag(tag)} style={styles.removeTagButton}>
+                    <Text style={[styles.removeTagText, { color: theme.primary }]}>×</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
+        </View>
+      )}
+
+      {/* Custom Tag Input */}
+      {!savedEntry && (
+        <View style={styles.customTagInputContainer}>
+          <TextInput
+            style={[styles.customTagInput, { color: theme.textPrimary, borderColor: theme.cardBorder }]}
+            placeholder="Add custom tag..."
+            placeholderTextColor={theme.textMuted}
+            value={customTagInput}
+            onChangeText={setCustomTagInput}
+            onSubmitEditing={addCustomTag}
+            returnKeyType="done"
+          />
+          <TouchableOpacity
+            style={[
+              styles.addTagButton,
+              { backgroundColor: theme.primary, opacity: customTagInput.trim() ? 1 : 0.5 }
+            ]}
+            onPress={addCustomTag}
+            disabled={!customTagInput.trim()}
+          >
+            <Text style={[styles.addTagButtonText, { color: theme.white }]}>+</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+
   // Section A: Journal Entry Area
   const renderJournalSection = () => {
     return (
@@ -548,6 +670,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           onChangeText={setTitle}
           editable={!savedEntry}
         />
+
+        {renderTagSelector()}
+
         <TextInput
           style={[styles.contentInput, { color: theme.textPrimary }]}
           multiline
@@ -831,6 +956,94 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingBottom: 8,
   },
+
+  // Tag Selector Styles
+  tagSection: {
+    marginVertical: 12,
+  },
+  tagSectionLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  presetTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  tagIcon: {
+    fontSize: 16,
+  },
+  tagLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  customTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  customTagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  customTagText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  removeTagButton: {
+    marginLeft: 4,
+  },
+  removeTagText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    lineHeight: 20,
+  },
+  customTagInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  customTagInput: {
+    flex: 1,
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+  },
+  addTagButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addTagButtonText: {
+    fontSize: 24,
+    fontWeight: '600',
+    lineHeight: 24,
+  },
+
   contentInput: {
     fontSize: 16,
     minHeight: 200,

@@ -41,7 +41,7 @@ CREATE TABLE user_preferences (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Journal entries table
+-- Journal entries table (multiple entries per day allowed)
 CREATE TABLE journal_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -50,10 +50,10 @@ CREATE TABLE journal_entries (
   mood_rating INTEGER CHECK (mood_rating >= 1 AND mood_rating <= 5),
   voice_memo_url TEXT,
   title TEXT,
+  tags TEXT[] DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  word_count INTEGER GENERATED ALWAYS AS (array_length(string_to_array(content, ' '), 1)) STORED,
-  UNIQUE(user_id, date)
+  word_count INTEGER GENERATED ALWAYS AS (array_length(string_to_array(content, ' '), 1)) STORED
 );
 
 -- AI insights table
@@ -202,6 +202,7 @@ export interface DatabaseJournalEntry {
   mood_rating?: number;
   voice_memo_url?: string;
   title?: string;
+  tags?: string[];  // Optional tags array
   created_at: string;
   updated_at: string;
   word_count: number;

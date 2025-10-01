@@ -31,21 +31,23 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
     }
   };
 
-  const getEntryTypeIcon = (entryType: 'journal' | 'note') => {
-    return entryType === 'journal' ? '📝' : '🗒️';
-  };
-
   const renderEntryTags = () => {
     const tags: string[] = [];
 
     if (dayData.journalEntry) {
-      tags.push('📝 Main Journal');
+      // Show main journal entry
+      const entryTags = dayData.journalEntry.tags || [];
+      const isJournal = entryTags.includes('journal');
+      const icon = isJournal ? '📝' : '🗒️';
+      tags.push(`${icon} Main Entry`);
     }
 
     dayData.notes.forEach((note, index) => {
       if (index < 2) { // Show max 2 note titles
-        const title = note.title || `Note ${index + 1}`;
-        tags.push(`🗒️ ${title}`);
+        const noteTags = note.tags || [];
+        const icon = noteTags.includes('note') ? '🗒️' : '📝';
+        const title = note.title || `Entry ${index + 1}`;
+        tags.push(`${icon} ${title}`);
       }
     });
 

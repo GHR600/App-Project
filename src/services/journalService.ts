@@ -7,6 +7,7 @@ export interface CreateJournalEntryData {
   voiceMemoUrl?: string;
   title?: string;
   date?: string; // ISO date string (YYYY-MM-DD) - if not provided, uses today
+  tags?: string[]; // Optional tags for categorization
 }
 
 export interface UpdateJournalEntryData {
@@ -14,6 +15,7 @@ export interface UpdateJournalEntryData {
   moodRating?: number;
   voiceMemoUrl?: string;
   title?: string;
+  tags?: string[]; // Optional tags for categorization
 }
 
 export interface JournalEntryWithWordCount extends DatabaseJournalEntry {
@@ -92,7 +94,7 @@ export class JournalService {
     }
   }
 
-  // Create a new journal entry (one per day)
+  // Create a new journal entry (multiple entries per day allowed)
   static async createEntry(userId: string, data: CreateJournalEntryData): Promise<{
     entry: DatabaseJournalEntry | null;
     error: any;
@@ -106,41 +108,29 @@ export class JournalService {
         userId
       });
 
-      // Check if journal entry already exists for the target date
-      const { data: existingEntry, error: queryError } = await supabase
-        .from('journal_entries')
-        .select('id')
-        .eq('user_id', userId)
-        .gte('created_at', `${targetDate}T00:00:00.000Z`)
-        .lt('created_at', `${targetDate}T23:59:59.999Z`);
-
-      console.log('🔍 Checked for existing entry:', {
-        targetDate,
-        existingCount: existingEntry?.length || 0,
-        hasError: !!queryError
-      });
-
-      if (queryError) {
-        console.error('Error checking existing journal entries:', queryError);
-        return { entry: null, error: 'Failed to check existing entries. Please try again.' };
-      }
-
-      if (existingEntry && existingEntry.length > 0) {
-        const isToday = targetDate === new Date().toISOString().split('T')[0];
-        const message = isToday
-          ? 'You already have an entry for today. You can edit it or wait until tomorrow.'
-          : `You already have an entry for ${targetDate}. Please edit that entry instead.`;
-        return { entry: null, error: message };
-      }
-
       // Prepare insert data with specific date timestamp
+      // Auto-infer tags if not provided: journal entries have mood, notes don't
+      let tags = data.tags;
+      if (!tags || tags.length === 0) {
+        tags = data.moodRating !== undefined && data.moodRating !== null
+          ? ['journal']
+          : ['note'];
+      }
+
+      // Use current timestamp if creating for today, otherwise use noon for the target date
+      const isToday = targetDate === new Date().toISOString().split('T')[0];
+      const timestamp = isToday
+        ? new Date().toISOString() // Current time for today's entries
+        : `${targetDate}T12:00:00.000Z`; // Noon UTC for past/future dates
+
       const insertData = {
         user_id: userId,
         content: data.content,
         mood_rating: data.moodRating,
         voice_memo_url: data.voiceMemoUrl,
         title: data.title,
-        created_at: `${targetDate}T12:00:00.000Z` // Set to noon UTC for the target date
+        tags: tags,
+        created_at: timestamp
       };
 
       const { data: entry, error } = await supabase
@@ -321,6 +311,8 @@ export class JournalService {
       if (data.content !== undefined) updateData.content = data.content;
       if (data.moodRating !== undefined) updateData.mood_rating = data.moodRating;
       if (data.voiceMemoUrl !== undefined) updateData.voice_memo_url = data.voiceMemoUrl;
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.tags !== undefined) updateData.tags = data.tags;
 
       const { data: entry, error } = await supabase
         .from('journal_entries')
