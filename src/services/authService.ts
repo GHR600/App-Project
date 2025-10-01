@@ -27,6 +27,15 @@ export class AuthService {
   // Sign up new user
   static async signUp(data: SignUpData): Promise<AuthResponse> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return {
+          user: null,
+          session: null,
+          error: { message: 'Supabase client is not configured. Please check your environment variables.' } as AuthError
+        };
+      }
+
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password
@@ -82,6 +91,15 @@ export class AuthService {
   // Sign in existing user
   static async signIn(data: SignInData): Promise<AuthResponse> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return {
+          user: null,
+          session: null,
+          error: { message: 'Supabase client is not configured. Please check your environment variables.' } as AuthError
+        };
+      }
+
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password
@@ -112,6 +130,11 @@ export class AuthService {
   // Sign out user
   static async signOut(): Promise<{ error: AuthError | null }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: { message: 'Supabase client is not configured' } as AuthError };
+      }
+
       const { error } = await supabase.auth.signOut();
       return { error };
     } catch (error) {
@@ -122,6 +145,11 @@ export class AuthService {
   // Get current user
   static async getCurrentUser(): Promise<AuthUser | null> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available - returning null user');
+        return null;
+      }
+
       const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error || !user) {
@@ -191,6 +219,11 @@ export class AuthService {
   // Reset password
   static async resetPassword(email: string): Promise<{ error: AuthError | null }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: { message: 'Supabase client is not configured' } as AuthError };
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'exp://localhost:8081/reset-password' // For development, replace with your app's deep link in production
       });
@@ -204,6 +237,11 @@ export class AuthService {
   // Update password
   static async updatePassword(newPassword: string): Promise<{ error: AuthError | null }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: { message: 'Supabase client is not configured' } as AuthError };
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -217,6 +255,11 @@ export class AuthService {
   // Check if user needs to complete onboarding
   static async needsOnboarding(): Promise<boolean> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return true;
+      }
+
       const user = await this.getCurrentUser();
       if (!user) return true;
 
@@ -241,6 +284,11 @@ export class AuthService {
   // Mark onboarding as complete
   static async completeOnboarding(): Promise<{ error: any | null }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: 'Supabase client is not configured' };
+      }
+
       const user = await this.getCurrentUser();
       if (!user) {
         return { error: 'No authenticated user' };

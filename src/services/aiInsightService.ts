@@ -59,6 +59,11 @@ export class AIInsightService {
     });
 
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: 'Supabase client is not configured' };
+      }
+
       const { error } = await supabase
         .from('ai_insights')
         .insert({
@@ -92,6 +97,11 @@ export class AIInsightService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return { insights: [], error: 'Supabase client is not configured' };
+      }
+
       const { data: insights, error } = await supabase
         .from('ai_insights')
         .select('*')
@@ -132,6 +142,11 @@ export class AIInsightService {
     hasMore: boolean;
   }> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return { insights: [], error: 'Supabase client is not configured', hasMore: false };
+      }
+
       const { limit = 20, offset = 0 } = options;
 
       let query = supabase
@@ -183,6 +198,29 @@ export class AIInsightService {
   }> {
     try {
       console.log('🚀 AIInsightService.sendChatMessage called with:', { userId, journalEntryId, message: message.substring(0, 50) + '...' });
+
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return {
+          userMessage: {
+            id: 'temp-error',
+            role: 'user',
+            content: message,
+            timestamp: new Date().toISOString(),
+            journalEntryId,
+            userId,
+          },
+          aiResponse: {
+            id: 'temp-error-ai',
+            role: 'assistant',
+            content: 'Database is not configured. Please check your environment settings.',
+            timestamp: new Date().toISOString(),
+            journalEntryId,
+            userId,
+          },
+          error: 'Supabase client is not configured'
+        };
+      }
 
       // Check if user is authenticated
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -361,6 +399,11 @@ export class AIInsightService {
     error?: any;
   }> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return { messages: [], error: 'Supabase client is not configured' };
+      }
+
       const { data: messages, error } = await supabase
         .from('chat_messages')
         .select('*')
@@ -399,6 +442,11 @@ export class AIInsightService {
     error?: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { message: null, error: 'Supabase client is not configured' };
+      }
+
       const { data: insertedMsg, error } = await supabase
         .from('chat_messages')
         .insert({
@@ -440,6 +488,11 @@ export class AIInsightService {
     journalEntryId: string
   ): Promise<{ error?: any }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: 'Supabase client is not configured' };
+      }
+
       const { error } = await supabase
         .from('chat_messages')
         .delete()
@@ -457,6 +510,11 @@ export class AIInsightService {
    */
   private static async getAuthToken(): Promise<string | null> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return null;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       return session?.access_token || null;
     } catch (error) {
@@ -669,6 +727,14 @@ export class AIInsightService {
         contentLength: journalContent.length,
         conversationLength: conversationHistory?.length || 0
       });
+
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return {
+          summary: 'Database is not configured. Please check your environment settings.',
+          error: 'Supabase client is not configured'
+        };
+      }
 
       // Check if user is authenticated
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();

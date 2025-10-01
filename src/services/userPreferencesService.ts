@@ -22,6 +22,11 @@ export class UserPreferencesService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { preferences: null, error: 'Supabase client is not configured' };
+      }
+
       const { data: preferences, error } = await supabase
         .from('user_preferences')
         .insert({
@@ -52,6 +57,11 @@ export class UserPreferencesService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return { preferences: null, error: 'Supabase client is not configured' };
+      }
+
       const { data: preferences, error } = await supabase
         .from('user_preferences')
         .select('*')
@@ -80,6 +90,11 @@ export class UserPreferencesService {
     error: any;
   }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { preferences: null, error: 'Supabase client is not configured' };
+      }
+
       const updateData: any = {};
 
       if (data.focusAreas !== undefined) updateData.focus_areas = data.focusAreas;
@@ -109,6 +124,11 @@ export class UserPreferencesService {
   // Delete user preferences (for account deletion)
   static async deletePreferences(userId: string): Promise<{ error: any }> {
     try {
+      if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return { error: 'Supabase client is not configured' };
+      }
+
       const { error } = await supabase
         .from('user_preferences')
         .delete()
@@ -129,6 +149,11 @@ export class UserPreferencesService {
   // Get user's current mood trend based on recent entries
   static async getRecentMoodTrend(userId: string): Promise<'positive' | 'neutral' | 'negative'> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return 'neutral';
+      }
+
       const { data: entries, error } = await supabase
         .from('journal_entries')
         .select('mood_rating')
@@ -159,6 +184,15 @@ export class UserPreferencesService {
     subscriptionStatus: 'free' | 'premium';
   }> {
     try {
+      if (!supabase) {
+        console.warn('⚠️  Supabase client not available');
+        return {
+          focusAreas: [],
+          recentMoodTrend: 'neutral',
+          subscriptionStatus: 'free'
+        };
+      }
+
       // Get user preferences and subscription status
       const [preferencesResult, userResult] = await Promise.all([
         this.getUserPreferences(userId),
