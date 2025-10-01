@@ -60,3 +60,6 @@ Thumbs.db
 # Expo
 .expo/
 .vercel
+nul
+supabase/.temp/cli-latest
+supabase/migrations/20250101000000_complete_unified_entry_system.sql
