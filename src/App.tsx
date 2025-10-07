@@ -275,7 +275,7 @@ const MainApp: React.FC = () => {
           setCurrentScreen('signUp');
           return renderHomeScreen();
         }
-        return <StatsScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
+        return <StatsScreen userId={user.id} onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
       case 'notes':
         if (!user) {
           setCurrentScreen('signUp');

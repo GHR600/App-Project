@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Flame } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { typography, spacing, borderRadius } from '../styles/designSystem';
 import { BottomNavigation } from '../components/BottomNavigation';
@@ -39,14 +40,11 @@ interface UserStats {
 const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats, isLoading }) => {
   const { theme } = useTheme();
 
-  const getStreakEmoji = (streak: number) => {
-    if (streak === 0) return '📝';
-    if (streak < 3) return '🔥';
-    if (streak < 7) return '🔥🔥';
-    if (streak < 14) return '🔥🔥🔥';
-    if (streak < 30) return '⭐';
-    if (streak < 100) return '🏆';
-    return '👑';
+  const getStreakIcon = (streak: number) => {
+    if (streak === 0) return { icon: '📝', size: 32 };
+    if (streak < 30) return { icon: 'flame', size: streak < 3 ? 28 : streak < 7 ? 32 : streak < 14 ? 36 : 40 };
+    if (streak < 100) return { icon: '🏆', size: 32 };
+    return { icon: '👑', size: 32 };
   };
 
   const getStreakMessage = (streak: number) => {
@@ -77,11 +75,19 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
     );
   }
 
+  const streakIcon = getStreakIcon(stats.currentStreak);
+
   return (
     <View style={styles.statsContainer}>
       {/* Streak Banner */}
       <View style={[styles.streakBanner, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
-        <Text style={[styles.streakEmoji]}>{getStreakEmoji(stats.currentStreak)}</Text>
+        <View style={styles.streakIconContainer}>
+          {streakIcon.icon === 'flame' ? (
+            <Flame size={streakIcon.size} color={theme.primary} fill={theme.primary} />
+          ) : (
+            <Text style={[styles.streakEmoji, { fontSize: streakIcon.size }]}>{streakIcon.icon}</Text>
+          )}
+        </View>
         <View style={styles.streakInfo}>
           <Text style={[styles.streakNumber, { color: theme.primary }]}>
             {stats.currentStreak} Day Streak
@@ -454,8 +460,6 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           </View>
         )}
 
-        <StatsHeader stats={stats} isLoading={isLoading} />
-
         <ScrollView
           style={styles.entriesContainer}
           contentContainerStyle={styles.entriesContent}
@@ -469,6 +473,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
           }
           showsVerticalScrollIndicator={false}
         >
+          <StatsHeader stats={stats} isLoading={isLoading} />
           {renderEntries()}
         </ScrollView>
       </View>
@@ -517,9 +522,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     borderWidth: 1,
   },
+  streakIconContainer: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
   streakEmoji: {
     fontSize: 36,
-    marginRight: spacing.md,
   },
   streakInfo: {
     flex: 1,
@@ -622,9 +633,9 @@ const styles = StyleSheet.create({
 
   // Entry Cards
   entryCard: {
-    borderRadius: borderRadius.md,
+    borderRadius: 0,
     padding: spacing.md,
-    marginBottom: spacing.sm,
+    marginBottom: 1,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -677,7 +688,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   entriesContent: {
-    padding: spacing.md,
     paddingTop: 0,
     paddingBottom: 80,
   },
@@ -690,6 +700,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     marginTop: spacing.md,
+    marginHorizontal: spacing.md,
   },
   showMoreText: {
     ...typography.body,
@@ -700,7 +711,7 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.md,
   },
   emptyStateIcon: {
     fontSize: 48,
@@ -728,7 +739,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   loadingContainer: {
-    gap: spacing.sm,
+    gap: 1,
   },
   loadingText: {
     height: 16,

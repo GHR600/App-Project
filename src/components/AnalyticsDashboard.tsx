@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { colors } from '../styles/designSystem';
 import { AnalyticsService, AdvancedAnalytics, ExportOptions } from '../services/analyticsService';
+import { CalendarHeatmap } from './CalendarHeatmap';
+import { supabase, DatabaseJournalEntry } from '../config/supabase';
 
 interface AnalyticsDashboardProps {
   userId: string;
@@ -21,6 +23,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   dateRange
 }) => {
   const [analytics, setAnalytics] = useState<AdvancedAnalytics | null>(null);
+  const [entries, setEntries] = useState<DatabaseJournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState<'overview' | 'mood' | 'patterns' | 'growth'>('overview');
 
@@ -31,6 +34,20 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const loadAnalytics = async () => {
     setIsLoading(true);
     try {
+      // Fetch journal entries
+      const { data: entriesData, error: entriesError } = await supabase
+        .from('journal_entries')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (entriesError) {
+        console.error('Error loading entries:', entriesError);
+      } else {
+        setEntries(entriesData || []);
+      }
+
+      // Generate analytics
       const { analytics: data, error } = await AnalyticsService.generateAdvancedAnalytics(
         userId,
         dateRange
@@ -80,6 +97,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   const renderOverviewTab = () => (
     <View style={styles.tabContent}>
+      {/* Calendar Heatmap */}
+      <CalendarHeatmap entries={entries} />
+
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{analytics?.contentAnalysis.totalWords || 0}</Text>
