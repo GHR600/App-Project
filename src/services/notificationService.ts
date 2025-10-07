@@ -29,6 +29,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -57,7 +59,7 @@ export class NotificationService {
       // Get push token for remote notifications
       if (Device.isDevice) {
         try {
-          this.pushToken = await this.getPushToken();
+          this.pushToken = await this.fetchPushToken();
           await AsyncStorage.setItem(PUSH_TOKEN_KEY, this.pushToken);
           console.log('Push token obtained:', this.pushToken);
         } catch (error) {
@@ -78,7 +80,7 @@ export class NotificationService {
     }
   }
 
-  private static async getPushToken(): Promise<string> {
+  private static async fetchPushToken(): Promise<string> {
     if (!Device.isDevice) {
       throw new Error('Must use physical device for push notifications');
     }
@@ -183,6 +185,7 @@ export class NotificationService {
             data: { type: 'daily_reminder' },
           },
           trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DAILY,
             hour: hours,
             minute: minutes,
             repeats: true,
@@ -203,7 +206,10 @@ export class NotificationService {
             body: "Don't break your journaling streak. Write a quick entry now!",
             data: { type: 'streak_reminder' },
           },
-          trigger: twoDaysFromNow,
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: twoDaysFromNow,
+          },
         });
       }
 
@@ -219,7 +225,10 @@ export class NotificationService {
             body: 'How was your week? Take some time to reflect on your growth and learnings.',
             data: { type: 'weekly_reflection' },
           },
-          trigger: nextSunday,
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: nextSunday,
+          },
         });
 
         console.log('Weekly reflection scheduled for next Sunday at 7 PM');
@@ -243,7 +252,10 @@ export class NotificationService {
           body,
           data,
         },
-        trigger: delay > 0 ? { seconds: delay } : null,
+        trigger: delay > 0 ? {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: delay,
+        } : null,
       });
 
       console.log('Local notification scheduled:', identifier);

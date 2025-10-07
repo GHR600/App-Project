@@ -1,3 +1,4 @@
+import React from 'react';
 import { InteractionManager, Dimensions } from 'react-native';
 import { logger } from './logger';
 

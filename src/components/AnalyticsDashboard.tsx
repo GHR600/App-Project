@@ -11,6 +11,13 @@ import {
 import { colors } from '../styles/designSystem';
 import { AnalyticsService, AdvancedAnalytics, ExportOptions } from '../services/analyticsService';
 import { CalendarHeatmap } from './CalendarHeatmap';
+import { MonthSummaryCard } from './MonthSummaryCard';
+import { AchievementsBanner } from './AchievementsBanner';
+import { WordCountTrendsChart } from './WordCountTrendsChart';
+import { BestWritingTimesChart } from './BestWritingTimesChart';
+import { MoodLineChart } from './MoodLineChart';
+import { MoodDistributionChart } from './MoodDistributionChart';
+import { InsightsPanel } from './InsightsPanel';
 import { supabase, DatabaseJournalEntry } from '../config/supabase';
 
 interface AnalyticsDashboardProps {
@@ -97,8 +104,22 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   const renderOverviewTab = () => (
     <View style={styles.tabContent}>
+      {/* Month Summary Card */}
+      <MonthSummaryCard entries={entries} />
+
       {/* Calendar Heatmap */}
       <CalendarHeatmap entries={entries} />
+
+      {/* Achievements Banner */}
+      <AchievementsBanner
+        totalEntries={entries.length}
+        totalWords={analytics?.contentAnalysis.totalWords || 0}
+        longestStreak={analytics?.streakAnalysis.longestStreak || 0}
+        currentStreak={analytics?.streakAnalysis.currentStreak || 0}
+      />
+
+      {/* Insights Panel */}
+      <InsightsPanel entries={entries} />
 
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
@@ -143,34 +164,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   const renderMoodTab = () => (
     <View style={styles.tabContent}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Mood Trends</Text>
-        {analytics?.moodTrends.length === 0 ? (
-          <Text style={styles.emptyState}>No mood data available</Text>
-        ) : (
-          analytics?.moodTrends.slice(-7).map((trend, index) => (
-            <View key={index} style={styles.moodItem}>
-              <Text style={styles.moodDate}>
-                {trend.date ? (() => {
-                  const date = new Date(trend.date);
-                  return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
-                })() : 'Unknown Date'}
-              </Text>
-              <View style={styles.moodBar}>
-                <View
-                  style={[
-                    styles.moodProgress,
-                    { width: `${(trend.averageMood / 5) * 100}%` }
-                  ]}
-                />
-              </View>
-              <Text style={styles.moodValue}>
-                {trend.averageMood.toFixed(1)}/5
-              </Text>
-            </View>
-          ))
-        )}
-      </View>
+      {/* Mood Line Chart */}
+      <MoodLineChart entries={entries} />
+
+      {/* Mood Distribution Chart */}
+      <MoodDistributionChart entries={entries} />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Emotional Insights</Text>
@@ -188,6 +186,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   const renderPatternsTab = () => (
     <View style={styles.tabContent}>
+      {/* Word Count Trends Chart */}
+      <WordCountTrendsChart entries={entries} period="week" />
+
+      {/* Best Writing Times Chart */}
+      <BestWritingTimesChart entries={entries} />
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Streak Analysis</Text>
         <View style={styles.streakCard}>

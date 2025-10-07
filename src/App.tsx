@@ -32,6 +32,7 @@ const MainApp: React.FC = () => {
   const [selectedEntry, setSelectedEntry] = useState<DatabaseJournalEntry | null>(null);
   const [activeTab, setActiveTab] = useState<'calendar' | 'home' | 'stats'>('home');
   const [menuVisible, setMenuVisible] = useState(false);
+  const [journalEntryParams, setJournalEntryParams] = useState<any>(null);
   const { user, loading } = useAuth();
   const { theme, isDark } = useTheme();
 
@@ -171,18 +172,18 @@ const MainApp: React.FC = () => {
           setCurrentScreen('signUp');
           return renderHomeScreen();
         }
-        const journalParams = (window as any).journalEntryParams || {};
+        const journalParams = journalEntryParams || {};
         return (
           <JournalEntryScreen
             userId={user.id}
             onBack={() => {
-              (window as any).journalEntryParams = null;
+              setJournalEntryParams(null);
               const targetScreen = journalParams.fromScreen === 'DayDetail' ? 'dayDetail' : 'dashboard';
               setCurrentScreen(targetScreen);
             }}
             onEntryComplete={(entry, insight) => {
               console.log('Entry completed:', entry, insight);
-              (window as any).journalEntryParams = null;
+              setJournalEntryParams(null);
               const targetScreen = journalParams.fromScreen === 'DayDetail' ? 'dayDetail' : 'dashboard';
               setCurrentScreen(targetScreen);
             }}
@@ -205,7 +206,7 @@ const MainApp: React.FC = () => {
               setCurrentScreen('journal');
               // Store the journal entry params for the journal screen
               if (params) {
-                (window as any).journalEntryParams = params;
+                setJournalEntryParams(params);
               }
             }
           },
@@ -252,20 +253,20 @@ const MainApp: React.FC = () => {
             onDateSelect={(date) => console.log('Date selected:', date)}
             onEntryPress={(entry) => {
               // Navigate to edit the entry
-              (window as any).journalEntryParams = {
+              setJournalEntryParams({
                 mode: 'edit',
                 entryId: entry.id,
                 fromScreen: 'Calendar',
                 initialDate: new Date(entry.created_at).toISOString().split('T')[0]
-              };
+              });
               setCurrentScreen('journal');
             }}
             onNewEntry={(date) => {
-              (window as any).journalEntryParams = {
+              setJournalEntryParams({
                 mode: 'create',
                 fromScreen: 'Calendar',
                 initialDate: date.toISOString().split('T')[0]
-              };
+              });
               setCurrentScreen('journal');
             }}
           />
