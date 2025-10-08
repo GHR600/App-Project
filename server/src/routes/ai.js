@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const aiService = require('../services/aiService');
-// const UserService = require('../services/userService'); // Temporarily disabled for development
+const UserService = require('../services/userService');
+const { checkAIRateLimit, getRateLimitStatus } = require('../middleware/rateLimiter');
 const fetch = require('node-fetch');
 
 /**
  * Generate AI insight for journal entry
  * POST /api/ai/insight (singular endpoint for client compatibility)
  */
-router.post('/insight', async (req, res) => {
+router.post('/insight', checkAIRateLimit, async (req, res) => {
   try {
     const { content, moodRating, userPreferences, recentEntries, subscriptionStatus } = req.body;
     const userId = req.user.id;
@@ -28,13 +29,17 @@ router.post('/insight', async (req, res) => {
       });
     }
 
+    // Fetch user's AI style preference from database
+    const aiStyle = await UserService.getUserAIStyle(userId);
+
     // Generate AI insight using consolidated service
     const insight = await aiService.generateInsight({
       content: content.trim(),
       moodRating,
       userPreferences: userPreferences || { focusAreas: ['general'], personalityType: 'supportive' },
       recentEntries: recentEntries || [],
-      subscriptionStatus: subscriptionStatus || 'free'
+      subscriptionStatus: subscriptionStatus || 'free',
+      aiStyle
     });
 
     // Return insight in expected format
@@ -61,7 +66,7 @@ router.post('/insight', async (req, res) => {
  * Generate AI insight for journal entry
  * POST /api/ai/insights (original plural endpoint)
  */
-router.post('/insights', async (req, res) => {
+router.post('/insights', checkAIRateLimit, async (req, res) => {
   try {
     const { content, moodRating } = req.body;
     const userId = req.user.id;
@@ -80,6 +85,9 @@ router.post('/insights', async (req, res) => {
         message: 'Journal content is too long (max 10,000 characters)'
       });
     }
+
+    // Fetch user's AI style preference from database
+    const aiStyle = await UserService.getUserAIStyle(userId);
 
     // Skip user tier checks in development mode
     // const permissionCheck = await UserService.canUserGenerateInsight(userId);
@@ -100,7 +108,8 @@ router.post('/insights', async (req, res) => {
       moodRating,
       userPreferences,
       recentEntries,
-      subscriptionStatus: userTier.subscriptionStatus
+      subscriptionStatus: userTier.subscriptionStatus,
+      aiStyle
     });
 
     // Skip usage tracking in development mode
@@ -157,19 +166,22 @@ router.post('/insights', async (req, res) => {
 });
 
 /**
- * Get user's AI insight usage stats
+ * Get user's AI insight usage stats and rate limit status
  * GET /api/ai/usage
  */
 router.get('/usage', async (req, res) => {
   try {
-    // Return mock usage stats for development
+    const userId = req.user.id;
+    const rateLimitStatus = await getRateLimitStatus(userId);
+
     res.json({
       success: true,
       usage: {
-        subscriptionStatus: 'free',
-        freeInsightsUsed: 0,
-        remainingFreeInsights: 3,
-        isUnlimited: false
+        subscriptionStatus: rateLimitStatus.isPremium ? 'premium' : 'free',
+        limit: rateLimitStatus.limit,
+        remaining: rateLimitStatus.remaining,
+        resetAt: rateLimitStatus.resetAt,
+        isUnlimited: rateLimitStatus.isPremium
       }
     });
   } catch (error) {
@@ -185,7 +197,7 @@ router.get('/usage', async (req, res) => {
  * Handle AI chat conversation
  * POST /api/ai/chat
  */
-router.post('/chat', async (req, res) => {
+router.post('/chat', checkAIRateLimit, async (req, res) => {
   try {
     const { messages, journalContext } = req.body;
     const userId = req.user.id;
@@ -198,75 +210,38 @@ router.post('/chat', async (req, res) => {
       });
     }
 
-    // Build system prompt for chat
-    let systemPrompt = `You are a strategic thinking partner in conversation mode. You're chatting with someone about their journal entry and helping them explore their thoughts through dialogue.
+    // Fetch user's AI style preference and subscription status
+    const aiStyle = await UserService.getUserAIStyle(userId);
+    const userTier = await UserService.getUserTier(userId);
+    const userPreferences = await UserService.getUserPreferences(userId);
 
-Your conversational style should be:
-- Analytical but accessible - help them see patterns in their experiences
-- Direct and honest - ask probing questions without being harsh
-- Strategic and future-focused - connect their thoughts to bigger goals
-- Pattern-recognition oriented - help them notice recurring themes
-- Practical - guide them toward actionable insights
-
-Keep responses conversational (1-3 sentences) and ask thoughtful follow-up questions that encourage strategic thinking.
-
-AVOID:
-- Generic validation without insight
-- Long analysis paragraphs (save that for insights)
-- Emotional cheerleading
-- Surface-level responses
-
-Context from their journal: "{journalContext}"
-Previous conversation: {conversationHistory}
-
-Respond naturally as their strategic thinking partner.`;
-
-    if (journalContext) {
-      systemPrompt += `\n\nContext from their recent journal entry: "${journalContext}"`;
+    // Get the last user message
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+    if (!lastUserMessage) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'No user message found'
+      });
     }
 
-    // Use Claude for chat if available
-    if (process.env.ANTHROPIC_API_KEY) {
-      try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 150,
-            system: systemPrompt,
-            messages: messages.map(msg => ({
-              role: msg.role,
-              content: msg.content
-            }))
-          })
-        });
+    // Build conversation history (exclude the last message as it will be the current message)
+    const conversationHistory = messages.slice(0, -1);
 
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.content[0]?.text;
+    // Generate chat response using AI service
+    const chatResponse = await aiService.generateChatResponse({
+      message: lastUserMessage.content,
+      journalContext,
+      conversationHistory,
+      userPreferences,
+      subscriptionStatus: userTier.subscriptionStatus,
+      aiStyle
+    });
 
-          if (content) {
-            return res.json({
-              success: true,
-              response: content.trim()
-            });
-          }
-        }
-      } catch (claudeError) {
-        console.error('Claude chat error:', claudeError);
-      }
-    }
-
-    // Fallback to mock response
-    const mockResponse = generateMockChatResponse(messages[messages.length - 1]?.content || '', journalContext);
     res.json({
       success: true,
-      response: mockResponse
+      response: chatResponse.response,
+      source: chatResponse.source,
+      model: chatResponse.model
     });
 
   } catch (error) {
@@ -280,42 +255,64 @@ Respond naturally as their strategic thinking partner.`;
 });
 
 /**
- * Generate mock chat response for fallback
+ * Update user's AI style preference
+ * PUT /api/ai/style
  */
-function generateMockChatResponse(userMessage, journalContext) {
-  const message = userMessage.toLowerCase();
+router.put('/style', async (req, res) => {
+  try {
+    const { aiStyle } = req.body;
+    const userId = req.user.id;
 
-  // Context-aware responses using strategic thinking approach
-  if (message.includes('feel') || message.includes('emotion')) {
-    return "Your feelings are completely valid. What patterns do you notice in these emotions, and what might they be telling you about your needs?";
+    // Validate request
+    if (!aiStyle || !['coach', 'reflector'].includes(aiStyle)) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'AI style must be either "coach" or "reflector"'
+      });
+    }
+
+    // Update user's AI style in database
+    await UserService.updateUserAIStyle(userId, aiStyle);
+
+    res.json({
+      success: true,
+      aiStyle,
+      message: 'AI style updated successfully'
+    });
+
+  } catch (error) {
+    console.error('AI style update error:', error);
+    res.status(500).json({
+      error: 'Update failed',
+      message: 'Failed to update AI style. Please try again.',
+      code: 'AI_STYLE_UPDATE_FAILED'
+    });
   }
+});
 
-  if (message.includes('why') || message.includes('understand')) {
-    return "That's a strategic question. Self-understanding often comes through examining the systems and patterns behind our experiences. What connections are you starting to see?";
+/**
+ * Get user's current AI style preference
+ * GET /api/ai/style
+ */
+router.get('/style', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const aiStyle = await UserService.getUserAIStyle(userId);
+
+    res.json({
+      success: true,
+      aiStyle
+    });
+
+  } catch (error) {
+    console.error('AI style fetch error:', error);
+    res.status(500).json({
+      error: 'Fetch failed',
+      message: 'Failed to fetch AI style. Please try again.',
+      code: 'AI_STYLE_FETCH_FAILED'
+    });
   }
-
-  if (message.includes('help') || message.includes('advice')) {
-    return "I'm here to help you find your own insights through strategic analysis. What specific outcome are you trying to optimize for in this situation?";
-  }
-
-  if (message.includes('stress') || message.includes('anxious') || message.includes('worried')) {
-    return "Stress often signals misalignment between your current state and desired state. What would need to change to move toward your preferred outcome?";
-  }
-
-  if (message.includes('work') || message.includes('job') || message.includes('career')) {
-    return "Career challenges often reflect deeper questions about values and strategic positioning. What matters most to you in your professional growth right now?";
-  }
-
-  // Generic strategic responses
-  const strategicResponses = [
-    "That's a valuable insight. What patterns might this reveal about your decision-making framework?",
-    "Interesting perspective. How does this connect to your broader goals and priorities?",
-    "What you're describing suggests an underlying system at work. What would optimizing that system look like?",
-    "This seems like an important data point. What would this tell you about what to focus on next?",
-  ];
-
-  return strategicResponses[Math.floor(Math.random() * strategicResponses.length)];
-}
+});
 
 /**
  * Health check for AI service

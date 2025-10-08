@@ -169,6 +169,58 @@ class UserService {
       };
     }
   }
+
+  /**
+   * Get user's AI style preference (Coach vs Reflector)
+   */
+  static async getUserAIStyle(userId) {
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('ai_style')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.warn('Error fetching user AI style:', error);
+      }
+
+      return user?.ai_style || 'reflector';
+    } catch (error) {
+      console.error('Error getting user AI style:', error);
+      return 'reflector';
+    }
+  }
+
+  /**
+   * Update user's AI style preference
+   */
+  static async updateUserAIStyle(userId, aiStyle) {
+    try {
+      // Validate ai_style value
+      if (!['coach', 'reflector'].includes(aiStyle)) {
+        throw new Error('Invalid AI style. Must be "coach" or "reflector"');
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          ai_style: aiStyle,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) {
+        throw new Error(`Failed to update AI style: ${error.message}`);
+      }
+
+      console.log(`Updated AI style for user ${userId}: ${aiStyle}`);
+      return { success: true, aiStyle };
+    } catch (error) {
+      console.error('Error updating user AI style:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = UserService;

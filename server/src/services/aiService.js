@@ -1,4 +1,11 @@
 const Anthropic = require('@anthropic-ai/sdk');
+const {
+  getInsightPrompt,
+  getChatPrompt,
+  getSummaryPrompt,
+  getModelForTier,
+  getMaxTokens
+} = require('../config/aiPrompts');
 
 class AIService {
   constructor() {
@@ -20,7 +27,8 @@ class AIService {
     moodRating,
     userPreferences,
     recentEntries,
-    subscriptionStatus
+    subscriptionStatus,
+    aiStyle = 'reflector'
   }) {
     try {
       // Use real Claude API if available
@@ -30,7 +38,8 @@ class AIService {
           moodRating,
           userPreferences,
           recentEntries,
-          subscriptionStatus
+          subscriptionStatus,
+          aiStyle
         });
       }
 
@@ -62,14 +71,14 @@ class AIService {
     moodRating,
     userPreferences,
     recentEntries,
-    subscriptionStatus
+    subscriptionStatus,
+    aiStyle = 'reflector'
   }) {
     const startTime = Date.now();
     const isPremium = subscriptionStatus === 'premium';
-    const model = isPremium ? 'claude-3-sonnet-20240229' : 'claude-3-haiku-20240307';
 
     console.log('🤖 Claude AI - Starting insight generation:', {
-      model,
+      aiStyle,
       isPremium,
       contentLength: content.length,
       moodRating,
@@ -77,34 +86,39 @@ class AIService {
       recentEntriesCount: recentEntries?.length || 0
     });
 
-    const prompt = this.buildPrompt({
-      content,
+    // Use centralized prompt builder
+    const promptConfig = getInsightPrompt({
+      style: aiStyle,
+      entry: content,
       moodRating,
-      userPreferences,
       recentEntries,
+      userPreferences,
       isPremium
     });
 
     console.log('🤖 Claude AI - Built prompt:', {
-      promptLength: prompt.length,
-      promptPreview: prompt.substring(0, 200) + '...'
+      model: promptConfig.model,
+      maxTokens: promptConfig.maxTokens,
+      systemPromptLength: promptConfig.systemPrompt.length,
+      userMessageLength: promptConfig.userMessage.length
     });
 
     try {
       console.log('🤖 Claude AI - Calling API with params:', {
-        model,
-        max_tokens: isPremium ? 500 : 300,
+        model: promptConfig.model,
+        max_tokens: promptConfig.maxTokens,
         temperature: 0.7,
-        messageCount: 1
+        messageCount: 2
       });
 
       const response = await this.anthropic.messages.create({
-        model,
-        max_tokens: isPremium ? 500 : 300,
+        model: promptConfig.model,
+        max_tokens: promptConfig.maxTokens,
         temperature: 0.7,
+        system: promptConfig.systemPrompt,
         messages: [{
           role: 'user',
-          content: prompt
+          content: promptConfig.userMessage
         }]
       });
 
@@ -229,184 +243,6 @@ class AIService {
     }
   }
 
-  /**
-   * Build unified strategic thinking partner prompt
-   */
-  buildUnifiedPrompt({
-    content,
-    moodRating,
-    userPreferences,
-    recentEntries,
-    isPremium,
-    outputFormat = 'insight', // 'insight', 'chat', or 'summary'
-    // Chat-specific parameters
-    message,
-    journalContext,
-    conversationHistory
-  }) {
-    const focusAreasText = userPreferences?.focusAreas?.join(', ') || 'General well-being';
-    const premiumContext = isPremium
-      ? '\n- Premium subscriber: Provide deeper strategic analysis and long-term pattern recognition'
-      : '\n- Free tier: Focus on immediate insights and actionable steps';
-
-    // Core strategic thinking partner personality (same for both modes)
-    const corePersonality = `You are a strategic thinking partner who provides analytical depth and practical guidance. Your tone should be:
-
-ANALYTICAL BUT ACCESSIBLE
-- Break down complex situations into clear patterns and frameworks
-- Identify underlying systems and root causes, not just surface symptoms
-- Use structured thinking but explain it in plain language
-
-DIRECT AND HONEST
-- Skip flattery and motivational platitudes
-- Give candid assessments even when they might be uncomfortable
-- Focus on actionable truth over emotional comfort
-
-STRATEGIC AND FUTURE-FOCUSED
-- Connect immediate experiences to longer-term goals and patterns
-- Suggest tactical next steps while keeping strategic objectives in view
-- Help identify what's worth optimizing vs. what to ignore
-
-PATTERN-RECOGNITION ORIENTED
-- Look for recurring themes across different life areas
-- Connect seemingly unrelated experiences to show larger trends
-- Help the user understand their own behavioral and decision-making patterns
-
-PRACTICAL AND IMPLEMENTATION-FOCUSED
-- Always end with specific, actionable steps
-- Distinguish between immediate actions (next 30 days) and longer-term positioning
-- Provide concrete frameworks for decision-making
-
-TONE CHARACTERISTICS:
-- Confident but not prescriptive - offer analysis and let the user decide
-- Intellectually curious about the user's experiences and motivations
-- Respectful of complexity while pushing for clarity
-- Supportive of the user's goals without being a cheerleader
-
-AVOID:
-- Generic advice or obvious observations
-- Emotional validation without practical insight
-- Analysis paralysis - always provide clear next steps
-- Treating symptoms instead of addressing root causes`;
-
-    // Build context based on format type
-    let contextSection = '';
-    let outputSection = '';
-
-    if (outputFormat === 'insight') {
-      // Insight format - analyze journal entry
-      const moodText = moodRating ? `${moodRating}/5` : 'Not specified';
-      const recentEntriesText = recentEntries?.length > 0
-        ? recentEntries.map(entry => `"${entry.content.substring(0, 150)}..."`).join('\n')
-        : 'No recent entries available';
-
-      contextSection = `
-User Context:
-- Focus areas: ${focusAreasText}
-- Current mood: ${moodText}
-- Personality type: ${userPreferences?.personalityType || 'Not specified'}${premiumContext}
-
-Current Entry:
-"${content}"
-
-Recent Context:
-${recentEntriesText}`;
-
-      outputSection = `
-Please respond with EXACTLY this JSON format:
-{
-  "insight": "Your ${isPremium ? '75-150' : '75-125'} word strategic analysis identifying 2-3 key patterns with specific, actionable next steps",
-  "followUpQuestion": "One strategic follow-up question that helps identify optimization opportunities or decision-making frameworks",
-  "confidence": 0.85
-}
-
-Requirements:
-- Identify 2-3 key patterns or insights from the entry
-- Connect these patterns to broader goals and life context
-- Provide specific, actionable next steps (immediate and longer-term)
-- Be direct and analytical without being cold or clinical
-- Confidence should be between 0.7-0.95
-- ${isPremium ? 'Provide deeper pattern analysis across life areas and strategic positioning' : 'Focus on immediate patterns and tactical next steps'}`;
-
-    } else if (outputFormat === 'chat') {
-      // Chat format - conversational dialogue
-      const conversationContext = conversationHistory?.length > 0
-        ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
-        : 'No previous conversation';
-
-      const journalContextText = journalContext
-        ? `Journal Entry Context: "${journalContext.substring(0, 500)}${journalContext.length > 500 ? '...' : ''}"`
-        : 'No journal context provided';
-
-      contextSection = `
-User Context:
-- Focus areas: ${focusAreasText}${premiumContext}
-
-${journalContextText}
-
-Previous Conversation:
-${conversationContext}
-
-Current User Message: "${message}"`;
-
-      outputSection = `
-Keep responses conversational (1-3 sentences) and ask thoughtful follow-up questions that encourage strategic thinking.
-
-CHAT-SPECIFIC GUIDELINES:
-- Use the same analytical approach but in conversational tone
-- Ask probing questions without being harsh
-- Guide them toward actionable insights through dialogue
-- Avoid long analysis paragraphs (save detailed analysis for insights)
-
-Respond naturally as their strategic thinking partner.`;
-
-    } else if (outputFormat === 'summary') {
-      // Summary format - synthesize journal and conversation
-      const conversationContext = conversationHistory?.length > 0
-        ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')
-        : 'No conversation occurred';
-
-      contextSection = `
-User Context:
-- Focus areas: ${focusAreasText}${premiumContext}
-
-Journal Entry:
-"${content}"
-
-Related Conversation:
-${conversationContext}`;
-
-      outputSection = `
-Please provide a ${isPremium ? 'comprehensive' : 'concise'} summary (${isPremium ? '100-150' : '75-100'} words) that includes:
-1. Main themes from the journal entry
-2. Key insights from the conversation (if any)
-3. Notable emotional or experiential patterns
-
-Write the summary in a clear, supportive tone that would be helpful for the user to reference later. Focus on the most meaningful aspects rather than trying to capture every detail.
-
-Use the same analytical approach to identify patterns and insights, but present them as a cohesive summary rather than separate analysis points.`;
-    }
-
-    return `${corePersonality}
-
-${contextSection}
-
-${outputSection}`;
-  }
-
-  /**
-   * Build prompt for Claude AI (legacy wrapper)
-   */
-  buildPrompt({ content, moodRating, userPreferences, recentEntries, isPremium }) {
-    return this.buildUnifiedPrompt({
-      content,
-      moodRating,
-      userPreferences,
-      recentEntries,
-      isPremium,
-      outputFormat: 'insight'
-    });
-  }
 
   /**
    * Generate sophisticated mock insights
@@ -572,7 +408,8 @@ ${outputSection}`;
     journalContext,
     conversationHistory,
     userPreferences,
-    subscriptionStatus
+    subscriptionStatus,
+    aiStyle = 'reflector'
   }) {
     try {
       // Use real Claude API if available
@@ -582,7 +419,8 @@ ${outputSection}`;
           journalContext,
           conversationHistory,
           userPreferences,
-          subscriptionStatus
+          subscriptionStatus,
+          aiStyle
         });
       }
 
@@ -604,21 +442,23 @@ ${outputSection}`;
     journalContext,
     conversationHistory,
     userPreferences,
-    subscriptionStatus
+    subscriptionStatus,
+    aiStyle = 'reflector'
   }) {
     const startTime = Date.now();
     const isPremium = subscriptionStatus === 'premium';
-    const model = isPremium ? 'claude-3-sonnet-20240229' : 'claude-3-haiku-20240307';
 
     console.log('🤖 Claude AI - Starting chat response generation:', {
-      model,
+      aiStyle,
       isPremium,
       messageLength: message.length,
       journalContextLength: journalContext?.length || 0,
       conversationHistoryLength: conversationHistory?.length || 0
     });
 
-    const prompt = this.buildChatPrompt({
+    // Use centralized prompt builder
+    const promptConfig = getChatPrompt({
+      style: aiStyle,
       message,
       journalContext,
       conversationHistory,
@@ -628,12 +468,13 @@ ${outputSection}`;
 
     try {
       const response = await this.anthropic.messages.create({
-        model,
-        max_tokens: isPremium ? 400 : 250,
+        model: promptConfig.model,
+        max_tokens: promptConfig.maxTokens,
         temperature: 0.7,
+        system: promptConfig.systemPrompt,
         messages: [{
           role: 'user',
-          content: prompt
+          content: promptConfig.userMessage
         }]
       });
 
@@ -664,19 +505,6 @@ ${outputSection}`;
     }
   }
 
-  /**
-   * Build prompt for Claude AI chat (legacy wrapper)
-   */
-  buildChatPrompt({ message, journalContext, conversationHistory, userPreferences, isPremium }) {
-    return this.buildUnifiedPrompt({
-      message,
-      journalContext,
-      conversationHistory,
-      userPreferences,
-      isPremium,
-      outputFormat: 'chat'
-    });
-  }
 
   /**
    * Generate summary using Claude AI
@@ -685,7 +513,8 @@ ${outputSection}`;
     journalContent,
     conversationHistory,
     userPreferences,
-    subscriptionStatus
+    subscriptionStatus,
+    aiStyle = 'reflector'
   }) {
     try {
       // Use real Claude API if available
@@ -694,7 +523,8 @@ ${outputSection}`;
           journalContent,
           conversationHistory,
           userPreferences,
-          subscriptionStatus
+          subscriptionStatus,
+          aiStyle
         });
       }
 
@@ -715,20 +545,22 @@ ${outputSection}`;
     journalContent,
     conversationHistory,
     userPreferences,
-    subscriptionStatus
+    subscriptionStatus,
+    aiStyle = 'reflector'
   }) {
     const startTime = Date.now();
     const isPremium = subscriptionStatus === 'premium';
-    const model = isPremium ? 'claude-3-sonnet-20240229' : 'claude-3-haiku-20240307';
 
     console.log('🤖 Claude AI - Starting summary generation:', {
-      model,
+      aiStyle,
       isPremium,
       journalContentLength: journalContent.length,
       conversationHistoryLength: conversationHistory?.length || 0
     });
 
-    const prompt = this.buildSummaryPrompt({
+    // Use centralized prompt builder
+    const promptConfig = getSummaryPrompt({
+      style: aiStyle,
       journalContent,
       conversationHistory,
       userPreferences,
@@ -737,12 +569,13 @@ ${outputSection}`;
 
     try {
       const response = await this.anthropic.messages.create({
-        model,
-        max_tokens: isPremium ? 300 : 200,
+        model: promptConfig.model,
+        max_tokens: promptConfig.maxTokens,
         temperature: 0.7,
+        system: promptConfig.systemPrompt,
         messages: [{
           role: 'user',
-          content: prompt
+          content: promptConfig.userMessage
         }]
       });
 
@@ -772,18 +605,6 @@ ${outputSection}`;
     }
   }
 
-  /**
-   * Build prompt for Claude AI summary (legacy wrapper)
-   */
-  buildSummaryPrompt({ journalContent, conversationHistory, userPreferences, isPremium }) {
-    return this.buildUnifiedPrompt({
-      content: journalContent,
-      conversationHistory,
-      userPreferences,
-      isPremium,
-      outputFormat: 'summary'
-    });
-  }
 
   /**
    * Generate mock chat response
