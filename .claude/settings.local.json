@@ -38,7 +38,10 @@
       "mcp__ide__getDiagnostics",
       "Bash(awk:*)",
       "Bash(npx supabase:*)",
-      "Read(//c//**)"
+      "Read(//c//**)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

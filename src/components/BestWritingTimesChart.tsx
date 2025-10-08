@@ -129,7 +129,7 @@ export const BestWritingTimesChart: React.FC<BestWritingTimesChartProps> = ({ en
       </ScrollView>
 
       {peakHours.length > 0 && (
-        <View style={styles.legend}>
+        <View style={[styles.legend, { borderTopColor: theme.cardBorder }]}>
           <View style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: theme.primary }]} />
             <Text style={[styles.legendText, { color: theme.textSecondary }]}>
@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: '#00000010',
     flexDirection: 'row',
     justifyContent: 'center',
   },

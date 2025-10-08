@@ -228,7 +228,7 @@ export class AnalyticsService {
     }
 
     const dates = entries.map(entry => new Date(entry.created_at).toDateString());
-    const uniqueDates = [...new Set(dates)].sort();
+    const uniqueDates = Array.from(new Set(dates)).sort();
 
     let currentStreak = 0;
     let longestStreak = 0;
@@ -502,7 +502,7 @@ export class AnalyticsService {
     let txt = `Journal Export\n`;
     txt += `Export Date: ${new Date(data.metadata.exportDate).toLocaleDateString()}\n`;
     txt += `Total Entries: ${data.metadata.totalEntries}\n\n`;
-    txt += '=' * 50 + '\n\n';
+    txt += '='.repeat(50) + '\n\n';
 
     data.journalEntries.forEach((entry: DatabaseJournalEntry, index: number) => {
       txt += `Entry ${index + 1}\n`;
@@ -511,7 +511,7 @@ export class AnalyticsService {
         txt += `Mood: ${entry.mood_rating}/5\n`;
       }
       txt += `\n${entry.content}\n\n`;
-      txt += '-' * 30 + '\n\n';
+      txt += '-'.repeat(30) + '\n\n';
     });
 
     return txt;
