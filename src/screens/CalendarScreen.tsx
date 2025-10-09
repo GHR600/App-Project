@@ -32,7 +32,8 @@ interface CalendarDay {
 }
 
 const { width } = Dimensions.get('window');
-const CELL_SIZE = (width - 32) / 7; // 7 days per week
+// Account for calendarContainer marginHorizontal (24px) + padding (24px) = 48px total
+const CELL_SIZE = (width - 48) / 7; // 7 days per week
 
 export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   userId,

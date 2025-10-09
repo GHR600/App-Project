@@ -36,7 +36,6 @@ export interface ChatMessage {
 
 import { API_CONFIG } from '../utils/env';
 import { supabase } from '../config/supabase';
-import { buildChatPrompt } from '../config/prompts';
 import { generateAIInsightWithRetry } from './aiService';
 
 export class AIInsightService {

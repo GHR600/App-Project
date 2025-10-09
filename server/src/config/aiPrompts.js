@@ -38,7 +38,7 @@ const REFLECTOR_PERSONALITY = {
 
 // Model Selection Based on Subscription Tier
 function getModelForTier(isPremium) {
-  return isPremium ? 'claude-3-5-sonnet-20241022' : 'claude-3-haiku-20240307';
+  return isPremium ? 'claude-sonnet-4-5-20250929' : 'claude-sonnet-4-5-20250929';
 }
 
 // Token Limits Based on Subscription Tier and Request Type
@@ -83,7 +83,7 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
 
   const systemPrompt = `You are a ${personality.style} AI journaling companion. Your personality is: ${personality.tone.join(', ')}.
 
-Keep responses concise: 2-4 short paragraphs maximum.${preferencesSection}${contextSection}
+Keep responses concise: 2-4 concise constructive maximum.${preferencesSection}${contextSection}
 
 Respond with JSON in this exact format:
 {
