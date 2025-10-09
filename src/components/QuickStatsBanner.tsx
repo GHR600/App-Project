@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
+import { FileTextIcon, FlameIcon } from './icons/AppIcons';
+import { MessageSquare, BarChart3 } from 'lucide-react-native';
 
 interface QuickStat {
-  icon: string;
+  iconType: 'entries' | 'words' | 'average' | 'streak';
   value: number | string;
   label: string;
 }

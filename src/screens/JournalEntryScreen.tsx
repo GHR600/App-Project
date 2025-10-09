@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { ArrowUp } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
@@ -192,19 +193,35 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     return moodMap[emoji] || 3;
   };
 
-  // Load chat history when saved entry changes
+  // Load chat history and initial insight when saved entry changes
   useEffect(() => {
     const loadChatHistory = async () => {
       if (savedEntry) {
         try {
+          console.log('📖 Loading chat history and insight for entry:', savedEntry.id);
+
+          // Load initial insight from ai_insights table
+          const { insights, error: insightsError } = await AIInsightService.getInsightsForEntry(userId, savedEntry.id);
+          if (!insightsError && insights && insights.length > 0) {
+            // Get the most recent insight (they're ordered by created_at desc)
+            const latestInsight = insights[0];
+            console.log('✅ Loaded initial insight:', latestInsight.insight.substring(0, 100) + '...');
+            setInitialInsight(latestInsight.insight);
+            setHasGeneratedInitialInsight(true);
+          } else {
+            console.log('ℹ️ No insights found for this entry');
+          }
+
+          // Load chat messages
           const { messages, error } = await AIInsightService.getChatHistory(userId, savedEntry.id);
           if (error) {
-            console.error('Error loading chat history:', error);
+            console.error('❌ Error loading chat history:', error);
           } else {
+            console.log('✅ Loaded chat messages:', messages.length);
             setChatMessages(messages);
           }
         } catch (error) {
-          console.error('Error loading chat history:', error);
+          console.error('❌ Error loading chat history:', error);
         }
       }
     };
@@ -735,16 +752,15 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     );
   };
 
-  // Section B: AI Chat Area
+  // Section B: Chat Area
   const renderChatSection = () => {
   if (!savedEntry) {
     return (
       <View style={[styles.chatSection, { backgroundColor: theme.surface }]}>
         <View style={styles.chatPlaceholder}>
-          <Text style={styles.chatPlaceholderIcon}>💬</Text>
-          <Text style={[styles.chatPlaceholderTitle, { color: theme.textPrimary }]}>Chat with AI</Text>
+          <Text style={[styles.chatPlaceholderTitle, { color: theme.textPrimary }]}>Continue the conversation</Text>
           <Text style={[styles.chatPlaceholderText, { color: theme.textSecondary }]}>
-            Save your journal entry first to start chatting with AI.
+            Save your journal entry first to start chatting.
           </Text>
         </View>
       </View>
@@ -753,13 +769,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   return (
     <View style={[styles.chatSection, { backgroundColor: theme.surface }]}>
-      {/* Initial AI Insight */}
+      {/* Initial Insight */}
       {initialInsight && (
         <View style={[styles.insightBubble, { borderColor: theme.primary }]}>
-          <View style={styles.insightHeader}>
-            <Text style={styles.insightIcon}>🤖</Text>
-            <Text style={[styles.insightLabel, { color: theme.primary }]}>AI INSIGHT</Text>
-          </View>
           <Text style={[styles.insightText, { color: theme.textPrimary }]}>{initialInsight}</Text>
         </View>
       )}
@@ -802,7 +814,6 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                     { color: message.role === 'user' ? theme.white : theme.textPrimary }
                   ]}
                 >
-                  {message.role === 'assistant' ? '🤖 ' : '💬 '}
                   {message.content}
                 </Text>
               </View>
@@ -811,7 +822,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         })()}
         {isChatLoading && (
           <View style={[styles.claudeBubble, { backgroundColor: theme.backgroundTertiary }]}>
-            <Text style={[styles.claudeBubbleText, { color: theme.textPrimary }]}>🤖 Thinking...</Text>
+            <Text style={[styles.claudeBubbleText, { color: theme.textPrimary }]}>Thinking...</Text>
           </View>
         )}
       </ScrollView>
@@ -835,7 +846,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           onPress={handleSendChatMessage}
           disabled={!currentChatMessage.trim() || isChatLoading}
         >
-          <Text style={[styles.sendButtonText, { color: theme.white }]}>Send</Text>
+          <ArrowUp size={20} color={theme.white} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
     </View>
@@ -1105,10 +1116,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 40,
   },
-  chatPlaceholderIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
   chatPlaceholderTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -1127,20 +1134,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-  },
-  insightHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  insightIcon: {
-    fontSize: 18,
-    marginRight: 8,
-  },
-  insightLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
   },
   insightText: {
     fontSize: 14,
@@ -1190,15 +1183,11 @@ const styles = StyleSheet.create({
     maxHeight: 80,
   },
   sendButton: {
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  sendButtonDisabled: {
-  },
-  sendButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Section C: Summary

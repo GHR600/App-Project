@@ -466,54 +466,111 @@ export class JournalService {
     }
   }
 
-  // Update user streak based on last entry date
+  // Update user streak based on actual consecutive days with entries
   private static async updateUserStreak(userId: string): Promise<void> {
     try {
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('last_entry_date, streak_count')
-        .eq('id', userId)
-        .maybeSingle(); // Use maybeSingle to handle non-existent users
+      // Query all entries to calculate actual streak from database
+      const { data: entries, error: entriesError } = await supabase
+        .from('journal_entries')
+        .select('created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-      // Skip streak update if user doesn't exist in users table (demo mode)
-      if (userError || !user) {
-        console.log('User not found in users table, skipping streak update');
+      if (entriesError || !entries || entries.length === 0) {
+        console.log('⚠️ No entries found for streak calculation');
+        // Reset streak to 0 if no entries
+        await supabase
+          .from('users')
+          .update({ streak_count: 0, last_entry_date: null })
+          .eq('id', userId);
         return;
       }
 
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const lastEntryDate = user?.last_entry_date;
-      let newStreakCount = user?.streak_count || 0;
+      // Extract unique dates (YYYY-MM-DD format) - work purely with date strings to avoid timezone issues
+      const uniqueDates = new Set<string>();
+      entries.forEach(entry => {
+        // Parse timestamp and extract date in UTC (entries are stored in UTC)
+        const date = entry.created_at.split('T')[0]; // More reliable than new Date().toISOString()
+        uniqueDates.add(date);
+      });
 
-      if (!lastEntryDate) {
-        // First entry ever
-        newStreakCount = 1;
+      // Sort dates in descending order (most recent first)
+      const sortedDates = Array.from(uniqueDates).sort((a, b) => b.localeCompare(a));
+
+      // Get today and yesterday as date strings (YYYY-MM-DD) in UTC
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+
+      const yesterdayDate = new Date(now);
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+      console.log('📅 Streak calculation debug:', {
+        todayStr,
+        yesterdayStr,
+        mostRecentEntry: sortedDates[0],
+        totalUniqueDays: sortedDates.length,
+        recentDates: sortedDates.slice(0, 7)
+      });
+
+      // Check if streak is active (entry today or yesterday)
+      const hasEntryToday = sortedDates.includes(todayStr);
+      const hasEntryYesterday = sortedDates.includes(yesterdayStr);
+
+      let streak = 0;
+
+      if (!hasEntryToday && !hasEntryYesterday) {
+        // Streak is broken - no entry today or yesterday
+        console.log('💔 Streak broken - no entry today or yesterday');
+        streak = 0;
       } else {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        // Start from most recent entry date and count backwards
+        let currentDateStr = hasEntryToday ? todayStr : yesterdayStr;
 
-        if (lastEntryDate === yesterdayStr) {
-          // Consecutive day - increment streak
-          newStreakCount += 1;
-        } else if (lastEntryDate !== today) {
-          // Missed days - reset streak
-          newStreakCount = 1;
+        console.log('🔥 Counting streak from:', currentDateStr);
+
+        // Count consecutive days by iterating through sorted dates
+        for (const entryDate of sortedDates) {
+          if (entryDate === currentDateStr) {
+            streak++;
+            console.log(`  ✓ Day ${streak}: ${entryDate} matches ${currentDateStr}`);
+
+            // Move to previous day for next iteration
+            const prevDate = new Date(currentDateStr + 'T00:00:00Z');
+            prevDate.setUTCDate(prevDate.getUTCDate() - 1);
+            currentDateStr = prevDate.toISOString().split('T')[0];
+          } else if (entryDate < currentDateStr) {
+            // Gap found - entry is older than expected next date
+            console.log(`  ✗ Gap found: expected ${currentDateStr}, found ${entryDate}`);
+            break;
+          }
+          // If entryDate > currentDateStr, it's a future date (skip it)
         }
-        // If lastEntryDate === today, keep current streak (same day, multiple entries)
       }
 
-      // Update user record
+      console.log('📊 Final streak calculation:', {
+        userId,
+        totalEntries: entries.length,
+        uniqueDays: sortedDates.length,
+        calculatedStreak: streak,
+        hasEntryToday,
+        hasEntryYesterday
+      });
+
+      // Update user record with calculated streak
+      const lastEntryDate = sortedDates[0]; // Most recent date
       await supabase
         .from('users')
         .update({
-          last_entry_date: today,
-          streak_count: newStreakCount
+          last_entry_date: lastEntryDate,
+          streak_count: streak
         })
         .eq('id', userId);
 
+      console.log('✅ Streak updated successfully:', { streak, lastEntryDate });
+
     } catch (error) {
-      console.error('Unexpected error updating user streak:', error);
+      console.error('❌ Unexpected error updating user streak:', error);
     }
   }
 

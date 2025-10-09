@@ -11,7 +11,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Flame } from 'lucide-react-native';
+import {
+  MenuIcon,
+  SearchIcon,
+  CloseIcon,
+  FlameIcon,
+  TrophyIcon,
+  CrownIcon,
+  FileTextIcon,
+  getMoodEmoji,
+} from '../components/icons/AppIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { typography, spacing, borderRadius } from '../styles/designSystem';
 import { BottomNavigation } from '../components/BottomNavigation';
@@ -40,11 +49,11 @@ interface UserStats {
 const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats, isLoading }) => {
   const { theme } = useTheme();
 
-  const getStreakIcon = (streak: number) => {
-    if (streak === 0) return { icon: '📝', size: 32 };
-    if (streak < 30) return { icon: 'flame', size: streak < 3 ? 28 : streak < 7 ? 32 : streak < 14 ? 36 : 40 };
-    if (streak < 100) return { icon: '🏆', size: 32 };
-    return { icon: '👑', size: 32 };
+  const getStreakIcon = (streak: number): { type: 'fileText' | 'flame' | 'trophy' | 'crown'; size: number } => {
+    if (streak === 0) return { type: 'fileText', size: 32 };
+    if (streak < 30) return { type: 'flame', size: streak < 3 ? 28 : streak < 7 ? 32 : streak < 14 ? 36 : 40 };
+    if (streak < 100) return { type: 'trophy', size: 32 };
+    return { type: 'crown', size: 32 };
   };
 
   const getStreakMessage = (streak: number) => {
@@ -82,10 +91,17 @@ const StatsHeader: React.FC<{ stats: UserStats; isLoading: boolean }> = ({ stats
       {/* Streak Banner */}
       <View style={[styles.streakBanner, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
         <View style={styles.streakIconContainer}>
-          {streakIcon.icon === 'flame' ? (
-            <Flame size={streakIcon.size} color={theme.primary} fill={theme.primary} />
-          ) : (
-            <Text style={[styles.streakEmoji, { fontSize: streakIcon.size }]}>{streakIcon.icon}</Text>
+          {streakIcon.type === 'flame' && (
+            <FlameIcon size={streakIcon.size} color={theme.primary} fill={theme.primary} />
+          )}
+          {streakIcon.type === 'trophy' && (
+            <TrophyIcon size={streakIcon.size} color={theme.primary} strokeWidth={2} />
+          )}
+          {streakIcon.type === 'crown' && (
+            <CrownIcon size={streakIcon.size} color={theme.primary} strokeWidth={2} />
+          )}
+          {streakIcon.type === 'fileText' && (
+            <FileTextIcon size={streakIcon.size} color={theme.primary} strokeWidth={2} />
           )}
         </View>
         <View style={styles.streakInfo}>
@@ -256,17 +272,8 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     setCurrentPage(prev => prev + 1);
   };
 
-  const getMoodEmoji = (rating?: number): string => {
-    if (!rating) return '';
-    switch (rating) {
-      case 1: return '😢';
-      case 2: return '😕';
-      case 3: return '😐';
-      case 4: return '😊';
-      case 5: return '😄';
-      default: return '😐';
-    }
-  };
+  // Mood emojis are imported from AppIcons
+  // const getMoodEmoji is now imported from AppIcons
 
   const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
@@ -317,7 +324,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     if (filteredEntries.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateIcon}>{searchQuery ? '🔍' : '📝'}</Text>
+          <View style={styles.emptyStateIconContainer}>
+            {searchQuery ? (
+              <SearchIcon size={48} color={theme.textMuted} strokeWidth={1.5} />
+            ) : (
+              <FileTextIcon size={48} color={theme.textMuted} strokeWidth={1.5} />
+            )}
+          </View>
           <Text style={[styles.emptyStateTitle, { color: theme.textPrimary }]}>
             {searchQuery ? 'No Results Found' : 'Start Your Journey'}
           </Text>
@@ -419,11 +432,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
             style={styles.menuButton}
             onPress={onMenuPress}
           >
-            <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
+            <MenuIcon size={24} color={theme.primary} strokeWidth={2.5} />
           </TouchableOpacity>
 
           <View style={[styles.searchBar, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.searchIcon, { color: theme.textSecondary }]}>🔍</Text>
+            <View style={styles.searchIconContainer}>
+              <SearchIcon size={18} color={theme.textSecondary} strokeWidth={2} />
+            </View>
             <TextInput
               style={[styles.searchInput, { color: theme.textPrimary }]}
               placeholder="Search all entries..."
@@ -433,7 +448,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
             />
             {searchQuery !== '' && (
               <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-                <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>✕</Text>
+                <CloseIcon size={18} color={theme.textSecondary} strokeWidth={2} />
               </TouchableOpacity>
             )}
           </View>
@@ -449,7 +464,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
                     {selectedTagFilter}
                   </Text>
                   <TouchableOpacity onPress={() => setSelectedTagFilter(null)} style={styles.removeFilterButton}>
-                    <Text style={[styles.removeFilterText, { color: getTagColor(selectedTagFilter) }]}>✕</Text>
+                    <CloseIcon size={14} color={getTagColor(selectedTagFilter)} strokeWidth={2.5} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -504,10 +519,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuIcon: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
 
   // Compact Stats Header (MyDiary Style)
   statsContainer: {
@@ -528,9 +539,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm,
-  },
-  streakEmoji: {
-    fontSize: 36,
   },
   streakInfo: {
     flex: 1,
@@ -574,8 +582,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  searchIcon: {
-    fontSize: 18,
+  searchIconContainer: {
     marginRight: spacing.sm,
   },
   searchInput: {
@@ -585,10 +592,6 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     padding: spacing.xs,
-  },
-  clearButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 
   // Filters Container
@@ -616,10 +619,7 @@ const styles = StyleSheet.create({
   },
   removeFilterButton: {
     marginLeft: 2,
-  },
-  removeFilterText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    padding: 2,
   },
   clearFiltersButton: {
     paddingHorizontal: spacing.sm,
@@ -713,8 +713,7 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: spacing.md,
   },
-  emptyStateIcon: {
-    fontSize: 48,
+  emptyStateIconContainer: {
     marginBottom: spacing.md,
   },
   emptyStateTitle: {

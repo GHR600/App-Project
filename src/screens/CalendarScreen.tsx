@@ -10,6 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import {
+  MenuIcon,
+  BackIcon,
+  ForwardIcon,
+  FileTextIcon,
+} from '../components/icons/AppIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { JournalService, JournalEntryWithInsights } from '../services/journalService';
 
@@ -214,7 +220,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}>
         <TouchableOpacity onPress={onMenuPress} style={styles.backButton}>
-          <Text style={[styles.backButtonText, { color: theme.textPrimary }]}>☰</Text>
+          <MenuIcon size={24} color={theme.textPrimary} strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Calendar</Text>
         <View style={styles.backButton} />
@@ -224,11 +230,11 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       <View style={[styles.monthHeader, { backgroundColor: theme.backgroundSecondary, borderBottomColor: theme.cardBorder }]}>
         <View style={styles.monthNavigation}>
           <TouchableOpacity onPress={handlePreviousMonth} style={styles.navButton}>
-            <Text style={[styles.navButtonText, { color: theme.textPrimary }]}>◀</Text>
+            <BackIcon size={20} color={theme.textPrimary} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={[styles.monthText, { color: theme.textPrimary }]}>{formatMonthYear(currentMonth)}</Text>
           <TouchableOpacity onPress={handleNextMonth} style={styles.navButton}>
-            <Text style={[styles.navButtonText, { color: theme.textPrimary }]}>▶</Text>
+            <ForwardIcon size={20} color={theme.textPrimary} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleTodayPress} style={[styles.todayButton, { backgroundColor: theme.primary }]}>
@@ -294,7 +300,9 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
             </View>
           ) : selectedEntries.length === 0 ? (
             <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyStateIcon}>📝</Text>
+              <View style={styles.emptyStateIconWrapper}>
+                <FileTextIcon size={48} color={theme.textMuted} strokeWidth={1.5} />
+              </View>
               <Text style={[styles.noEntriesText, { color: theme.textSecondary }]}>No entry for this date</Text>
               <Text style={[styles.noEntriesSubtext, { color: theme.textMuted }]}>
                 Tap the + button to create one
@@ -390,10 +398,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -421,10 +425,8 @@ const styles = StyleSheet.create({
   },
   navButton: {
     padding: 8,
-  },
-  navButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   monthText: {
     fontSize: 16,
@@ -527,8 +529,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 40,
   },
-  emptyStateIcon: {
-    fontSize: 48,
+  emptyStateIconWrapper: {
     marginBottom: 16,
   },
   noEntriesText: {

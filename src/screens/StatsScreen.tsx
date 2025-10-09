@@ -7,6 +7,7 @@ import { QuickStatsBanner } from '../components/QuickStatsBanner';
 import { AnalyticsDashboard } from '../components/AnalyticsDashboard';
 import { supabase, DatabaseJournalEntry } from '../config/supabase';
 import { AnalyticsService, AdvancedAnalytics } from '../services/analyticsService';
+import { MenuIcon, StatsIcon } from '../components/icons/AppIcons';
 
 interface StatsScreenProps {
   userId: string;
@@ -61,7 +62,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
           style={styles.menuButton}
           onPress={onMenuPress}
         >
-          <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
+          <MenuIcon size={24} color={theme.primary} strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Statistics</Text>
         <View style={styles.menuButton} />
@@ -89,7 +90,9 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
         </ScrollView>
       ) : (
         <View style={styles.emptyContainer}>
-          <Text style={[styles.icon, { color: theme.primary }]}>📊</Text>
+          <View style={styles.emptyIconContainer}>
+            <StatsIcon size={64} color={theme.primary} strokeWidth={1.5} />
+          </View>
           <Text style={[styles.title, { color: theme.textPrimary }]}>No Data Yet</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Start writing journal entries to see your stats!
@@ -117,10 +120,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuIcon: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -143,8 +142,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
   },
-  icon: {
-    fontSize: 64,
+  emptyIconContainer: {
     marginBottom: spacing.lg,
   },
   title: {

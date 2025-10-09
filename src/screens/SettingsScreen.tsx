@@ -9,6 +9,16 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SunIcon,
+  MoonIcon,
+  SettingsIcon,
+  TargetIcon,
+  UserIcon,
+  CheckIcon,
+  InfoIcon,
+  ArrowRightIcon,
+} from '../components/icons/AppIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../config/supabase';
@@ -27,21 +37,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
   const [updatingAIStyle, setUpdatingAIStyle] = useState(false);
 
   const themeOptions = [
-    { value: 'light' as const, label: 'Light', icon: '☀️' },
-    { value: 'dark' as const, label: 'Dark', icon: '🌙' },
-    { value: 'system' as const, label: 'System', icon: '⚙️' },
+    { value: 'light' as const, label: 'Light', iconType: 'sun' as const },
+    { value: 'dark' as const, label: 'Dark', iconType: 'moon' as const },
+    { value: 'system' as const, label: 'System', iconType: 'settings' as const },
   ];
 
   const aiStyleOptions = [
     {
       value: 'coach' as const,
-      emoji: '🎯',
+      iconType: 'target' as const,
       label: 'Coach',
       description: 'Strategic and direct. Helps you spot patterns and take action.',
     },
     {
       value: 'reflector' as const,
-      emoji: '🧘',
+      iconType: 'user' as const,
       label: 'Reflector',
       description: 'Thoughtful and curious. Gives you space to process and think clearly.',
     },
@@ -137,7 +147,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                       }
                     ]}
                   >
-                    <Text style={styles.aiStyleEmoji}>{option.emoji}</Text>
+                    <View style={styles.aiStyleIconContainer}>
+                      {option.iconType === 'target' ? (
+                        <TargetIcon
+                          size={32}
+                          color={aiStyle === option.value ? theme.white : theme.primary}
+                          strokeWidth={2}
+                        />
+                      ) : (
+                        <UserIcon
+                          size={32}
+                          color={aiStyle === option.value ? theme.white : theme.primary}
+                          strokeWidth={2}
+                        />
+                      )}
+                    </View>
                     <View style={styles.aiStyleContent}>
                       <Text
                         style={[
@@ -161,7 +185,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                       </Text>
                     </View>
                     {aiStyle === option.value && (
-                      <Text style={[styles.checkmark, { color: theme.white }]}>✓</Text>
+                      <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -190,7 +214,29 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                   }
                 ]}
               >
-                <Text style={styles.themeIcon}>{option.icon}</Text>
+                <View style={styles.themeIconContainer}>
+                  {option.iconType === 'sun' && (
+                    <SunIcon
+                      size={24}
+                      color={themeMode === option.value ? theme.white : theme.primary}
+                      strokeWidth={2}
+                    />
+                  )}
+                  {option.iconType === 'moon' && (
+                    <MoonIcon
+                      size={24}
+                      color={themeMode === option.value ? theme.white : theme.primary}
+                      strokeWidth={2}
+                    />
+                  )}
+                  {option.iconType === 'settings' && (
+                    <SettingsIcon
+                      size={24}
+                      color={themeMode === option.value ? theme.white : theme.primary}
+                      strokeWidth={2}
+                    />
+                  )}
+                </View>
                 <Text
                   style={[
                     styles.themeLabel,
@@ -202,7 +248,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                   {option.label}
                 </Text>
                 {themeMode === option.value && (
-                  <Text style={[styles.checkmark, { color: theme.white }]}>✓</Text>
+                  <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
                 )}
               </TouchableOpacity>
             ))}
@@ -210,7 +256,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
 
           {themeMode === 'system' && (
             <View style={[styles.infoBox, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
-              <Text style={[styles.infoIcon, { color: theme.info }]}>ℹ️</Text>
+              <View style={styles.infoIconContainer}>
+                <InfoIcon size={16} color={theme.info} strokeWidth={2} />
+              </View>
               <Text style={[styles.infoText, { color: theme.textSecondary }]}>
                 System theme matches your device's appearance settings
               </Text>
@@ -235,15 +283,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Support</Text>
           <TouchableOpacity style={styles.settingItem}>
             <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Help Center</Text>
-            <Text style={[styles.settingValue, { color: theme.primary }]}>→</Text>
+            <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.settingItem}>
             <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Privacy Policy</Text>
-            <Text style={[styles.settingValue, { color: theme.primary }]}>→</Text>
+            <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.settingItem}>
             <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Terms of Service</Text>
-            <Text style={[styles.settingValue, { color: theme.primary }]}>→</Text>
+            <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -311,18 +359,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
   },
-  themeIcon: {
-    fontSize: 24,
+  themeIconContainer: {
     marginRight: 12,
   },
   themeLabel: {
     fontSize: 16,
     fontWeight: '600',
     flex: 1,
-  },
-  checkmark: {
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   infoBox: {
     flexDirection: 'row',
@@ -332,9 +375,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
-  infoIcon: {
-    fontSize: 16,
+  infoIconContainer: {
     marginRight: 8,
+    marginTop: 2,
   },
   infoText: {
     fontSize: 13,
@@ -367,8 +410,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
   },
-  aiStyleEmoji: {
-    fontSize: 32,
+  aiStyleIconContainer: {
     marginRight: 16,
   },
   aiStyleContent: {
