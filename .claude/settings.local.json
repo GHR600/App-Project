@@ -43,7 +43,8 @@
       "Bash(do echo \"=== $file ===\")",
       "Bash(done)",
       "Bash(mkdir:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Read(//c/**)"
     ],
     "deny": [],
     "ask": []
