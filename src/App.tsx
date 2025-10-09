@@ -10,9 +10,12 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { useAndroidBackHandler } from './hooks/useAndroidBackHandler';
+import { initializeRevenueCat, loginRevenueCat, logoutRevenueCat } from './services/subscriptionService';
 import { SubscriptionPaywallScreen } from './screens/SubscriptionPaywallScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { OnboardingScreen } from './screens/OnboardingScreen';
 import { JournalEntryScreen } from './screens/JournalEntryScreen';
 import { DashboardHomeScreen } from './screens/DashboardHomeScreen';
 import { EntryDetailScreen } from './screens/EntryDetailScreen';
@@ -33,8 +36,79 @@ const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'calendar' | 'home' | 'stats'>('home');
   const [menuVisible, setMenuVisible] = useState(false);
   const [journalEntryParams, setJournalEntryParams] = useState<any>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const { user, loading } = useAuth();
   const { theme, isDark } = useTheme();
+
+  // Initialize RevenueCat when app mounts
+  useEffect(() => {
+    const initRevenueCat = async () => {
+      try {
+        await initializeRevenueCat();
+        console.log('RevenueCat initialized');
+      } catch (error) {
+        console.error('RevenueCat initialization failed:', error);
+      }
+    };
+
+    initRevenueCat();
+  }, []);
+
+  // Log in/out RevenueCat user when auth changes
+  useEffect(() => {
+    const handleRevenueCatAuth = async () => {
+      if (user) {
+        try {
+          await loginRevenueCat(user.id);
+        } catch (error) {
+          console.error('RevenueCat login failed:', error);
+        }
+      } else {
+        try {
+          await logoutRevenueCat();
+        } catch (error) {
+          console.error('RevenueCat logout failed:', error);
+        }
+      }
+    };
+
+    handleRevenueCatAuth();
+  }, [user]);
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (!user) {
+        setCheckingOnboarding(false);
+        return;
+      }
+
+      try {
+        const { supabase } = await import('./config/supabase');
+        const { data, error } = await supabase
+          .from('users')
+          .select('ai_style')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error checking onboarding status:', error);
+          setNeedsOnboarding(false);
+        } else {
+          // If ai_style is null or undefined, user needs onboarding
+          setNeedsOnboarding(!data?.ai_style);
+        }
+      } catch (error) {
+        console.error('Error in onboarding check:', error);
+        setNeedsOnboarding(false);
+      } finally {
+        setCheckingOnboarding(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [user]);
 
   // Android back button handler
   const handleAndroidBack = useCallback(() => {
@@ -142,6 +216,19 @@ const MainApp: React.FC = () => {
   );
 
   const renderCurrentScreen = () => {
+    // Show onboarding if user is authenticated and needs it
+    if (user && needsOnboarding && !checkingOnboarding) {
+      return (
+        <OnboardingScreen
+          userId={user.id}
+          onComplete={() => {
+            setNeedsOnboarding(false);
+            setCurrentScreen('dashboard');
+          }}
+        />
+      );
+    }
+
     switch (currentScreen) {
       case 'signUp':
         return (
@@ -346,7 +433,9 @@ const App: React.FC = () => {
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-          <MainApp />
+          <SubscriptionProvider>
+            <MainApp />
+          </SubscriptionProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

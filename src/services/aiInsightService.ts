@@ -483,12 +483,15 @@ export class AIInsightService {
     });
 
     try {
-      // Use new AI service with full context
+      // Use new AI service with full context - send correct request format to backend
       const aiResponse = await generateAIInsightWithRetry({
-        userId: entry.userId,
-        currentEntryId: entry.id,
-        currentEntryContent: entry.content,
-        currentEntryMood: entry.moodRating
+        content: entry.content,
+        moodRating: entry.moodRating,
+        userPreferences: {
+          focusAreas: userContext.focusAreas || ['general'],
+        },
+        recentEntries: recentEntries || [],
+        subscriptionStatus: userContext.subscriptionStatus
       });
 
       if (aiResponse.error) {

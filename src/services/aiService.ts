@@ -4,7 +4,26 @@
  * ALL Claude API calls must go through the backend for security (API keys should never be in frontend)
  */
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+import { API_CONFIG } from '../utils/env';
+import { supabase } from '../config/supabase';
+
+const API_URL = API_CONFIG.baseUrl;
+
+/**
+ * Get authorization headers with access token
+ */
+async function getAuthHeaders(): Promise<HeadersInit> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+
+  return headers;
+}
 
 export interface AIInsightResponse {
   insight: string;
@@ -32,12 +51,10 @@ export interface AIInsightRequest {
  */
 export async function generateAIInsight(request: AIInsightRequest): Promise<AIInsightResponse> {
   try {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_URL}/api/ai/insight`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include authentication cookies
+      headers,
       body: JSON.stringify(request),
     });
 
@@ -74,12 +91,10 @@ export async function sendChatMessage(
   journalContext?: string
 ): Promise<{ response: string; error?: string }> {
   try {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_URL}/api/ai/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include authentication cookies
+      headers,
       body: JSON.stringify({
         messages: [...conversationHistory, { role: 'user', content: message }],
         journalContext,
@@ -111,12 +126,10 @@ export async function sendChatMessage(
  */
 export async function getUserAIStyle(): Promise<{ aiStyle: string; error?: string }> {
   try {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_URL}/api/ai/style`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include authentication cookies
+      headers,
     });
 
     if (!response.ok) {
@@ -146,12 +159,10 @@ export async function updateUserAIStyle(
   aiStyle: 'coach' | 'reflector'
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_URL}/api/ai/style`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include authentication cookies
+      headers,
       body: JSON.stringify({ aiStyle }),
     });
 
