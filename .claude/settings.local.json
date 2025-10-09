@@ -44,7 +44,9 @@
       "Bash(done)",
       "Bash(mkdir:*)",
       "Bash(test:*)",
-      "Read(//c/**)"
+      "Read(//c/**)",
+      "Bash(mv:*)",
+      "Bash(rmdir:*)"
     ],
     "deny": [],
     "ask": []
