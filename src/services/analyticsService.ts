@@ -76,6 +76,15 @@ export class AnalyticsService {
       const endDate = dateRange?.end || new Date();
       const startDate = dateRange?.start || new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
+      // Fetch user's streak from users table (authoritative source)
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('streak_count')
+        .eq('id', userId)
+        .maybeSingle();
+
+      const currentStreak = userData?.streak_count || 0;
+
       // Fetch journal entries and insights
       const { data: entries, error: entriesError } = await supabase
         .from('journal_entries')
@@ -106,7 +115,7 @@ export class AnalyticsService {
         wordCloud: this.generateWordCloud(entries || []),
         writingPatterns: this.generateWritingPatterns(entries || []),
         emotionalInsights: this.generateEmotionalInsights(entries || [], insights || []),
-        streakAnalysis: this.generateStreakAnalysis(entries || []),
+        streakAnalysis: this.generateStreakAnalysis(entries || [], currentStreak),
         contentAnalysis: this.generateContentAnalysis(entries || []),
         growthMetrics: this.generateGrowthMetrics(entries || [], insights || []),
       };
@@ -217,7 +226,10 @@ export class AnalyticsService {
     }));
   }
 
-  private static generateStreakAnalysis(entries: DatabaseJournalEntry[]) {
+  private static generateStreakAnalysis(
+    entries: DatabaseJournalEntry[],
+    currentStreak: number
+  ) {
     if (entries.length === 0) {
       return {
         currentStreak: 0,
@@ -227,18 +239,19 @@ export class AnalyticsService {
       };
     }
 
-    const dates = entries.map(entry => new Date(entry.created_at).toDateString());
-    const uniqueDates = Array.from(new Set(dates)).sort();
+    // Extract unique dates (use UTC date strings to avoid timezone issues)
+    const uniqueDates = Array.from(
+      new Set(entries.map(entry => entry.created_at.split('T')[0]))
+    ).sort();
 
-    let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 1;
 
-    // Calculate streaks
+    // Calculate longest streak by checking consecutive dates
     for (let i = 1; i < uniqueDates.length; i++) {
-      const prevDate = new Date(uniqueDates[i - 1]);
-      const currDate = new Date(uniqueDates[i]);
-      const dayDiff = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+      const prevDate = new Date(uniqueDates[i - 1] + 'T00:00:00Z');
+      const currDate = new Date(uniqueDates[i] + 'T00:00:00Z');
+      const dayDiff = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
 
       if (dayDiff === 1) {
         tempStreak++;
@@ -250,23 +263,16 @@ export class AnalyticsService {
 
     longestStreak = Math.max(longestStreak, tempStreak);
 
-    // Current streak
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-
-    if (uniqueDates.includes(today) || uniqueDates.includes(yesterday)) {
-      currentStreak = tempStreak;
-    }
-
     // Average gap and consistency
     const totalDays = uniqueDates.length;
-    const dateRange = (new Date(uniqueDates[uniqueDates.length - 1]).getTime() -
-                      new Date(uniqueDates[0]).getTime()) / (1000 * 60 * 60 * 24);
-    const averageGapBetweenEntries = dateRange / (totalDays - 1);
+    const firstDate = new Date(uniqueDates[0] + 'T00:00:00Z');
+    const lastDate = new Date(uniqueDates[uniqueDates.length - 1] + 'T00:00:00Z');
+    const dateRange = Math.round((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+    const averageGapBetweenEntries = totalDays > 1 ? dateRange / (totalDays - 1) : 0;
     const consistency = Math.min(1, totalDays / (dateRange + 1));
 
     return {
-      currentStreak,
+      currentStreak, // Use authoritative streak from users table
       longestStreak,
       averageGapBetweenEntries,
       consistency,

@@ -27,11 +27,29 @@ export const QuickStatsBanner: React.FC<QuickStatsBannerProps> = ({
   const { theme } = useTheme();
 
   const quickStats: QuickStat[] = [
-    { icon: '📝', value: totalEntries, label: 'Entries' },
-    { icon: '💬', value: totalWords.toLocaleString(), label: 'Words' },
-    { icon: '📊', value: Math.round(avgWordsPerEntry), label: 'Avg/Entry' },
-    { icon: '🔥', value: currentStreak, label: 'Day Streak' },
+    { iconType: 'entries', value: totalEntries, label: 'Entries' },
+    { iconType: 'words', value: totalWords.toLocaleString(), label: 'Words' },
+    { iconType: 'average', value: Math.round(avgWordsPerEntry), label: 'Avg/Entry' },
+    { iconType: 'streak', value: currentStreak, label: 'Day Streak' },
   ];
+
+  const renderIcon = (iconType: QuickStat['iconType']) => {
+    const iconSize = 20;
+    const iconColor = theme.primary;
+
+    switch (iconType) {
+      case 'entries':
+        return <FileTextIcon size={iconSize} color={iconColor} strokeWidth={2} />;
+      case 'words':
+        return <MessageSquare size={iconSize} color={iconColor} strokeWidth={2} />;
+      case 'average':
+        return <BarChart3 size={iconSize} color={iconColor} strokeWidth={2} />;
+      case 'streak':
+        return <FlameIcon size={iconSize} color={iconColor} fill={iconColor} strokeWidth={2} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <ScrollView
@@ -48,7 +66,9 @@ export const QuickStatsBanner: React.FC<QuickStatsBannerProps> = ({
             { backgroundColor: theme.surface },
           ]}
         >
-          <Text style={styles.icon}>{stat.icon}</Text>
+          <View style={styles.iconContainer}>
+            {renderIcon(stat.iconType)}
+          </View>
           <Text style={[styles.value, { color: theme.textPrimary }]}>
             {stat.value}
           </Text>
@@ -80,8 +100,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  icon: {
-    fontSize: 20,
+  iconContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   value: {
     fontSize: 18,
