@@ -26,6 +26,7 @@ import { CalendarScreen } from './screens/CalendarScreen';
 import { StatsScreen } from './screens/StatsScreen';
 import { NotesScreen } from './screens/NotesScreen';
 import { AccountScreen } from './screens/AccountScreen';
+import { ExportScreen } from './screens/ExportScreen';
 import { DatabaseJournalEntry } from './config/supabase';
 import { BottomNavigation } from './components/BottomNavigation';
 import { SideMenu } from './components/SideMenu';
@@ -116,7 +117,8 @@ const MainApp: React.FC = () => {
     if (currentScreen === 'journal' || currentScreen === 'settings' ||
         currentScreen === 'calendar' || currentScreen === 'stats' ||
         currentScreen === 'notes' || currentScreen === 'account' ||
-        currentScreen === 'subscription' || currentScreen === 'entryDetail') {
+        currentScreen === 'subscription' || currentScreen === 'entryDetail' ||
+        currentScreen === 'export') {
       // Navigate back to dashboard
       setCurrentScreen('dashboard');
       return true; // Prevent default (exit app)
@@ -376,6 +378,12 @@ const MainApp: React.FC = () => {
           return renderHomeScreen();
         }
         return <AccountScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
+      case 'export':
+        if (!user) {
+          setCurrentScreen('signUp');
+          return renderHomeScreen();
+        }
+        return <ExportScreen />;
       default:
         return renderHomeScreen();
     }
@@ -402,11 +410,11 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const handleMenuNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats') => {
+  const handleMenuNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats' | 'export') => {
     setCurrentScreen(screen);
   };
 
-  const shouldShowBottomNav = user && ['dashboard', 'calendar', 'stats', 'notes', 'account'].includes(currentScreen);
+  const shouldShowBottomNav = user && ['dashboard', 'calendar', 'stats', 'notes', 'account', 'export'].includes(currentScreen);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>

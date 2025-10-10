@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
-import { AnalyticsService, AdvancedAnalytics, ExportOptions } from '../services/analyticsService';
+import { AnalyticsService, AdvancedAnalytics } from '../services/analyticsService';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { MonthSummaryCard } from './MonthSummaryCard';
 import { AchievementsBanner } from './AchievementsBanner';
@@ -76,33 +76,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     }
   };
 
-  const handleExport = async (format: 'json' | 'csv' | 'txt') => {
-    try {
-      const options: ExportOptions = {
-        format,
-        dateRange: dateRange || {
-          start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-          end: new Date()
-        },
-        includeInsights: true,
-        includeAnalytics: true,
-        includeImages: false,
-      };
-
-      const { data, filename, error } = await AnalyticsService.exportData(userId, options);
-
-      if (error) {
-        Alert.alert('Export Error', 'Failed to export data');
-      } else {
-        // In a real app, you'd use a file sharing library to save/share the file
-        Alert.alert('Export Complete', `Data exported as ${filename}`);
-        console.log('Exported data:', data.substring(0, 200) + '...');
-      }
-    } catch (error) {
-      console.error('Export error:', error);
-      Alert.alert('Error', 'Failed to export data');
-    }
-  };
 
   const renderOverviewTab = () => (
     <View style={styles.tabContent}>
@@ -321,20 +294,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.cardBorder }]}>
         <Text style={[styles.title, { color: theme.textPrimary }]}>Analytics Dashboard</Text>
-        <View style={styles.exportButtons}>
-          <TouchableOpacity
-            style={[styles.exportButton, { backgroundColor: theme.primary }]}
-            onPress={() => handleExport('csv')}
-          >
-            <Text style={[styles.exportButtonText, { color: theme.textInverse }]}>CSV</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.exportButton, { backgroundColor: theme.primary }]}
-            onPress={() => handleExport('json')}
-          >
-            <Text style={[styles.exportButtonText, { color: theme.textInverse }]}>JSON</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
       <View style={[styles.tabBar, { backgroundColor: theme.surface, borderBottomColor: theme.cardBorder }]}>
@@ -387,19 +346,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  exportButtons: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  exportButton: {
-    borderRadius: 6,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-  },
-  exportButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
   },
   tabBar: {
     flexDirection: 'row',
