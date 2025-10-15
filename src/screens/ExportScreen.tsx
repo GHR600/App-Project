@@ -8,15 +8,22 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { MenuIcon } from '../components/icons/AppIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
 import { AnalyticsService } from '../services/analyticsService';
 import { saveAndShareFile } from '../utils/fileExport';
 import { useAuth } from '../contexts/AuthContext';
 
-export const ExportScreen: React.FC = () => {
-  const { theme } = useTheme();
+interface ExportScreenProps {
+  onMenuPress?: () => void;
+}
+
+export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
+  const { theme, isDark } = useTheme();
   const { user } = useAuth();
 
   // Date range state
@@ -106,19 +113,31 @@ export const ExportScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.background }]}
-      contentContainerStyle={styles.contentContainer}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Export Data
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Export your journal entries or statistics
-        </Text>
+      <View style={[styles.topHeader, { backgroundColor: theme.backgroundSecondary }]}>
+        <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+          <MenuIcon size={24} color={theme.textPrimary} strokeWidth={2.5} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Export</Text>
+        <View style={styles.menuButton} />
       </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
+      >
+        {/* Page Title */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>
+            Export Data
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+            Export your journal entries or statistics
+          </Text>
+        </View>
 
       {/* Date Range Section */}
       <View style={[styles.section, { backgroundColor: theme.surface }]}>
@@ -397,12 +416,33 @@ export const ExportScreen: React.FC = () => {
           {isExporting ? 'Exporting...' : 'Export Data'}
         </Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  menuButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  scrollView: {
     flex: 1,
   },
   contentContainer: {

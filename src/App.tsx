@@ -383,7 +383,7 @@ const MainApp: React.FC = () => {
           setCurrentScreen('signUp');
           return renderHomeScreen();
         }
-        return <ExportScreen />;
+        return <ExportScreen onMenuPress={() => setMenuVisible(true)} />;
       default:
         return renderHomeScreen();
     }
@@ -410,7 +410,7 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const handleMenuNavigate = (screen: 'account' | 'settings' | 'notes' | 'calendar' | 'stats' | 'export') => {
+  const handleMenuNavigate = (screen: 'account' | 'settings' | 'export') => {
     setCurrentScreen(screen);
   };
 
