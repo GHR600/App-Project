@@ -4,10 +4,10 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   BackHandler
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { AnimatedButton } from './components/AnimatedButton';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
@@ -146,43 +146,48 @@ const MainApp: React.FC = () => {
         {user ? (
           // Authenticated user buttons
           <>
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.primaryButton, { backgroundColor: theme.primary }]}
               onPress={() => setCurrentScreen('dashboard')}
+              hapticFeedback="light"
             >
               <Text style={[styles.primaryButtonText, { color: theme.white }]}>📊 Open Dashboard</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
 
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.primaryButton, { backgroundColor: theme.primary }]}
               onPress={() => setCurrentScreen('journal')}
+              hapticFeedback="light"
             >
               <Text style={[styles.primaryButtonText, { color: theme.white }]}>📝 New Journal Entry</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
 
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]}
               onPress={() => setCurrentScreen('settings')}
+              hapticFeedback="light"
             >
               <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>⚙️ Settings</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </>
         ) : (
           // Unauthenticated user buttons
           <>
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.primaryButton, { backgroundColor: theme.primary }]}
               onPress={() => setCurrentScreen('signUp')}
+              hapticFeedback="light"
             >
               <Text style={[styles.primaryButtonText, { color: theme.white }]}>🚀 Create Free Account</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
 
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]}
               onPress={() => setCurrentScreen('signIn')}
+              hapticFeedback="light"
             >
               <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>🔑 Sign In</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </>
         )}
       </View>

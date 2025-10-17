@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   Animated
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors } from '../styles/designSystem';
 import { VoiceMemoService, VoiceMemo } from '../services/voiceMemoService';
 
@@ -158,13 +158,14 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   return (
     <View style={[styles.container, style]}>
       {!isRecording ? (
-        <TouchableOpacity
+        <AnimatedButton
           style={styles.startButton}
           onPress={handleStartRecording}
+          hapticFeedback="medium"
         >
           <Text style={styles.micIcon}>🎤</Text>
           <Text style={styles.startButtonText}>Start Voice Recording</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       ) : (
         <View style={styles.recordingContainer}>
           <View style={styles.recordingHeader}>
@@ -191,21 +192,23 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           </View>
 
           <View style={styles.controlsContainer}>
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.controlButton, styles.pauseButton]}
               onPress={handlePauseRecording}
+              hapticFeedback="light"
             >
               <Text style={styles.controlButtonText}>
                 {isPaused ? '▶️' : '⏸️'}
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
 
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.controlButton, styles.stopButton]}
               onPress={handleStopRecording}
+              hapticFeedback="heavy"
             >
               <Text style={styles.controlButtonText}>⏹️</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </View>
 
           <Text style={styles.instructionText}>

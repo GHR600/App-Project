@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Animated,
   Easing
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors, typography, components } from '../styles/designSystem';
 import { AIInsightService, AIInsight, JournalEntry, UserContext } from '../services/aiInsightService';
 
@@ -94,9 +94,9 @@ export const AIInsightDisplay: React.FC<AIInsightDisplayProps> = ({
         <View style={styles.errorContainer}>
           <Text style={styles.errorIcon}>⚠️</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={handleRegenerateInsight} style={styles.retryButton}>
+          <AnimatedButton onPress={handleRegenerateInsight} style={styles.retryButton} hapticFeedback="medium">
             <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       </View>
     );
@@ -144,9 +144,9 @@ export const AIInsightDisplay: React.FC<AIInsightDisplayProps> = ({
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity onPress={handleRegenerateInsight} style={styles.regenerateButton}>
+          <AnimatedButton onPress={handleRegenerateInsight} style={styles.regenerateButton} hapticFeedback="medium">
             <Text style={styles.regenerateButtonText}>🔄 New Insight</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       </View>
 

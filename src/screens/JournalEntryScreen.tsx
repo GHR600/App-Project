@@ -4,7 +4,6 @@ import {
   Text,
   View,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
 import { AIInsightService, AIInsight, JournalEntry, UserContext, ChatMessage } from '../services/aiInsightService';
+import { AnimatedButton } from '../components/AnimatedButton';
 
 interface JournalEntryScreenProps {
   userId: string;
@@ -586,9 +586,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   // Render Header
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}>
-      <TouchableOpacity onPress={onBack} style={styles.closeButton}>
+      <AnimatedButton onPress={onBack} style={styles.closeButton} hapticFeedback="light">
         <Text style={[styles.closeButtonText, { color: theme.textPrimary }]}>✕</Text>
-      </TouchableOpacity>
+      </AnimatedButton>
       <View style={styles.headerCenter}>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Journal Entry</Text>
       </View>
@@ -599,21 +599,22 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   // Render Date and Mood Row
   const renderDateMoodRow = () => (
     <View style={styles.dateMoodRow}>
-      <TouchableOpacity style={styles.dateSelector}>
+      <AnimatedButton style={styles.dateSelector} hapticFeedback="light">
         <Text style={[styles.dateSelectorText, { color: theme.primaryLight }]}>
           {formatDate(selectedDate)} ▼
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
+      </AnimatedButton>
+      <AnimatedButton
         style={styles.moodSelector}
         onPress={() => {
           const currentIndex = moodEmojis.indexOf(selectedMood);
           const nextIndex = (currentIndex + 1) % moodEmojis.length;
           setSelectedMood(moodEmojis[nextIndex]);
         }}
+        hapticFeedback="light"
       >
         <Text style={styles.moodEmoji}>{selectedMood}</Text>
-      </TouchableOpacity>
+      </AnimatedButton>
     </View>
   );
 
@@ -627,7 +628,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         {presetTags.map(tag => {
           const isSelected = selectedTags.includes(tag.value);
           return (
-            <TouchableOpacity
+            <AnimatedButton
               key={tag.value}
               style={[
                 styles.tagChip,
@@ -635,6 +636,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                 isSelected && { backgroundColor: theme.primary, borderColor: theme.primary }
               ]}
               onPress={() => toggleTag(tag.value)}
+              hapticFeedback="light"
             >
               <Text style={styles.tagIcon}>{tag.icon}</Text>
               <Text style={[
@@ -644,7 +646,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
               ]}>
                 {tag.label}
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           );
         })}
       </View>
@@ -660,9 +662,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                 style={[styles.customTagChip, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
               >
                 <Text style={[styles.customTagText, { color: theme.primary }]}>🏷️ {tag}</Text>
-                <TouchableOpacity onPress={() => removeTag(tag)} style={styles.removeTagButton}>
+                <AnimatedButton onPress={() => removeTag(tag)} style={styles.removeTagButton} hapticFeedback="light">
                   <Text style={[styles.removeTagText, { color: theme.primary }]}>×</Text>
-                </TouchableOpacity>
+                </AnimatedButton>
               </View>
             ))}
         </View>
@@ -679,16 +681,17 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           onSubmitEditing={addCustomTag}
           returnKeyType="done"
         />
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.addTagButton,
             { backgroundColor: theme.primary, opacity: customTagInput.trim() ? 1 : 0.5 }
           ]}
           onPress={addCustomTag}
           disabled={!customTagInput.trim()}
+          hapticFeedback="light"
         >
           <Text style={[styles.addTagButtonText, { color: theme.white }]}>+</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </View>
   );
@@ -733,7 +736,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           onChangeText={setEntryText}
           textAlignVertical="top"
         />
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.saveButtonBottom,
             {
@@ -743,11 +746,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           ]}
           onPress={handleSaveEntry}
           disabled={!canSave || isSaving}
+          hapticFeedback="medium"
         >
           <Text style={[styles.saveButtonText, { color: theme.white }]}>
             {buttonText}
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     );
   };
@@ -838,16 +842,17 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           multiline
           editable={!isChatLoading}
         />
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.sendButton,
             { backgroundColor: (!currentChatMessage.trim() || isChatLoading) ? theme.textMuted : theme.primary }
           ]}
           onPress={handleSendChatMessage}
           disabled={!currentChatMessage.trim() || isChatLoading}
+          hapticFeedback="light"
         >
           <ArrowUp size={20} color={theme.white} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </View>
   );
@@ -859,18 +864,19 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
     return (
       <View style={styles.summarySection}>
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.summariseButton,
             { borderColor: isSummaryLoading ? theme.textMuted : theme.primary }
           ]}
           onPress={handleGenerateSummary}
           disabled={isSummaryLoading}
+          hapticFeedback="medium"
         >
           <Text style={[styles.summariseButtonText, { color: theme.primary }]}>
             {isSummaryLoading ? 'GENERATING...' : 'SUMMARISE'}
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
 
         {summary && (
           <View style={[styles.summaryDisplay, { backgroundColor: theme.surface }]}>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
 import { QuickStatsBanner } from '../components/QuickStatsBanner';
@@ -20,13 +21,18 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
   const [entries, setEntries] = useState<DatabaseJournalEntry[]>([]);
   const [analytics, setAnalytics] = useState<AdvancedAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
   }, [userId]);
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const loadData = useCallback(async () => {
+    if (isRefreshing) {
+      // Don't show loading spinner when refreshing
+    } else {
+      setIsLoading(true);
+    }
     try {
       // Fetch journal entries
       const { data: entriesData, error: entriesError } = await supabase
@@ -51,19 +57,26 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
       console.error('Error loading stats data:', error);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, [userId, isRefreshing]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadData();
+  }, [loadData]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header with menu button */}
       <View style={styles.header}>
-        <TouchableOpacity
+        <AnimatedButton
           style={styles.menuButton}
           onPress={onMenuPress}
+          hapticFeedback="light"
         >
           <MenuIcon size={24} color={theme.primary} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </AnimatedButton>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Statistics</Text>
         <View style={styles.menuButton} />
       </View>
@@ -76,7 +89,22 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
           </Text>
         </View>
       ) : analytics ? (
-        <ScrollView style={styles.scrollView}>
+        <ScrollView
+          style={styles.scrollView}
+          bounces={true}
+          alwaysBounceVertical={true}
+          showsVerticalScrollIndicator={false}
+          decelerationRate="fast"
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.primary}
+              colors={[theme.primary]}
+            />
+          }
+        >
           {/* Quick Stats Banner - Always visible at top */}
           <QuickStatsBanner
             totalEntries={entries.length}

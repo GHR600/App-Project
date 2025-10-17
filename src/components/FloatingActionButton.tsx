@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
 import { colors, shadows } from '../styles/designSystem';
+import { AnimatedButton } from './AnimatedButton';
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -38,7 +39,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   };
 
   return (
-    <TouchableOpacity
+    <AnimatedButton
       style={[
         styles.container,
         getSizeStyles(),
@@ -47,12 +48,12 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         style
       ]}
       onPress={onPress}
-      activeOpacity={0.8}
+      hapticFeedback="medium"
     >
       <Text style={[styles.icon, { fontSize: getIconSize() }]}>
         {icon}
       </Text>
-    </TouchableOpacity>
+    </AnimatedButton>
   );
 };
 

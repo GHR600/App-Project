@@ -46,7 +46,8 @@
       "Bash(test:*)",
       "Read(//c/**)",
       "Bash(mv:*)",
-      "Bash(rmdir:*)"
+      "Bash(rmdir:*)",
+      "Bash(powershell -Command \"Get-Content ''src\\screens\\SignUpScreen.tsx'' | Select-String -Pattern ''import.*TouchableOpacity'' -Context 0,10\")"
     ],
     "deny": [],
     "ask": []

@@ -2,11 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Animated,
   Dimensions
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { BlurView } from 'expo-blur';
 import { colors } from '../styles/designSystem';
 
@@ -46,13 +46,13 @@ export const PrivacyOverlay: React.FC<PrivacyOverlayProps> = ({
             Your journal content is protected. Tap to unlock and continue reading.
           </Text>
 
-          <TouchableOpacity
+          <AnimatedButton
             style={styles.unlockButton}
             onPress={onUnlock}
-            activeOpacity={0.8}
+            hapticFeedback="medium"
           >
             <Text style={styles.unlockButtonText}>🔓 Unlock Content</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
 
           <Text style={styles.hint}>
             Your content will auto-lock again after 5 minutes of inactivity

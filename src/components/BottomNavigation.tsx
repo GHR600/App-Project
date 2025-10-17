@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text, Animated } from 'react-native';
+import { View, StyleSheet, Text, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { AnimatedButton } from './AnimatedButton';
 
 interface BottomNavigationProps {
   activeTab: 'calendar' | 'home' | 'stats';
@@ -42,15 +43,14 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     <View style={styles.container}>
       <View style={styles.navBar}>
         {/* Calendar Button */}
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.sideButton,
             { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
-            pressedButton === 'calendar' && { backgroundColor: 'rgba(255, 255, 255, 0.25)' }
           ]}
-          onPressIn={() => setPressedButton('calendar')}
-          onPressOut={() => setPressedButton(null)}
           onPress={() => onTabPress('calendar')}
+          hapticFeedback="light"
+          scaleMin={0.92}
         >
           <Text style={[styles.icon, { color: theme.white }]}>
             ☷
@@ -58,7 +58,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <Text style={[styles.label, { color: theme.white }]}>
             Calendar
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
 
         {/* New Entry Button (Center) with Pulsating Halo */}
         <View style={styles.centerButtonContainer}>
@@ -74,24 +74,25 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               },
             ]}
           />
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.centerButton, { backgroundColor: theme.primary }]}
             onPress={onNewEntry}
+            hapticFeedback="medium"
+            scaleMin={0.92}
           >
             <Text style={[styles.plusIcon, { color: theme.white }]}>+</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
         {/* Stats Button */}
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.sideButton,
             { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
-            pressedButton === 'stats' && { backgroundColor: 'rgba(255, 255, 255, 0.25)' }
           ]}
-          onPressIn={() => setPressedButton('stats')}
-          onPressOut={() => setPressedButton(null)}
           onPress={() => onTabPress('stats')}
+          hapticFeedback="light"
+          scaleMin={0.92}
         >
           <Text style={[styles.icon, { color: theme.white }]}>
             ⚊
@@ -99,7 +100,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <Text style={[styles.label, { color: theme.white }]}>
             Stats
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </View>
   );

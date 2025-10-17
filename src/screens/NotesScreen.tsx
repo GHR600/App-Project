@@ -188,6 +188,11 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({ onBack, onMenuPress })
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 100 }]}
+        bounces={true}
+        alwaysBounceVertical={true}
+        showsVerticalScrollIndicator={false}
+        decelerationRate="fast"
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}

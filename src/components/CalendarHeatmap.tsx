@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Modal } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { DatabaseJournalEntry } from '../config/supabase';
 import { spacing } from '../styles/designSystem';
@@ -174,7 +175,7 @@ export const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
             {weeks.map((week, weekIndex) => (
               <View key={weekIndex} style={styles.weekColumn}>
                 {week.map((day, dayIndex) => (
-                  <TouchableOpacity
+                  <AnimatedButton
                     key={dayIndex}
                     onPress={() => handleDayPress(day)}
                     style={[
@@ -189,7 +190,10 @@ export const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
                       },
                     ]}
                     disabled={day.entryCount < 0}
-                  />
+                    hapticFeedback="light"
+                  >
+                    <View />
+                  </AnimatedButton>
                 ))}
               </View>
             ))}
@@ -218,10 +222,10 @@ export const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
         animationType="fade"
         onRequestClose={() => setTooltip({ ...tooltip, visible: false })}
       >
-        <TouchableOpacity
+        <AnimatedButton
           style={styles.modalOverlay}
-          activeOpacity={1}
           onPress={() => setTooltip({ ...tooltip, visible: false })}
+          hapticFeedback="none"
         >
           <View style={[styles.tooltipContainer, { backgroundColor: theme.surface }]}>
             <Text style={[styles.tooltipDate, { color: theme.textPrimary }]}>
@@ -236,7 +240,7 @@ export const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
               </Text>
             )}
           </View>
-        </TouchableOpacity>
+        </AnimatedButton>
       </Modal>
     </View>
   );

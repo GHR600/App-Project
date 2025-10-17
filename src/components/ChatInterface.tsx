@@ -3,13 +3,13 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   Alert
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors } from '../styles/designSystem';
 import { AIInsightService, ChatMessage } from '../services/aiInsightService';
 import { TypingIndicator } from './TypingIndicator';
@@ -180,16 +180,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           maxLength={500}
           editable={!isTyping}
         />
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.sendButton,
             (!currentMessage.trim() || isTyping) && styles.sendButtonDisabled
           ]}
           onPress={sendMessage}
           disabled={!currentMessage.trim() || isTyping}
+          hapticFeedback="medium"
         >
           <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </KeyboardAvoidingView>
   );

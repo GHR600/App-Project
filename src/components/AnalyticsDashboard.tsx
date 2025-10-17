@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Dimensions,
   Alert
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
 import { AnalyticsService, AdvancedAnalytics } from '../services/analyticsService';
@@ -283,9 +283,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     return (
       <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.errorText, { color: theme.textSecondary }]}>Unable to load analytics</Text>
-        <TouchableOpacity style={[styles.retryButton, { backgroundColor: theme.primary }]} onPress={loadAnalytics}>
+        <AnimatedButton style={[styles.retryButton, { backgroundColor: theme.primary }]} onPress={loadAnalytics} hapticFeedback="medium">
           <Text style={[styles.retryButtonText, { color: theme.textInverse }]}>Retry</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     );
   }
@@ -303,13 +303,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           { key: 'patterns', label: 'Patterns' },
           { key: 'growth', label: 'Growth' },
         ].map(tab => (
-          <TouchableOpacity
+          <AnimatedButton
             key={tab.key}
             style={[
               styles.tab,
               selectedTab === tab.key && { borderBottomColor: theme.primary }
             ]}
             onPress={() => setSelectedTab(tab.key as any)}
+            hapticFeedback="light"
           >
             <Text style={[
               styles.tabText,
@@ -317,7 +318,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             ]}>
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         ))}
       </View>
 
@@ -350,10 +351,13 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
+    paddingHorizontal: spacing.md,
+    gap: spacing.md,
   },
   tab: {
     flex: 1,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',

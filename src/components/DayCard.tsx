@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors, typography, shadows, borderRadius, spacing } from '../styles/designSystem';
 import { DayCardData } from '../types';
 
@@ -51,7 +52,7 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <AnimatedButton style={styles.container} onPress={onPress} hapticFeedback="light">
       <View style={styles.header}>
         <Text style={styles.dateText}>{formatDate(dayData.date)}</Text>
         <Text style={styles.moodEmoji}>{dayData.dominantMood}</Text>
@@ -70,7 +71,7 @@ export const DayCard: React.FC<DayCardProps> = ({ dayData, onPress }) => {
           </Text>
         ))}
       </View>
-    </TouchableOpacity>
+    </AnimatedButton>
   );
 };
 

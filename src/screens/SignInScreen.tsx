@@ -3,11 +3,11 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   Alert
 } from 'react-native';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { components } from '../styles/designSystem';
@@ -79,9 +79,9 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <AnimatedButton onPress={onBack} style={styles.backButton} hapticFeedback="light">
             <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
         <View style={styles.content}>
@@ -130,18 +130,19 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
               />
             </View>
 
-            <TouchableOpacity
+            <AnimatedButton
               onPress={handleSubmit}
               disabled={isLoading}
               style={[
                 styles.submitButton,
                 { backgroundColor: isLoading ? theme.textMuted : theme.primary }
               ]}
+              hapticFeedback="medium"
             >
               <Text style={[styles.submitButtonText, { color: theme.white }]}>
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </View>
 
           <View style={styles.footer}>

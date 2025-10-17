@@ -3,10 +3,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   RefreshControl
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors, typography, components } from '../styles/designSystem';
 import { JournalEntryWithInsights } from '../services/journalService';
 import { DailyCard } from './DailyCard';
@@ -145,9 +145,9 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
         <Text style={styles.emptyStateDescription}>
           Start your journaling journey by writing your first entry. Capture your thoughts, feelings, and experiences.
         </Text>
-        <TouchableOpacity onPress={onNewEntry} style={styles.primaryButton}>
+        <AnimatedButton onPress={onNewEntry} style={styles.primaryButton} hapticFeedback="medium">
           <Text style={styles.primaryButtonText}>Write First Entry</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     );
   }
@@ -167,9 +167,9 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
     >
       <View style={styles.diaryHeader}>
         <Text style={styles.diaryTitle}>Your Journey</Text>
-        <TouchableOpacity onPress={onNewEntry} style={styles.newEntryButton}>
+        <AnimatedButton onPress={onNewEntry} style={styles.newEntryButton} hapticFeedback="medium">
           <Text style={styles.newEntryButtonText}>+ New Entry</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
 
       {sortedGroupKeys.map(dateKey => {

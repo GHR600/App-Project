@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Animated,
   LayoutAnimation,
@@ -11,6 +10,7 @@ import {
   TextInput,
   Alert
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors, typography, components } from '../styles/designSystem';
 import { JournalEntryWithInsights } from '../services/journalService';
 
@@ -51,10 +51,10 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
 
   return (
     <View style={styles.expandableSection}>
-      <TouchableOpacity
+      <AnimatedButton
         style={styles.sectionHeader}
         onPress={toggleSection}
-        activeOpacity={0.7}
+        hapticFeedback="light"
       >
         <View style={styles.sectionHeaderLeft}>
           <Text style={styles.sectionIcon}>{icon}</Text>
@@ -71,7 +71,7 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
         ]}>
           <Text style={styles.chevronText}>›</Text>
         </View>
-      </TouchableOpacity>
+      </AnimatedButton>
       {isExpanded && (
         <View style={styles.sectionContent}>
           {children}
@@ -193,10 +193,10 @@ export const DailyCard: React.FC<DailyCardProps> = ({
   return (
     <View style={[styles.container, isExpanded && styles.expandedContainer]}>
       {/* Card Header */}
-      <TouchableOpacity
+      <AnimatedButton
         style={styles.cardHeader}
         onPress={handleCardPress}
-        activeOpacity={0.8}
+        hapticFeedback="light"
       >
         <View style={styles.headerTop}>
           <Text style={styles.date}>{formatDate(entry.created_at)}</Text>
@@ -223,7 +223,7 @@ export const DailyCard: React.FC<DailyCardProps> = ({
             <Text style={styles.expandHint}>Tap to expand →</Text>
           )}
         </View>
-      </TouchableOpacity>
+      </AnimatedButton>
 
       {/* Expandable Sections */}
       {isExpanded && (
@@ -247,29 +247,32 @@ export const DailyCard: React.FC<DailyCardProps> = ({
                   placeholderTextColor={colors.gray400}
                 />
                 <View style={styles.editActions}>
-                  <TouchableOpacity
+                  <AnimatedButton
                     style={[styles.editButton, styles.cancelButton]}
                     onPress={handleCancelEdit}
+                    hapticFeedback="light"
                   >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </AnimatedButton>
+                  <AnimatedButton
                     style={[styles.editButton, styles.saveButton]}
                     onPress={handleSaveEdit}
+                    hapticFeedback="medium"
                   >
                     <Text style={styles.saveButtonText}>Save</Text>
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 </View>
               </View>
             ) : (
               <View style={styles.journalContent}>
                 <Text style={styles.fullContent}>{entry.content}</Text>
-                <TouchableOpacity
+                <AnimatedButton
                   style={styles.editTrigger}
                   onPress={() => setEditMode(true)}
+                  hapticFeedback="light"
                 >
                   <Text style={styles.editTriggerText}>✏️ Edit entry</Text>
-                </TouchableOpacity>
+                </AnimatedButton>
               </View>
             )}
           </ExpandableSection>
@@ -349,16 +352,17 @@ export const DailyCard: React.FC<DailyCardProps> = ({
                   multiline
                   maxLength={500}
                 />
-                <TouchableOpacity
+                <AnimatedButton
                   style={[
                     styles.sendButton,
                     !chatMessage.trim() && styles.sendButtonDisabled
                   ]}
                   onPress={handleSendMessage}
                   disabled={!chatMessage.trim()}
+                  hapticFeedback="medium"
                 >
                   <Text style={styles.sendButtonText}>Send</Text>
-                </TouchableOpacity>
+                </AnimatedButton>
               </View>
             </View>
           </ExpandableSection>

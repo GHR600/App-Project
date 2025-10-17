@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   Platform,
@@ -12,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MenuIcon } from '../components/icons/AppIcons';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
 import { AnalyticsService } from '../services/analyticsService';
@@ -118,9 +118,9 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
 
       {/* Header */}
       <View style={[styles.topHeader, { backgroundColor: theme.backgroundSecondary }]}>
-        <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+        <AnimatedButton onPress={onMenuPress} style={styles.menuButton} hapticFeedback="light">
           <MenuIcon size={24} color={theme.textPrimary} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </AnimatedButton>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Export</Text>
         <View style={styles.menuButton} />
       </View>
@@ -150,28 +150,30 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
             <Text style={[styles.dateLabel, { color: theme.textSecondary }]}>
               Start Date
             </Text>
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.dateButton, { backgroundColor: theme.backgroundSecondary, borderColor: theme.cardBorder }]}
               onPress={() => setShowStartPicker(true)}
+              hapticFeedback="light"
             >
               <Text style={[styles.dateButtonText, { color: theme.textPrimary }]}>
                 {formatDate(startDate)}
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </View>
 
           <View style={styles.datePickerContainer}>
             <Text style={[styles.dateLabel, { color: theme.textSecondary }]}>
               End Date
             </Text>
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.dateButton, { backgroundColor: theme.backgroundSecondary, borderColor: theme.cardBorder }]}
               onPress={() => setShowEndPicker(true)}
+              hapticFeedback="light"
             >
               <Text style={[styles.dateButtonText, { color: theme.textPrimary }]}>
                 {formatDate(endDate)}
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </View>
         </View>
 
@@ -209,41 +211,45 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
 
         {/* Preset Buttons */}
         <View style={styles.presetContainer}>
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.presetButton, { backgroundColor: theme.backgroundSecondary }]}
             onPress={() => setPresetDateRange(7)}
+            hapticFeedback="light"
           >
             <Text style={[styles.presetButtonText, { color: theme.textPrimary }]}>
               Last 7 days
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
 
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.presetButton, { backgroundColor: theme.backgroundSecondary }]}
             onPress={() => setPresetDateRange(30)}
+            hapticFeedback="light"
           >
             <Text style={[styles.presetButtonText, { color: theme.textPrimary }]}>
               Last 30 days
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
 
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.presetButton, { backgroundColor: theme.backgroundSecondary }]}
             onPress={() => setPresetDateRange(90)}
+            hapticFeedback="light"
           >
             <Text style={[styles.presetButtonText, { color: theme.textPrimary }]}>
               Last 3 months
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
 
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.presetButton, { backgroundColor: theme.backgroundSecondary }]}
             onPress={() => setPresetDateRange('all')}
+            hapticFeedback="light"
           >
             <Text style={[styles.presetButtonText, { color: theme.textPrimary }]}>
               All time
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       </View>
 
@@ -253,12 +259,13 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
           📊 What to Export?
         </Text>
 
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.radioOption,
             { borderColor: exportType === 'stats' ? theme.primary : theme.cardBorder }
           ]}
           onPress={() => setExportType('stats')}
+          hapticFeedback="light"
         >
           <View style={[
             styles.radioCircle,
@@ -276,14 +283,15 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
               Analytics, trends, and insights about your journaling
             </Text>
           </View>
-        </TouchableOpacity>
+        </AnimatedButton>
 
-        <TouchableOpacity
+        <AnimatedButton
           style={[
             styles.radioOption,
             { borderColor: exportType === 'entries' ? theme.primary : theme.cardBorder }
           ]}
           onPress={() => setExportType('entries')}
+          hapticFeedback="light"
         >
           <View style={[
             styles.radioCircle,
@@ -301,7 +309,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
               Your journal entries with content and metadata
             </Text>
           </View>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
 
       {/* Format Selection (only for entries) */}
@@ -312,7 +320,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
           </Text>
 
           <View style={styles.formatContainer}>
-            <TouchableOpacity
+            <AnimatedButton
               style={[
                 styles.formatButton,
                 {
@@ -321,6 +329,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
                 }
               ]}
               onPress={() => setEntryFormat('txt')}
+              hapticFeedback="light"
             >
               <Text style={[
                 styles.formatButtonText,
@@ -328,9 +337,9 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
               ]}>
                 TXT
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
 
-            <TouchableOpacity
+            <AnimatedButton
               style={[
                 styles.formatButton,
                 {
@@ -339,6 +348,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
                 }
               ]}
               onPress={() => setEntryFormat('pdf')}
+              hapticFeedback="light"
             >
               <Text style={[
                 styles.formatButtonText,
@@ -346,7 +356,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
               ]}>
                 PDF
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           </View>
         </View>
       )}
@@ -358,9 +368,10 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
             ⚙️ Options
           </Text>
 
-          <TouchableOpacity
+          <AnimatedButton
             style={styles.checkboxOption}
             onPress={() => setIncludeInsights(!includeInsights)}
+            hapticFeedback="light"
           >
             <View style={[
               styles.checkbox,
@@ -376,11 +387,12 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
             <Text style={[styles.checkboxLabel, { color: theme.textPrimary }]}>
               Include AI insights
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
 
-          <TouchableOpacity
+          <AnimatedButton
             style={styles.checkboxOption}
             onPress={() => setIncludeMood(!includeMood)}
+            hapticFeedback="light"
           >
             <View style={[
               styles.checkbox,
@@ -396,12 +408,12 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
             <Text style={[styles.checkboxLabel, { color: theme.textPrimary }]}>
               Include mood data
             </Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       )}
 
       {/* Export Button */}
-      <TouchableOpacity
+      <AnimatedButton
         style={[
           styles.exportButton,
           {
@@ -411,11 +423,12 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
         ]}
         onPress={handleExport}
         disabled={isExporting}
+        hapticFeedback="medium"
       >
         <Text style={[styles.exportButtonText, { color: theme.textInverse }]}>
           {isExporting ? 'Exporting...' : 'Export Data'}
         </Text>
-      </TouchableOpacity>
+      </AnimatedButton>
       </ScrollView>
     </SafeAreaView>
   );

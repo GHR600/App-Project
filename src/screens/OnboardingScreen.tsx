@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../config/supabase';
@@ -60,13 +60,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
 
         <View style={styles.cardsContainer}>
           {/* Coach Card */}
-          <TouchableOpacity
+          <AnimatedButton
             style={[
               styles.card,
               selectedStyle === 'coach' && styles.cardSelected,
             ]}
             onPress={() => !loading && handleSelectStyle('coach')}
             disabled={loading}
+            hapticFeedback="medium"
           >
             <Text style={styles.cardEmoji}>🎯</Text>
             <Text style={styles.cardTitle}>Coach</Text>
@@ -82,16 +83,17 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
             {selectedStyle === 'coach' && loading && (
               <ActivityIndicator color={theme.white} style={styles.loader} />
             )}
-          </TouchableOpacity>
+          </AnimatedButton>
 
           {/* Reflector Card */}
-          <TouchableOpacity
+          <AnimatedButton
             style={[
               styles.card,
               selectedStyle === 'reflector' && styles.cardSelected,
             ]}
             onPress={() => !loading && handleSelectStyle('reflector')}
             disabled={loading}
+            hapticFeedback="medium"
           >
             <Text style={styles.cardEmoji}>🧘</Text>
             <Text style={styles.cardTitle}>Reflector</Text>
@@ -107,7 +109,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
             {selectedStyle === 'reflector' && loading && (
               <ActivityIndicator color={theme.white} style={styles.loader} />
             )}
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       </View>
     </SafeAreaView>

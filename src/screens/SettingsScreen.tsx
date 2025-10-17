@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
@@ -22,6 +21,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../config/supabase';
+import { AnimatedButton } from '../components/AnimatedButton';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -113,9 +113,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { backgroundColor: theme.backgroundSecondary, borderBottomColor: theme.cardBorder }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <AnimatedButton onPress={onBack} style={styles.backButton} hapticFeedback="light">
           <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Settings</Text>
         <View style={styles.headerRight} />
       </View>
@@ -134,7 +134,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
             ) : (
               <View style={styles.aiStyleOptions}>
                 {aiStyleOptions.map((option) => (
-                  <TouchableOpacity
+                  <AnimatedButton
                     key={option.value}
                     onPress={() => handleAIStyleChange(option.value)}
                     disabled={updatingAIStyle}
@@ -146,6 +146,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                         opacity: updatingAIStyle ? 0.6 : 1,
                       }
                     ]}
+                    hapticFeedback="medium"
                   >
                     <View style={styles.aiStyleIconContainer}>
                       {option.iconType === 'target' ? (
@@ -187,7 +188,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                     {aiStyle === option.value && (
                       <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
                     )}
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 ))}
               </View>
             )}
@@ -203,7 +204,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
 
           <View style={styles.themeOptions}>
             {themeOptions.map((option) => (
-              <TouchableOpacity
+              <AnimatedButton
                 key={option.value}
                 onPress={() => setThemeMode(option.value)}
                 style={[
@@ -213,6 +214,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                     borderColor: themeMode === option.value ? theme.primary : theme.cardBorder,
                   }
                 ]}
+                hapticFeedback="light"
               >
                 <View style={styles.themeIconContainer}>
                   {option.iconType === 'sun' && (
@@ -250,7 +252,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                 {themeMode === option.value && (
                   <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
                 )}
-              </TouchableOpacity>
+              </AnimatedButton>
             ))}
           </View>
 
@@ -281,18 +283,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
 
         <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Support</Text>
-          <TouchableOpacity style={styles.settingItem}>
+          <AnimatedButton style={styles.settingItem} hapticFeedback="light">
             <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Help Center</Text>
             <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
+          </AnimatedButton>
+          <AnimatedButton style={styles.settingItem} hapticFeedback="light">
             <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Privacy Policy</Text>
             <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
+          </AnimatedButton>
+          <AnimatedButton style={styles.settingItem} hapticFeedback="light">
             <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Terms of Service</Text>
             <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       </ScrollView>
     </SafeAreaView>

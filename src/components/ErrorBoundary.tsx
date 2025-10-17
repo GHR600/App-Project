@@ -2,11 +2,11 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   Dimensions
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors } from '../styles/designSystem';
 
 interface Props {
@@ -129,19 +129,21 @@ export class ErrorBoundary extends Component<Props, State> {
             </Text>
 
             <View style={styles.actions}>
-              <TouchableOpacity
+              <AnimatedButton
                 style={styles.primaryButton}
                 onPress={this.handleRestart}
+                hapticFeedback="medium"
               >
                 <Text style={styles.primaryButtonText}>Try Again</Text>
-              </TouchableOpacity>
+              </AnimatedButton>
 
-              <TouchableOpacity
+              <AnimatedButton
                 style={styles.secondaryButton}
                 onPress={this.handleShowDetails}
+                hapticFeedback="light"
               >
                 <Text style={styles.secondaryButtonText}>Show Details</Text>
-              </TouchableOpacity>
+              </AnimatedButton>
             </View>
 
             <Text style={styles.footer}>

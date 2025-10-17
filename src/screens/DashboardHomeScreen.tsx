@@ -3,12 +3,12 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
   StyleSheet,
   Alert,
   TextInput
 } from 'react-native';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -340,9 +340,9 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
               : 'Write your first journal entry to begin tracking your thoughts and growth.'}
           </Text>
           {!searchQuery && (
-            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry}>
+            <AnimatedButton style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry} hapticFeedback="medium">
               <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create First Entry</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           )}
         </View>
       );
@@ -354,11 +354,11 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
     return (
       <>
         {displayedEntries.map((entry) => (
-          <TouchableOpacity
+          <AnimatedButton
             key={entry.id}
             style={[styles.entryCard, { backgroundColor: theme.surface }]}
             onPress={() => handleEntryPress(entry)}
-            activeOpacity={0.7}
+            hapticFeedback="light"
           >
             {/* Header: Timestamp and Mood */}
             <View style={styles.entryHeader}>
@@ -386,7 +386,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
             {entry.tags && entry.tags.length > 0 && (
               <View style={styles.entryTags}>
                 {entry.tags.map((tag, index) => (
-                  <TouchableOpacity
+                  <AnimatedButton
                     key={index}
                     style={[
                       styles.tagChip,
@@ -400,22 +400,22 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
                       e.stopPropagation(); // Prevent entry card from being clicked
                       handleTagClick(tag);
                     }}
-                    activeOpacity={0.7}
+                    hapticFeedback="light"
                   >
                     <Text style={[styles.tagText, { color: getTagColor(tag) }]}>
                       {tag}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 ))}
               </View>
             )}
-          </TouchableOpacity>
+          </AnimatedButton>
         ))}
 
         {hasMore && (
-          <TouchableOpacity style={[styles.showMoreButton, { borderColor: theme.primary }]} onPress={handleShowMore}>
+          <AnimatedButton style={[styles.showMoreButton, { borderColor: theme.primary }]} onPress={handleShowMore} hapticFeedback="light">
             <Text style={[styles.showMoreText, { color: theme.primary }]}>Show More</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         )}
       </>
     );
@@ -428,12 +428,13 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
       <View style={styles.content}>
         {/* Top Bar with Menu and Search */}
         <View style={styles.topBar}>
-          <TouchableOpacity
+          <AnimatedButton
             style={styles.menuButton}
             onPress={onMenuPress}
+            hapticFeedback="light"
           >
             <MenuIcon size={24} color={theme.primary} strokeWidth={2.5} />
-          </TouchableOpacity>
+          </AnimatedButton>
 
           <View style={[styles.searchBar, { backgroundColor: theme.surface }]}>
             <View style={styles.searchIconContainer}>
@@ -447,9 +448,9 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
               onChangeText={setSearchQuery}
             />
             {searchQuery !== '' && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+              <AnimatedButton onPress={() => setSearchQuery('')} style={styles.clearButton} hapticFeedback="light">
                 <CloseIcon size={18} color={theme.textSecondary} strokeWidth={2} />
-              </TouchableOpacity>
+              </AnimatedButton>
             )}
           </View>
         </View>
@@ -463,14 +464,14 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
                   <Text style={[styles.activeFilterText, { color: getTagColor(selectedTagFilter) }]}>
                     {selectedTagFilter}
                   </Text>
-                  <TouchableOpacity onPress={() => setSelectedTagFilter(null)} style={styles.removeFilterButton}>
+                  <AnimatedButton onPress={() => setSelectedTagFilter(null)} style={styles.removeFilterButton} hapticFeedback="light">
                     <CloseIcon size={14} color={getTagColor(selectedTagFilter)} strokeWidth={2.5} />
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 </View>
               )}
-              <TouchableOpacity onPress={handleClearFilters} style={[styles.clearFiltersButton, { backgroundColor: theme.error + '15' }]}>
+              <AnimatedButton onPress={handleClearFilters} style={[styles.clearFiltersButton, { backgroundColor: theme.error + '15' }]} hapticFeedback="medium">
                 <Text style={[styles.clearFiltersText, { color: theme.error }]}>Clear all filters</Text>
-              </TouchableOpacity>
+              </AnimatedButton>
             </View>
           </View>
         )}
@@ -486,7 +487,11 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
               colors={[theme.primary]}
             />
           }
+          bounces={true}
+          alwaysBounceVertical={true}
           showsVerticalScrollIndicator={false}
+          decelerationRate="fast"
+          scrollEventThrottle={16}
         >
           <StatsHeader stats={stats} isLoading={isLoading} />
           {renderEntries()}

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   Alert,
   Dimensions
 } from 'react-native';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -219,9 +219,9 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
 
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}>
-        <TouchableOpacity onPress={onMenuPress} style={styles.backButton}>
+        <AnimatedButton onPress={onMenuPress} style={styles.backButton} hapticFeedback="light">
           <MenuIcon size={24} color={theme.textPrimary} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </AnimatedButton>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Calendar</Text>
         <View style={styles.backButton} />
       </View>
@@ -229,24 +229,28 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       {/* Month Navigation */}
       <View style={[styles.monthHeader, { backgroundColor: theme.backgroundSecondary, borderBottomColor: theme.cardBorder }]}>
         <View style={styles.monthNavigation}>
-          <TouchableOpacity onPress={handlePreviousMonth} style={styles.navButton}>
+          <AnimatedButton onPress={handlePreviousMonth} style={styles.navButton} hapticFeedback="light">
             <BackIcon size={20} color={theme.textPrimary} strokeWidth={2.5} />
-          </TouchableOpacity>
+          </AnimatedButton>
           <Text style={[styles.monthText, { color: theme.textPrimary }]}>{formatMonthYear(currentMonth)}</Text>
-          <TouchableOpacity onPress={handleNextMonth} style={styles.navButton}>
+          <AnimatedButton onPress={handleNextMonth} style={styles.navButton} hapticFeedback="light">
             <ForwardIcon size={20} color={theme.textPrimary} strokeWidth={2.5} />
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
-        <TouchableOpacity onPress={handleTodayPress} style={[styles.todayButton, { backgroundColor: theme.primary }]}>
+        <AnimatedButton onPress={handleTodayPress} style={[styles.todayButton, { backgroundColor: theme.primary }]} hapticFeedback="medium">
           <Text style={[styles.todayButtonText, { color: theme.white }]}>TODAY</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
 
       {/* Single ScrollView for entire content */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
+        bounces={true}
+        alwaysBounceVertical={true}
+        showsVerticalScrollIndicator={false}
+        decelerationRate="fast"
+        scrollEventThrottle={16}
       >
         {/* Calendar Grid */}
         <View style={[styles.calendarContainer, { backgroundColor: theme.backgroundSecondary }]}>
@@ -262,7 +266,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
           {/* Calendar Days */}
           <View style={styles.calendarGrid}>
             {calendarDays.map((day, index) => (
-              <TouchableOpacity
+              <AnimatedButton
                 key={index}
                 style={[
                   styles.dayCell,
@@ -270,6 +274,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                   day.isToday && !day.isSelected && { ...styles.dayCellToday, borderColor: theme.primary }
                 ]}
                 onPress={() => handleDatePress(day.date)}
+                hapticFeedback="light"
               >
                 <Text
                   style={[
@@ -285,7 +290,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                 {day.hasEntries && (
                   <View style={[styles.entryIndicator, { backgroundColor: theme.warning }]} />
                 )}
-              </TouchableOpacity>
+              </AnimatedButton>
             ))}
           </View>
         </View>
@@ -324,10 +329,11 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                 };
 
                 return (
-                  <TouchableOpacity
+                  <AnimatedButton
                     key={entry.id}
                     style={[styles.entryPreview, { backgroundColor: theme.backgroundTertiary, borderLeftColor: theme.primary }]}
                     onPress={() => onEntryPress?.(entry)}
+                    hapticFeedback="light"
                   >
                     {entry.title && (
                       <Text style={[styles.entryTitle, { color: theme.textPrimary }]} numberOfLines={1}>
@@ -368,7 +374,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                         </Text>
                       )}
                     </View>
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 );
               })}
             </View>

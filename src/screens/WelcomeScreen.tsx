@@ -2,11 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   SafeAreaView
 } from 'react-native';
+import { AnimatedButton } from '../components/AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { components } from '../styles/designSystem';
 
@@ -78,12 +78,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity onPress={onGetStarted} style={[styles.primaryButton, { backgroundColor: theme.primary }]}>
+          <AnimatedButton onPress={onGetStarted} style={[styles.primaryButton, { backgroundColor: theme.primary }]} hapticFeedback="medium">
             <Text style={[styles.primaryButtonText, { color: theme.white }]}>Get Started Free</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onSignIn} style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]}>
+          </AnimatedButton>
+          <AnimatedButton onPress={onSignIn} style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]} hapticFeedback="light">
             <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>I Already Have an Account</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
         <View style={styles.footer}>

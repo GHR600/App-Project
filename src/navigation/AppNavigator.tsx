@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators, TransitionSpecs } from '@react-navigation/stack';
 import { useAuth } from '../contexts/AuthContext';
 
 // Import screens
@@ -53,7 +53,11 @@ const AuthStack = () => (
     screenOptions={{
       headerShown: false,
       gestureEnabled: true,
-      cardStyleInterpolator: ({ current, layouts }) => ({
+      transitionSpec: {
+        open: TransitionSpecs.TransitionIOSSpec,
+        close: TransitionSpecs.TransitionIOSSpec,
+      },
+      cardStyleInterpolator: ({ current, next, layouts }) => ({
         cardStyle: {
           transform: [
             {
@@ -62,7 +66,21 @@ const AuthStack = () => (
                 outputRange: [layouts.screen.width, 0],
               }),
             },
+            {
+              scale: next
+                ? next.progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 0.9],
+                  })
+                : 1,
+            },
           ],
+          opacity: next
+            ? next.progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0.85],
+              })
+            : 1,
         },
       }),
     }}
@@ -79,7 +97,11 @@ const MainStack = () => (
     screenOptions={{
       headerShown: false,
       gestureEnabled: true,
-      cardStyleInterpolator: ({ current, layouts }) => ({
+      transitionSpec: {
+        open: TransitionSpecs.TransitionIOSSpec,
+        close: TransitionSpecs.TransitionIOSSpec,
+      },
+      cardStyleInterpolator: ({ current, next, layouts }) => ({
         cardStyle: {
           transform: [
             {
@@ -88,7 +110,21 @@ const MainStack = () => (
                 outputRange: [layouts.screen.width, 0],
               }),
             },
+            {
+              scale: next
+                ? next.progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 0.9],
+                  })
+                : 1,
+            },
           ],
+          opacity: next
+            ? next.progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0.85],
+              })
+            : 1,
         },
       }),
     }}

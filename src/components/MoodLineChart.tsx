@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { DatabaseJournalEntry } from '../config/supabase';
 import { spacing } from '../styles/designSystem';
@@ -117,7 +118,7 @@ export const MoodLineChart: React.FC<MoodLineChartProps> = ({ entries }) => {
         </Text>
         <View style={styles.periodSelector}>
           {periods.map(period => (
-            <TouchableOpacity
+            <AnimatedButton
               key={period.key}
               onPress={() => setSelectedPeriod(period.key)}
               style={[
@@ -128,6 +129,7 @@ export const MoodLineChart: React.FC<MoodLineChartProps> = ({ entries }) => {
                   borderColor: theme.primary + '40',
                 },
               ]}
+              hapticFeedback="light"
             >
               <Text
                 style={[
@@ -140,7 +142,7 @@ export const MoodLineChart: React.FC<MoodLineChartProps> = ({ entries }) => {
               >
                 {period.label}
               </Text>
-            </TouchableOpacity>
+            </AnimatedButton>
           ))}
         </View>
       </View>

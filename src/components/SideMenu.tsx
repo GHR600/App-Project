@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  TouchableOpacity,
   StyleSheet,
   Text,
   Modal,
@@ -9,6 +8,7 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -100,14 +100,15 @@ export const SideMenu: React.FC<SideMenuProps> = ({
               <View style={styles.menuItems}>
                 {/* Main Menu Section */}
                 {mainMenuItems.map((item) => (
-                  <TouchableOpacity
+                  <AnimatedButton
                     key={item.key}
                     style={[styles.menuItem, { borderBottomColor: theme.cardBorder }]}
                     onPress={item.onPress}
+                    hapticFeedback="light"
                   >
                     <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>{item.icon}</Text>
                     <Text style={[styles.menuLabel, { color: theme.textPrimary }]}>{item.label}</Text>
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 ))}
 
                 {/* Separator */}
@@ -115,26 +116,28 @@ export const SideMenu: React.FC<SideMenuProps> = ({
 
                 {/* Account Menu Section */}
                 {accountMenuItems.map((item) => (
-                  <TouchableOpacity
+                  <AnimatedButton
                     key={item.key}
                     style={[styles.menuItem, { borderBottomColor: theme.cardBorder }]}
                     onPress={item.onPress}
+                    hapticFeedback="light"
                   >
                     <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>{item.icon}</Text>
                     <Text style={[styles.menuLabel, { color: theme.textPrimary }]}>{item.label}</Text>
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 ))}
               </View>
 
               {/* Sign Out */}
               {user && (
                 <View style={[styles.footer, { borderTopColor: theme.cardBorder }]}>
-                  <TouchableOpacity
+                  <AnimatedButton
                     style={[styles.signOutButton, { backgroundColor: theme.error }]}
                     onPress={handleSignOut}
+                    hapticFeedback="heavy"
                   >
                     <Text style={[styles.signOutText, { color: theme.white }]}>Sign Out</Text>
-                  </TouchableOpacity>
+                  </AnimatedButton>
                 </View>
               )}
             </Animated.View>

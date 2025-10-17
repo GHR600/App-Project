@@ -2,9 +2,9 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet
 } from 'react-native';
+import { AnimatedButton } from './AnimatedButton';
 import { colors, typography, components } from '../styles/designSystem';
 import { AIInsight } from '../services/aiInsightService';
 
@@ -38,7 +38,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
     return text.substring(0, maxLength) + '...';
   };
 
-  const ContainerComponent = onPress ? TouchableOpacity : View;
+  const ContainerComponent = onPress ? AnimatedButton : View;
 
   return (
     <ContainerComponent
@@ -47,7 +47,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
         compact && styles.compactContainer
       ]}
       onPress={onPress}
-      activeOpacity={onPress ? 0.8 : 1}
+      hapticFeedback={onPress ? 'light' : undefined}
     >
       <View style={styles.header}>
         <View style={styles.iconContainer}>
