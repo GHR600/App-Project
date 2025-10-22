@@ -142,8 +142,7 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
             <Text style={styles.welcomeIcon}>🎉</Text>
             <Text style={[styles.title, { color: theme.textPrimary }]}>You're almost ready!</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Let's start with your first journal entry. This will help us provide you with a
-              personalized insight and show you how our AI can support your reflection journey.
+              Let's start with your first journal entry.
             </Text>
           </View>
         </View>
@@ -212,7 +211,6 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
             <View style={styles.insightHeader}>
               <Text style={[styles.insightTitle, { color: theme.textPrimary }]}>Here's your personalized insight!</Text>
               <Text style={[styles.insightSubtitle, { color: theme.textSecondary }]}>
-                This is an example of how our AI analyzes your writing to provide meaningful reflections.
               </Text>
             </View>
 
@@ -231,8 +229,7 @@ export const OnboardingFirstEntryScreen: React.FC<OnboardingFirstEntryScreenProp
                   <Text style={styles.completionIcon}>🎯</Text>
                   <Text style={[styles.completionTitle, { color: theme.textPrimary }]}>You're all set!</Text>
                   <Text style={[styles.completionText, { color: theme.textSecondary }]}>
-                    You've completed your setup and received your first AI insight.
-                    You have 2 more free insights this month, or upgrade to Premium for unlimited insights with deeper analysis.
+            
                   </Text>
                   <TouchableOpacity onPress={handleComplete} style={[styles.completeButton, { backgroundColor: theme.primary }]}>
                     <Text style={[styles.completeButtonText, { color: theme.white }]}>Start Journaling</Text>

@@ -25,19 +25,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.hero}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome to Mindful</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome to Journaling</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Your personal journaling companion that helps you understand your thoughts,
-            track your mood, and discover meaningful insights about your daily life.
+            A journal app that helps you understand your thoughts,
+            track your mood, and discover patterns in your daily life.
           </Text>
         </View>
 
         <View style={styles.features}>
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Personalized Insights</Text>
+              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Personalized</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
-                Get thoughtful insights tailored to your writing and focus areas
+                Get thoughtful feedback tailored to your writing and focus areas
               </Text>
             </View>
           </View>
@@ -47,15 +47,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Mood Tracking</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
                 Track your emotional patterns and discover what influences your wellbeing
-              </Text>
-            </View>
-          </View>
-
-          <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Daily Prompts</Text>
-              <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
-                Receive personalized reflection questions based on your interests and goals
               </Text>
             </View>
           </View>

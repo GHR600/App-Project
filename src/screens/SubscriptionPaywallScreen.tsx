@@ -81,7 +81,7 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
 
         Alert.alert(
           'Success!',
-          'Welcome to Premium! You now have unlimited AI access.',
+          'Welcome to Premium! You now have unlimited access.',
           [
             {
               text: 'OK',
@@ -158,19 +158,10 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
       <ScrollView style={styles.scrollContainer}>
         <Text style={[styles.title, { color: theme.textPrimary }]}>💎 Unlock Premium</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Get unlimited AI access and advanced features
+          Get unlimited access and advanced features
         </Text>
 
         <View style={styles.featuresContainer}>
-          <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>💬</Text>
-            <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Unlimited AI Chat</Text>
-              <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
-                Have unlimited conversations with your AI journaling companion
-              </Text>
-            </View>
-          </View>
 
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             <Text style={styles.featureIcon}>🧠</Text>
@@ -188,16 +179,6 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Detailed Analytics</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
                 Track mood trends, writing patterns, and emotional growth over time
-              </Text>
-            </View>
-          </View>
-
-          <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>⚡</Text>
-            <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Faster AI Responses</Text>
-              <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
-                Premium users get access to our most advanced AI model (Claude Sonnet)
               </Text>
             </View>
           </View>

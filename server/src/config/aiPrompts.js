@@ -141,10 +141,10 @@ function getSummaryPrompt({ style = 'reflector', journalContent, conversationHis
     conversationSection = `\n\nRelated conversation:\n${chatSummary}`;
   }
 
-  const systemPrompt = `You are a ${personality.style}. Create a brief summary for this journal entry. Use sentences and bullet points. 
+  const systemPrompt = `You are a ${personality.style}. Summarise this journal entry and chat. Use sentences and bullet points. 
 
 Summary requirements:
-- DO NOT START WITH "Summary:". just get into it
+- Begin directly with the content - no labels, no headers, no prefixes.
 - One clear sentence (10-15 words ideal)
 - Use ${personality.style} voice: ${style === 'coach' ? 'focus on patterns and actions' : 'focus on feelings and processing'}
 - Make it useful for quick scanning later${conversationSection}`;
