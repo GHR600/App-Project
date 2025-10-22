@@ -38,8 +38,9 @@ interface CalendarDay {
 }
 
 const { width } = Dimensions.get('window');
-// Account for calendarContainer marginHorizontal (24px) + padding (24px) = 48px total
-const CELL_SIZE = (width - 48) / 7; // 7 days per week
+// Account for calendarContainer marginHorizontal (12px * 2 = 24px) + padding (12px * 2 = 24px) = 48px total
+const CONTAINER_HORIZONTAL = 48; // Total horizontal space used by margins and padding
+const CELL_SIZE = (width - CONTAINER_HORIZONTAL) / 7; // 7 days per week
 
 export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   userId,
@@ -76,7 +77,11 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
 
-      const dateKey = date.toISOString().split('T')[0];
+      // Use local date for dateKey to match entry dates
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
       const dayEntries = entriesMap.get(dateKey) || [];
 
       days.push({
@@ -139,11 +144,15 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
         return;
       }
 
-      // Group entries by date
+      // Group entries by date (using local date, not UTC)
       const newEntriesMap = new Map<string, JournalEntryWithInsights[]>();
       entries.forEach(entry => {
         const entryDate = new Date(entry.created_at);
-        const dateKey = entryDate.toISOString().split('T')[0];
+        // Extract local date to match calendar grid dates
+        const year = entryDate.getFullYear();
+        const month = String(entryDate.getMonth() + 1).padStart(2, '0');
+        const day = String(entryDate.getDate()).padStart(2, '0');
+        const dateKey = `${year}-${month}-${day}`;
 
         if (!newEntriesMap.has(dateKey)) {
           newEntriesMap.set(dateKey, []);
@@ -186,11 +195,16 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   };
 
   const handleDatePress = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`;
+
     console.log('📆 Calendar: Date pressed:', {
       date: date.toISOString(),
-      dateKey: date.toISOString().split('T')[0],
-      hasEntries: entriesMap.has(date.toISOString().split('T')[0]),
-      entriesCount: (entriesMap.get(date.toISOString().split('T')[0]) || []).length
+      dateKey,
+      hasEntries: entriesMap.has(dateKey),
+      entriesCount: (entriesMap.get(dateKey) || []).length
     });
     setSelectedDate(date);
     onDateSelect?.(date);
@@ -202,7 +216,10 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   }, [currentMonth, loadEntriesForMonth]);
 
   const calendarDays = generateCalendarData(currentMonth);
-  const selectedDateKey = selectedDate.toISOString().split('T')[0];
+  const year = selectedDate.getFullYear();
+  const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(selectedDate.getDate()).padStart(2, '0');
+  const selectedDateKey = `${year}-${month}-${day}`;
   const selectedEntries = entriesMap.get(selectedDateKey) || [];
 
   console.log('🔍 Calendar render:', {
@@ -210,7 +227,10 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
     selectedDateKey,
     selectedEntriesCount: selectedEntries.length,
     entriesMapSize: entriesMap.size,
-    entriesMapKeys: Array.from(entriesMap.keys())
+    entriesMapKeys: Array.from(entriesMap.keys()),
+    totalDays: calendarDays.length,
+    firstDay: calendarDays[0]?.date.toDateString(),
+    lastDay: calendarDays[41]?.date.toDateString()
   });
 
   return (
@@ -318,7 +338,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
               {selectedEntries.map(entry => {
                 const getTagColor = (tag: string): string => {
                   const colors: { [key: string]: string } = {
-                    'journal': '#8B5CF6',
+                    'journal': '#f59e0b',
                     'note': '#10B981',
                     'thought': '#3B82F6',
                     'idea': '#F59E0B',
@@ -467,6 +487,7 @@ const styles = StyleSheet.create({
   dayHeaders: {
     flexDirection: 'row',
     marginBottom: 8,
+    width: CELL_SIZE * 7, // Match calendar grid width
   },
   dayHeader: {
     width: CELL_SIZE,
@@ -480,6 +501,7 @@ const styles = StyleSheet.create({
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    width: CELL_SIZE * 7, // Explicitly set width to ensure 7 columns
   },
   dayCell: {
     width: CELL_SIZE,
@@ -487,6 +509,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    margin: 0, // Ensure no margins throw off the grid
+    padding: 0, // Ensure no padding throws off the grid
   },
   dayCellSelected: {
     borderRadius: (CELL_SIZE * 0.9) / 2,

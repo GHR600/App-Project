@@ -292,7 +292,7 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
 
   const getTagColor = (tag: string): string => {
     const colors: { [key: string]: string } = {
-      'journal': '#8B5CF6',
+      'journal': '#f59e0b',
       'note': '#10B981',
       'thought': '#3B82F6',
       'idea': '#F59E0B',

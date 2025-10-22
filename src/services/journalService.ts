@@ -100,12 +100,20 @@ export class JournalService {
     error: any;
   }> {
     try {
-      // Use provided date or default to today
-      const targetDate = data.date || new Date().toISOString().split('T')[0];
+      // Use provided date or default to today in local timezone
+      const now = new Date();
+      const localDateString = !data.date
+        ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+        : data.date;
+
+      const targetDate = localDateString;
+
       console.log('🆕 JournalService.createEntry called:', {
         targetDate,
         providedDate: data.date,
-        userId
+        userId,
+        now: now.toString(),
+        localDate: localDateString
       });
 
       // Prepare insert data with specific date timestamp
@@ -117,11 +125,22 @@ export class JournalService {
           : ['note'];
       }
 
-      // Use current timestamp if creating for today, otherwise use noon for the target date
-      const isToday = targetDate === new Date().toISOString().split('T')[0];
+      // Determine if we're creating for today (in local timezone)
+      const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const isToday = targetDate === todayLocal;
+
+      // Use current time for today's entries, noon for past/future dates
       const timestamp = isToday
-        ? new Date().toISOString() // Current time for today's entries
+        ? now.toISOString() // Current time for today's entries
         : `${targetDate}T12:00:00.000Z`; // Noon UTC for past/future dates
+
+      console.log('⏰ Entry timestamp:', {
+        targetDate,
+        isToday,
+        todayLocal,
+        timestamp,
+        localTime: now.toString()
+      });
 
       const insertData = {
         user_id: userId,

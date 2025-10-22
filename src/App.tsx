@@ -137,7 +137,7 @@ const MainApp: React.FC = () => {
 
   const renderHomeScreen = () => (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.primary }]}>📝 Journaling App</Text>
+      <Text style={[styles.title, { color: theme.primary }]}>Journaling App</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
         {user ? `Welcome back, ${user.email}!` : 'Your personal journaling companion'}
       </Text>
@@ -151,7 +151,7 @@ const MainApp: React.FC = () => {
               onPress={() => setCurrentScreen('dashboard')}
               hapticFeedback="light"
             >
-              <Text style={[styles.primaryButtonText, { color: theme.white }]}>📊 Open Dashboard</Text>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>Open Dashboard</Text>
             </AnimatedButton>
 
             <AnimatedButton
@@ -159,7 +159,7 @@ const MainApp: React.FC = () => {
               onPress={() => setCurrentScreen('journal')}
               hapticFeedback="light"
             >
-              <Text style={[styles.primaryButtonText, { color: theme.white }]}>📝 New Journal Entry</Text>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>New Journal Entry</Text>
             </AnimatedButton>
 
             <AnimatedButton
@@ -167,7 +167,7 @@ const MainApp: React.FC = () => {
               onPress={() => setCurrentScreen('settings')}
               hapticFeedback="light"
             >
-              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>⚙️ Settings</Text>
+              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Settings</Text>
             </AnimatedButton>
           </>
         ) : (
@@ -178,7 +178,7 @@ const MainApp: React.FC = () => {
               onPress={() => setCurrentScreen('signUp')}
               hapticFeedback="light"
             >
-              <Text style={[styles.primaryButtonText, { color: theme.white }]}>🚀 Create Free Account</Text>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create Free Account</Text>
             </AnimatedButton>
 
             <AnimatedButton
@@ -186,7 +186,7 @@ const MainApp: React.FC = () => {
               onPress={() => setCurrentScreen('signIn')}
               hapticFeedback="light"
             >
-              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>🔑 Sign In</Text>
+              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Sign In</Text>
             </AnimatedButton>
           </>
         )}
@@ -197,19 +197,12 @@ const MainApp: React.FC = () => {
           <Text style={[styles.benefitsTitle, { color: theme.textPrimary }]}>What you get for free:</Text>
           <View style={styles.benefitsList}>
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>✨</Text>
-              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>3 AI-powered insights per month</Text>
-            </View>
-            <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>📝</Text>
               <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Unlimited journal entries</Text>
             </View>
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>📊</Text>
               <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Basic mood tracking</Text>
             </View>
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>🔒</Text>
               <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Private and secure</Text>
             </View>
           </View>
@@ -217,7 +210,7 @@ const MainApp: React.FC = () => {
       )}
 
       <View style={[styles.successBadge, { backgroundColor: theme.success }]}>
-        <Text style={[styles.successText, { color: theme.white }]}>✅ Mobile App Ready!</Text>
+        <Text style={[styles.successText, { color: theme.white }]}>Mobile App Ready!</Text>
       </View>
     </View>
   );
@@ -398,7 +391,7 @@ const MainApp: React.FC = () => {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <Text style={[styles.title, { color: theme.primary }]}>📝 Journaling App</Text>
+          <Text style={[styles.title, { color: theme.primary }]}>Journaling App</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Loading...</Text>
         </View>
         <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -538,10 +531,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
-  },
-  benefitIcon: {
-    fontSize: 16,
-    marginRight: 8,
   },
   benefitText: {
     fontSize: 14,

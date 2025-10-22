@@ -92,7 +92,6 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 
         <View style={styles.content}>
           <View style={styles.hero}>
-            <Text style={styles.icon}>📔</Text>
             <Text style={[styles.title, { color: theme.textPrimary }]}>Create Your Account</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Join thousands of people improving their mental wellbeing through mindful journaling
@@ -102,7 +101,6 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
           <View style={[styles.form, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             {error ? (
               <View style={[styles.errorContainer, { backgroundColor: theme.error + '20', borderColor: theme.error }]}>
-                <Text style={styles.errorIcon}>⚠️</Text>
                 <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text>
               </View>
             ) : null}
@@ -177,19 +175,12 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
             <Text style={[styles.benefitsTitle, { color: theme.textPrimary }]}>What you get for free:</Text>
             <View style={styles.benefitsList}>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>✨</Text>
-                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>3 AI-powered insights per month</Text>
-              </View>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>📝</Text>
                 <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Unlimited journal entries</Text>
               </View>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>📊</Text>
                 <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Basic mood tracking</Text>
               </View>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>🔒</Text>
                 <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Private and secure</Text>
               </View>
             </View>
@@ -228,11 +219,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  icon: {
-    fontSize: 48,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
   title: {
     fontWeight: '700',
     fontSize: 28,
@@ -265,10 +251,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  errorIcon: {
-    fontSize: 16,
-    marginRight: 8,
   },
   errorText: {
     fontSize: 14,
@@ -337,10 +319,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-  },
-  benefitIcon: {
-    fontSize: 16,
-    marginRight: 12,
   },
   benefitText: {
     fontSize: 14,

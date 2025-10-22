@@ -9,6 +9,7 @@ import Purchases, {
   PurchasesPackage,
   LOG_LEVEL,
 } from 'react-native-purchases';
+import Constants from 'expo-constants';
 import { supabase } from '../config/supabase';
 
 export type SubscriptionStatus = 'free' | 'premium';
@@ -18,7 +19,9 @@ export type SubscriptionStatus = 'free' | 'premium';
  * Should be called early in the app lifecycle
  */
 export async function initializeRevenueCat(): Promise<void> {
-  const apiKey = process.env.REACT_APP_REVENUECAT_ANDROID_KEY;
+  // Try to get API key from expo config first, then fall back to process.env
+  const extra = Constants.expoConfig?.extra || {};
+  const apiKey = extra.revenuecatGoogleApiKey || process.env.REVENUECAT_GOOGLE_API_KEY;
 
   if (!apiKey) {
     console.warn('RevenueCat API key not configured. Subscription features will not work.');

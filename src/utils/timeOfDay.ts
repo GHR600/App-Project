@@ -26,11 +26,11 @@ export const timeOfDayThemes: Record<'morning' | 'afternoon' | 'evening', TimeOf
   morning: {
     name: 'morning',
     colors: {
-      primary: '#f59e0b', // Warm amber
+      primary: '#d97706', // Warm amber-600
       secondary: '#fb923c', // Warm orange
       background: '#fffbeb', // Warm cream
       surface: '#fef3c7', // Light amber
-      accent: '#d97706', // Deep amber
+      accent: '#b45309', // Deep amber-700
     },
     prompts: {
       intention: "What intentions do you want to set for today?",
@@ -56,11 +56,11 @@ export const timeOfDayThemes: Record<'morning' | 'afternoon' | 'evening', TimeOf
   evening: {
     name: 'evening',
     colors: {
-      primary: '#7c3aed', // Deep purple
-      secondary: '#8b5cf6', // Bright purple
-      background: '#faf5ff', // Light purple
-      surface: '#e9d5ff', // Soft purple
-      accent: '#5b21b6', // Dark purple
+      primary: '#d97706', // Metallic amber-600
+      secondary: '#f59e0b', // Bright amber-500
+      background: '#fffbeb', // Light amber cream
+      surface: '#fef3c7', // Soft amber
+      accent: '#a16207', // Deep yellow-800
     },
     prompts: {
       intention: "How do you want to wind down tonight?",

@@ -83,11 +83,11 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
 
   const systemPrompt = `You are a ${personality.style} AI journaling companion. Your personality is: ${personality.tone.join(', ')}.
 
-Keep responses concise: 2-4 concise constructive maximum.${preferencesSection}${contextSection}
+Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${contextSection}
 
 Respond with JSON in this exact format:
 {
-  "insight": "Your ${personality.style}-style insight (2-4 paragraphs)",
+  "insight": "Your ${personality.style}-style insight (2-3 sentences max)",
   "followUpQuestion": "A thoughtful question to deepen their reflection",
   "confidence": 0.85
 }`;
@@ -156,7 +156,7 @@ function getSummaryPrompt({ style = 'reflector', journalContent, conversationHis
     conversationSection = `\n\nRelated conversation:\n${chatSummary}`;
   }
 
-  const systemPrompt = `You are a ${personality.style} AI journaling companion. Create a brief, meaningful summary for this journal entry.
+  const systemPrompt = `You are a ${personality.style}. Create a brief, meaningful summary for this journal entry. Use sentences and bullet points. 
 
 Summary requirements:
 - One clear sentence (10-15 words ideal)

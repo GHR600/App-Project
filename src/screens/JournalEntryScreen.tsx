@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { ArrowUp } from 'lucide-react-native';
+import { ArrowUp, FileText, MessageCircle, Lightbulb, Target, Heart, Tag } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { typography, components } from '../styles/designSystem';
 import { JournalService, CreateJournalEntryData } from '../services/journalService';
@@ -70,11 +70,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
 
   // Preset tags with icons
   const presetTags = [
-    { label: 'Journal', icon: '📝', value: 'journal' },
-    { label: 'Thought', icon: '💭', value: 'thought' },
-    { label: 'Idea', icon: '💡', value: 'idea' },
-    { label: 'Goal', icon: '🎯', value: 'goal' },
-    { label: 'Gratitude', icon: '✨', value: 'gratitude' },
+    { label: 'Journal', icon: FileText, value: 'journal' },
+    { label: 'Thought', icon: MessageCircle, value: 'thought' },
+    { label: 'Idea', icon: Lightbulb, value: 'idea' },
+    { label: 'Goal', icon: Target, value: 'goal' },
+    { label: 'Gratitude', icon: Heart, value: 'gratitude' },
   ];
 
   // Flow state
@@ -627,6 +627,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
       <View style={styles.presetTagsContainer}>
         {presetTags.map(tag => {
           const isSelected = selectedTags.includes(tag.value);
+          const IconComponent = tag.icon;
           return (
             <AnimatedButton
               key={tag.value}
@@ -638,7 +639,11 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
               onPress={() => toggleTag(tag.value)}
               hapticFeedback="light"
             >
-              <Text style={styles.tagIcon}>{tag.icon}</Text>
+              <IconComponent
+                size={16}
+                color={isSelected ? theme.white : theme.textSecondary}
+                strokeWidth={2}
+              />
               <Text style={[
                 styles.tagLabel,
                 { color: theme.textPrimary },
@@ -661,7 +666,8 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
                 key={tag}
                 style={[styles.customTagChip, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
               >
-                <Text style={[styles.customTagText, { color: theme.primary }]}>🏷️ {tag}</Text>
+                <Tag size={14} color={theme.primary} strokeWidth={2} />
+                <Text style={[styles.customTagText, { color: theme.primary }]}>{tag}</Text>
                 <AnimatedButton onPress={() => removeTag(tag)} style={styles.removeTagButton} hapticFeedback="light">
                   <Text style={[styles.removeTagText, { color: theme.primary }]}>×</Text>
                 </AnimatedButton>
@@ -1033,9 +1039,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     gap: 6,
   },
-  tagIcon: {
-    fontSize: 16,
-  },
   tagLabel: {
     fontSize: 14,
     fontWeight: '500',
@@ -1135,7 +1138,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   insightBubble: {
-    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+    backgroundColor: 'rgba(217, 119, 6, 0.2)',
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,

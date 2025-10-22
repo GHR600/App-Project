@@ -1,8 +1,8 @@
 export const colors = {
-  // Primary Colors (MyDiary Purple Theme)
-  primary: '#7C3AED',           // Main purple (buttons, links, accents)
-  primaryDark: '#6D28D9',       // Darker purple (hover states)
-  primaryLight: '#A855F7',      // Lighter purple (highlights)
+  // Primary Colors (Metallic Amber/Gold Theme)
+  primary: '#d97706',           // Main amber (buttons, links, accents) - amber-600
+  primaryDark: '#b45309',       // Darker amber (hover states) - amber-700
+  primaryLight: '#f59e0b',      // Lighter amber (highlights) - amber-500
 
   // Background Colors (Dark Theme)
   background: '#1e1b4b',        // Main dark background
@@ -24,7 +24,7 @@ export const colors = {
   info: '#3b82f6',              // Info blue
 
   // Legacy/Fallback Colors
-  secondary: '#7c3aed',         // Keep for compatibility
+  secondary: '#d97706',         // Keep for compatibility
   white: '#ffffff',
   gray50: '#f8fafc',
   gray100: '#f1f5f9',
@@ -40,22 +40,24 @@ export const colors = {
   // Component-specific colors
   cardBackground: 'rgba(255,255,255,0.08)',
   cardBorder: 'rgba(255,255,255,0.12)',
-  buttonPrimary: '#7C3AED',
+  buttonPrimary: '#d97706',
   buttonSecondary: 'rgba(255,255,255,0.1)',
   inputBackground: 'rgba(255,255,255,0.1)',
   inputBorder: 'rgba(255,255,255,0.2)',
   placeholderText: '#9ca3af',
 
   // Floating Action Button
-  floatingButton: '#7C3AED',
-  floatingButtonShadow: 'rgba(124, 58, 237, 0.3)',
+  floatingButton: '#d97706',
+  floatingButtonShadow: 'rgba(180, 83, 9, 0.3)',
 
   // Additional colors for extended functionality
   green600: '#10b981',
   red600: '#ef4444',
-  yellow600: '#f59e0b',
-  blue600: '#3b82f6',
-  purple600: '#7c3aed'
+  amber500: '#f59e0b',
+  amber600: '#d97706',
+  amber700: '#b45309',
+  yellow800: '#a16207',
+  blue600: '#3b82f6'
 };
 
 export const typography = {

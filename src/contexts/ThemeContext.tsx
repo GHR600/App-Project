@@ -63,9 +63,9 @@ interface ThemeContextType {
 
 const lightTheme: ThemeColors = {
   // Primary Colors
-  primary: '#7C3AED',
-  primaryDark: '#6D28D9',
-  primaryLight: '#A855F7',
+  primary: '#d97706',
+  primaryDark: '#b45309',
+  primaryLight: '#f59e0b',
 
   // Background Colors (Light Theme)
   background: '#ffffff',
@@ -89,13 +89,13 @@ const lightTheme: ThemeColors = {
   // Component-specific colors
   cardBackground: '#ffffff',
   cardBorder: '#e2e8f0',
-  buttonPrimary: '#7C3AED',
+  buttonPrimary: '#d97706',
   buttonSecondary: '#f1f5f9',
   inputBackground: '#ffffff',
   inputBorder: '#cbd5e1',
   placeholderText: '#94a3b8',
-  floatingButton: '#7C3AED',
-  floatingButtonShadow: 'rgba(124, 58, 237, 0.3)',
+  floatingButton: '#d97706',
+  floatingButtonShadow: 'rgba(180, 83, 9, 0.3)',
 
   // Legacy/Fallback Colors
   white: '#ffffff',
@@ -113,9 +113,9 @@ const lightTheme: ThemeColors = {
 
 const darkTheme: ThemeColors = {
   // Primary Colors
-  primary: '#7C3AED',
-  primaryDark: '#6D28D9',
-  primaryLight: '#A855F7',
+  primary: '#d97706',
+  primaryDark: '#b45309',
+  primaryLight: '#f59e0b',
 
   // Background Colors (Dark Theme)
   background: '#0f172a',
@@ -139,13 +139,13 @@ const darkTheme: ThemeColors = {
   // Component-specific colors
   cardBackground: 'rgba(255,255,255,0.05)',
   cardBorder: 'rgba(255,255,255,0.1)',
-  buttonPrimary: '#7C3AED',
+  buttonPrimary: '#d97706',
   buttonSecondary: 'rgba(255,255,255,0.1)',
   inputBackground: 'rgba(255,255,255,0.05)',
   inputBorder: 'rgba(255,255,255,0.15)',
   placeholderText: '#64748b',
-  floatingButton: '#7C3AED',
-  floatingButtonShadow: 'rgba(124, 58, 237, 0.3)',
+  floatingButton: '#d97706',
+  floatingButtonShadow: 'rgba(180, 83, 9, 0.3)',
 
   // Legacy/Fallback Colors
   white: '#ffffff',

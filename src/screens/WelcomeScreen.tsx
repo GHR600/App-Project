@@ -25,29 +25,24 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.hero}>
-          <View style={styles.iconContainer}>
-            <Text style={styles.mainIcon}>📔</Text>
-          </View>
           <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome to Mindful</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Your personal AI-powered journaling companion that helps you understand your thoughts,
+            Your personal journaling companion that helps you understand your thoughts,
             track your mood, and discover meaningful insights about your daily life.
           </Text>
         </View>
 
         <View style={styles.features}>
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>🧠</Text>
             <View style={styles.featureContent}>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Personalized Insights</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
-                Get thoughtful, AI-generated insights tailored to your writing and focus areas
+                Get thoughtful insights tailored to your writing and focus areas
               </Text>
             </View>
           </View>
 
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>📊</Text>
             <View style={styles.featureContent}>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Mood Tracking</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
@@ -57,7 +52,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </View>
 
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>🎯</Text>
             <View style={styles.featureContent}>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Daily Prompts</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
@@ -67,7 +61,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </View>
 
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>🔒</Text>
             <View style={styles.featureContent}>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Privacy First</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
@@ -88,7 +81,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: theme.textMuted }]}>
-            Start with 3 free AI insights • No credit card required
+            No credit card required
           </Text>
         </View>
       </ScrollView>
@@ -111,13 +104,6 @@ const styles = StyleSheet.create({
     marginBottom: 48,
     maxWidth: 600,
     paddingHorizontal: 20,
-  },
-  iconContainer: {
-    marginBottom: 24,
-  },
-  mainIcon: {
-    fontSize: 64,
-    textAlign: 'center',
   },
   title: {
     fontSize: 32,
@@ -150,10 +136,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  featureIcon: {
-    fontSize: 32,
-    marginRight: 16,
   },
   featureContent: {
     flex: 1,

@@ -86,7 +86,6 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
 
         <View style={styles.content}>
           <View style={styles.hero}>
-            <Text style={styles.icon}>📔</Text>
             <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome Back</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Sign in to continue your journaling journey
@@ -96,7 +95,6 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
           <View style={[styles.form, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             {error ? (
               <View style={[styles.errorContainer, { backgroundColor: theme.error + '20', borderColor: theme.error }]}>
-                <Text style={styles.errorIcon}>⚠️</Text>
                 <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text>
               </View>
             ) : null}
@@ -187,11 +185,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  icon: {
-    fontSize: 48,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
   title: {
     fontWeight: '700',
     fontSize: 28,
@@ -224,10 +217,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  errorIcon: {
-    fontSize: 16,
-    marginRight: 8,
   },
   errorText: {
     fontSize: 14,
