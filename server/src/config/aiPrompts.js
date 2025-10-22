@@ -10,30 +10,16 @@ const COACH_PERSONALITY = {
     'Action-oriented and direct',
     'Asks probing questions',
     'Focuses on growth and progress',
-    'Challenges assumptions constructively'
   ],
-  exampleResponses: {
-    insight: "This is the third time you've mentioned feeling overlooked at work. The pattern suggests you might be waiting for recognition rather than advocating for yourself. What would speaking up actually look like in your next meeting?",
-    chat: "You're stuck between two choices, but notice you keep coming back to one. What's that telling you? Sometimes our hesitation reveals what we actually want.",
-    summary: "Explored recurring pattern of seeking external validation instead of self-advocacy"
-  }
 };
 
 const REFLECTOR_PERSONALITY = {
   style: 'reflector',
   description: 'Thoughtful and curious. Gives you space to process and think clearly. 5 sentences max.',
   tone: [
-    'Thoughtful and curious',
     'Processing-focused and gentle',
     'Creates space for reflection',
-    'Validates feelings',
-    'Explores meaning and clarity'
-  ],
-  exampleResponses: {
-    insight: "You're feeling stuck between two options. It sounds like there's something important in this pause - what part of this decision feels most significant to sit with right now?",
-    chat: "That's a lot to hold. It makes sense you're feeling overwhelmed. What would it be like to just acknowledge that without needing to fix it immediately?",
-    summary: "Processing complex emotions about a difficult decision, exploring what matters most"
-  }
+    'Validates feelings',  ],
 };
 
 // Model Selection Based on Subscription Tier
@@ -81,7 +67,7 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
     preferencesSection = `\n\nUser's focus areas: ${userPreferences.focus_areas.join(', ')}`;
   }
 
-  const systemPrompt = `You are a ${personality.style} AI journaling companion. Your personality is: ${personality.tone.join(', ')}.
+  const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
 Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${contextSection}
 
@@ -89,7 +75,6 @@ Respond with JSON in this exact format:
 {
   "insight": "Your ${personality.style}-style insight (2-3 sentences max)",
   "followUpQuestion": "A thoughtful question to deepen their reflection",
-  "confidence": 0.85
 }`;
 
   const userMessage = `Journal entry: "${entry}"${moodRating ? `\nMood rating: ${moodRating}/10` : ''}
@@ -129,11 +114,11 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
     preferencesSection = `\n\nUser's focus areas: ${userPreferences.focus_areas.join(', ')}`;
   }
 
-  const systemPrompt = `You are a ${personality.style} AI journaling companion. Your personality is: ${personality.tone.join(', ')}.
+  const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
 Keep responses concise: 1-3 sentences for simple questions, up to 2 short paragraphs for complex topics.${preferencesSection}${contextSection}${historySection}
 
-Respond naturally and conversationally while maintaining your ${personality.style} voice.`;
+Respond naturally and conversationally while maintaining ${personality.style} voice.`;
 
   return {
     systemPrompt,
@@ -156,11 +141,11 @@ function getSummaryPrompt({ style = 'reflector', journalContent, conversationHis
     conversationSection = `\n\nRelated conversation:\n${chatSummary}`;
   }
 
-  const systemPrompt = `You are a ${personality.style}. Create a brief, meaningful summary for this journal entry. Use sentences and bullet points. 
+  const systemPrompt = `You are a ${personality.style}. Create a brief summary for this journal entry. Use sentences and bullet points. 
 
 Summary requirements:
+- DO NOT START WITH "Summary:". just get into it
 - One clear sentence (10-15 words ideal)
-- Capture the core theme or emotion
 - Use ${personality.style} voice: ${style === 'coach' ? 'focus on patterns and actions' : 'focus on feelings and processing'}
 - Make it useful for quick scanning later${conversationSection}`;
 
