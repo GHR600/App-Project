@@ -5,7 +5,10 @@
       "Bash(npm install -g eas-cli)",
       "Bash(npx expo config --type introspect)",
       "Bash(npx expo install expo-image)",
-      "Bash(node \"C:\\App Project\\scripts\\generate-assets.js\")"
+      "Bash(node \"C:\\App Project\\scripts\\generate-assets.js\")",
+      "Bash(eas secret:create:*)",
+      "Bash(eas env:create:*)",
+      "Bash(eas env:list:*)"
     ],
     "deny": [],
     "ask": []

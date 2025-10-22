@@ -116,7 +116,7 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
 
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Keep responses concise: 1-3 sentences for simple questions, up to 2 short paragraphs for complex topics.${preferencesSection}${contextSection}${historySection}
+Respond in EXACTLY 1-2 sentences (maximum 30 words total). Be concise and direct.${preferencesSection}${contextSection}${historySection}
 
 Respond naturally and conversationally while maintaining ${personality.style} voice.`;
 
