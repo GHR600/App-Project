@@ -4,7 +4,7 @@
 // AI Personality Definitions
 const COACH_PERSONALITY = {
   style: 'coach',
-  description: 'Strategic and direct. Helps you spot patterns and take action.',
+  description: 'Strategic and direct. Helps you spot patterns and take action. 3 sentences max.',
   tone: [
     'Strategic and pattern-focused',
     'Action-oriented and direct',
@@ -21,7 +21,7 @@ const COACH_PERSONALITY = {
 
 const REFLECTOR_PERSONALITY = {
   style: 'reflector',
-  description: 'Thoughtful and curious. Gives you space to process and think clearly.',
+  description: 'Thoughtful and curious. Gives you space to process and think clearly. 5 sentences max.',
   tone: [
     'Thoughtful and curious',
     'Processing-focused and gentle',
