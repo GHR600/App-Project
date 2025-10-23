@@ -2,8 +2,8 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: "AI Journaling App",
-    slug: "ai-journaling-app",
+    name: "Journaling",
+    slug: "journaling",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -17,7 +17,7 @@ export default {
       "**/*"
     ],
     ios: {
-      bundleIdentifier: "com.aijournalingapp",
+      bundleIdentifier: "com.journaling",
       supportsTablet: true,
       infoPlist: {
         SKAdNetworkItems: [
@@ -28,7 +28,7 @@ export default {
       }
     },
     android: {
-      package: "com.aijournalingapp",
+      package: "com.journaling",
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#0f172a"
@@ -49,8 +49,11 @@ export default {
       supabaseAnonKey: process.env.REACT_APP_SUPABASE_ANON_KEY,
       apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
       anthropicApiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
-      revenuecatGoogleApiKey: process.env.REVENUECAT_GOOGLE_API_KEY,
-      revenuecatId: process.env.REVENUECAT_ID
+      // RevenueCat platform-specific API keys
+      revenuecatAppleApiKey: process.env.REACT_APP_REVENUECAT_APPLE_API_KEY,
+      revenuecatGoogleApiKey: process.env.REACT_APP_REVENUECAT_GOOGLE_API_KEY,
+      revenuecatWebApiKey: process.env.REACT_APP_REVENUECAT_WEB_API_KEY,
+      revenuecatId: process.env.REACT_APP_REVENUECAT_ID
     }
   }
 };

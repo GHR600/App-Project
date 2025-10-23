@@ -27,6 +27,8 @@ import {
   Plus,
   Filter,
   Tag,
+  MessageSquare,
+  Type,
 } from 'lucide-react-native';
 
 export interface IconProps {
@@ -134,6 +136,15 @@ export const CalendarIcon: React.FC<IconProps> = ({ size = 24, color = '#000', s
 
 export const StatsIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
   <BarChart3 size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+// Content & Writing Icons
+export const MessageSquareIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <MessageSquare size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const TypeIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Type size={size} color={color} strokeWidth={strokeWidth} />
 );
 
 // Mood Emojis - Keep as constants since emojis work well for emotions

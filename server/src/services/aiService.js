@@ -175,7 +175,7 @@ class AIService {
           followUpQuestion: parsed.followUpQuestion,
           confidence: parsed.confidence || 0.85,
           source: 'claude',
-          model: model
+          model: promptConfig.model
         };
       } catch (parseError) {
         console.warn('🤖 Claude AI - JSON parsing failed, using text fallback:', {
@@ -204,7 +204,7 @@ class AIService {
             : "What would you like to explore further about this reflection?",
           confidence: 0.8,
           source: 'claude',
-          model: model
+          model: promptConfig.model
         };
 
         console.log('🤖 Claude AI - Fallback result:', {
@@ -496,7 +496,7 @@ class AIService {
         response: textContent.text.trim(),
         confidence: 0.85,
         source: 'claude',
-        model: model
+        model: promptConfig.model
       };
     } catch (claudeError) {
       const duration = Date.now() - startTime;
@@ -596,7 +596,7 @@ class AIService {
         summary: textContent.text.trim(),
         confidence: 0.9,
         source: 'claude',
-        model: model
+        model: promptConfig.model
       };
     } catch (claudeError) {
       const duration = Date.now() - startTime;

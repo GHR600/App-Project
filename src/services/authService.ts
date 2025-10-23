@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase';
 import { User, Session, AuthError } from '@supabase/supabase-js';
+import { loginRevenueCat } from './subscriptionService';
 
 export interface AuthUser {
   id: string;
@@ -59,6 +60,14 @@ export class AuthService {
           console.error('Error creating user profile:', profileError);
           // Don't fail the entire signup for profile creation errors
         }
+
+        // Identify user in RevenueCat
+        try {
+          await loginRevenueCat(authData.user.id);
+        } catch (error) {
+          console.error('Error identifying user in RevenueCat:', error);
+          // Don't fail signup for RevenueCat errors
+        }
       }
 
       return {
@@ -91,6 +100,16 @@ export class AuthService {
         return { user: null, session: null, error };
       }
 
+      // Identify user in RevenueCat after successful sign in
+      if (authData.user) {
+        try {
+          await loginRevenueCat(authData.user.id);
+        } catch (error) {
+          console.error('Error identifying user in RevenueCat:', error);
+          // Don't fail sign in for RevenueCat errors
+        }
+      }
+
       return {
         user: authData.user ? {
           id: authData.user.id,
@@ -112,6 +131,15 @@ export class AuthService {
   // Sign out user
   static async signOut(): Promise<{ error: AuthError | null }> {
     try {
+      // Log out from RevenueCat first
+      const { logoutRevenueCat } = await import('./subscriptionService');
+      try {
+        await logoutRevenueCat();
+      } catch (error) {
+        console.error('Error logging out from RevenueCat:', error);
+        // Continue with sign out even if RevenueCat logout fails
+      }
+
       const { error } = await supabase.auth.signOut();
       return { error };
     } catch (error) {

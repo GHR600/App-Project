@@ -32,8 +32,8 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [packages, setPackages] = useState<{
-    monthly?: PurchasesPackage;
-    annual?: PurchasesPackage;
+    weekly?: PurchasesPackage;
+    yearly?: PurchasesPackage;
   }>({});
 
   useEffect(() => {
@@ -48,15 +48,17 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
       if (offerings?.current) {
         const availablePackages = offerings.current.availablePackages;
 
-        // Find monthly and annual packages
-        const monthly = availablePackages.find(
-          (pkg) => pkg.identifier === '$rc_monthly' || pkg.packageType === 'MONTHLY'
+        // Find weekly and yearly packages based on identifier or packageType
+        const weekly = availablePackages.find(
+          (pkg) => pkg.identifier.toLowerCase().includes('weekly') || pkg.packageType === 'WEEKLY'
         );
-        const annual = availablePackages.find(
-          (pkg) => pkg.identifier === '$rc_annual' || pkg.packageType === 'ANNUAL'
+        const yearly = availablePackages.find(
+          (pkg) => pkg.identifier.toLowerCase().includes('yearly') ||
+                   pkg.identifier.toLowerCase().includes('annual') ||
+                   pkg.packageType === 'ANNUAL'
         );
 
-        setPackages({ monthly, annual });
+        setPackages({ weekly, yearly });
       }
     } catch (error) {
       console.error('Error loading offerings:', error);
@@ -193,48 +195,48 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
           </View>
         ) : (
           <View style={styles.pricingContainer}>
-            {packages.annual && (
+            {packages.yearly && (
               <View style={[styles.planCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
                 <View style={[styles.popularBadge, { backgroundColor: theme.primary }]}>
                   <Text style={[styles.popularText, { color: theme.white }]}>Best Value</Text>
                 </View>
-                <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Annual Plan</Text>
+                <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Yearly Plan</Text>
                 <Text style={[styles.price, { color: theme.textPrimary }]}>
-                  {formatPrice(packages.annual)}
+                  {formatPrice(packages.yearly)}
                 </Text>
-                <Text style={[styles.savings, { color: theme.success }]}>Save 33%</Text>
+                <Text style={[styles.savings, { color: theme.success }]}>Best Deal</Text>
                 <TouchableOpacity
                   style={[styles.primaryButton, { backgroundColor: theme.primary }]}
-                  onPress={() => handlePurchase(packages.annual!)}
+                  onPress={() => handlePurchase(packages.yearly!)}
                   disabled={purchasing}
                 >
                   {purchasing ? (
                     <ActivityIndicator color={theme.white} />
                   ) : (
                     <Text style={[styles.primaryButtonText, { color: theme.white }]}>
-                      Start Annual Plan
+                      Start Yearly Plan
                     </Text>
                   )}
                 </TouchableOpacity>
               </View>
             )}
 
-            {packages.monthly && (
+            {packages.weekly && (
               <View style={[styles.planCard, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-                <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Monthly Plan</Text>
+                <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Weekly Plan</Text>
                 <Text style={[styles.price, { color: theme.textPrimary }]}>
-                  {formatPrice(packages.monthly)}
+                  {formatPrice(packages.weekly)}
                 </Text>
                 <TouchableOpacity
                   style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: 'transparent' }]}
-                  onPress={() => handlePurchase(packages.monthly!)}
+                  onPress={() => handlePurchase(packages.weekly!)}
                   disabled={purchasing}
                 >
                   {purchasing ? (
                     <ActivityIndicator color={theme.primary} />
                   ) : (
                     <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>
-                      Start Monthly Plan
+                      Start Weekly Plan
                     </Text>
                   )}
                 </TouchableOpacity>

@@ -6,10 +6,8 @@ const COACH_PERSONALITY = {
   style: 'coach',
   description: 'Strategic and direct. Helps you spot patterns and take action. 3 sentences max.',
   tone: [
-    'Strategic and pattern-focused',
+    'Strategic',
     'Action-oriented and direct',
-    'Asks probing questions',
-    'Focuses on growth and progress',
   ],
 };
 
@@ -73,7 +71,7 @@ Keep responses concise: 2-3 concise constructive sentences maximum.${preferences
 
 Respond with JSON in this exact format:
 {
-  "insight": "Your ${personality.style}-style insight (2-3 sentences max)",
+  "insight": "Your ${personality.style}-style insight (1-2 sentences max)", leave an empty line, 
   "followUpQuestion": "A thoughtful question to deepen their reflection",
 }`;
 

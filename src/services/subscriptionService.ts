@@ -10,6 +10,7 @@ import Purchases, {
   LOG_LEVEL,
 } from 'react-native-purchases';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { supabase } from '../config/supabase';
 
 export type SubscriptionStatus = 'free' | 'premium';
@@ -21,10 +22,23 @@ export type SubscriptionStatus = 'free' | 'premium';
 export async function initializeRevenueCat(): Promise<void> {
   // Try to get API key from expo config first, then fall back to process.env
   const extra = Constants.expoConfig?.extra || {};
-  const apiKey = extra.revenuecatGoogleApiKey || process.env.REVENUECAT_GOOGLE_API_KEY;
+
+  // Select the appropriate API key based on platform
+  let apiKey: string | undefined;
+
+  if (Platform.OS === 'ios') {
+    // iOS uses Apple App Store key
+    apiKey = extra.revenuecatAppleApiKey || process.env.REACT_APP_REVENUECAT_APPLE_API_KEY;
+  } else if (Platform.OS === 'android') {
+    // Android uses Google Play key
+    apiKey = extra.revenuecatGoogleApiKey || process.env.REACT_APP_REVENUECAT_GOOGLE_API_KEY;
+  } else if (Platform.OS === 'web') {
+    // Web uses Web Billing key
+    apiKey = extra.revenuecatWebApiKey || process.env.REACT_APP_REVENUECAT_WEB_API_KEY;
+  }
 
   if (!apiKey) {
-    console.warn('RevenueCat API key not configured. Subscription features will not work.');
+    console.warn(`RevenueCat API key not configured for platform: ${Platform.OS}. Subscription features will not work.`);
     return;
   }
 
@@ -34,10 +48,10 @@ export async function initializeRevenueCat(): Promise<void> {
       await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
     }
 
-    // Configure RevenueCat
+    // Configure RevenueCat with platform-specific key
     await Purchases.configure({ apiKey });
 
-    console.log('RevenueCat initialized successfully');
+    console.log(`RevenueCat initialized successfully for ${Platform.OS}`);
   } catch (error) {
     console.error('Error initializing RevenueCat:', error);
     throw error;

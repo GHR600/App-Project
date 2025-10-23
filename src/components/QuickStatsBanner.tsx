@@ -2,8 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
-import { FileTextIcon, FlameIcon } from './icons/AppIcons';
-import { MessageSquare, BarChart3 } from 'lucide-react-native';
+import { FileTextIcon, FlameIcon, MessageSquareIcon, StatsIcon } from './icons/AppIcons';
 
 interface QuickStat {
   iconType: 'entries' | 'words' | 'average' | 'streak';
@@ -41,9 +40,9 @@ export const QuickStatsBanner: React.FC<QuickStatsBannerProps> = ({
       case 'entries':
         return <FileTextIcon size={iconSize} color={iconColor} strokeWidth={2} />;
       case 'words':
-        return <MessageSquare size={iconSize} color={iconColor} strokeWidth={2} />;
+        return <MessageSquareIcon size={iconSize} color={iconColor} strokeWidth={2} />;
       case 'average':
-        return <BarChart3 size={iconSize} color={iconColor} strokeWidth={2} />;
+        return <StatsIcon size={iconSize} color={iconColor} strokeWidth={2} />;
       case 'streak':
         return <FlameIcon size={iconSize} color={iconColor} fill={iconColor} strokeWidth={2} />;
       default:

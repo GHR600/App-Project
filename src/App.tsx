@@ -37,6 +37,7 @@ const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'calendar' | 'home' | 'stats'>('home');
   const [menuVisible, setMenuVisible] = useState(false);
   const [journalEntryParams, setJournalEntryParams] = useState<any>(null);
+  const [subscriptionReturnScreen, setSubscriptionReturnScreen] = useState<string>('dashboard');
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const { user, loading } = useAuth();
@@ -251,9 +252,21 @@ const MainApp: React.FC = () => {
           />
         );
       case 'subscription':
-        return <SubscriptionPaywallScreen onBack={() => setCurrentScreen('dashboard')} />;
+        return (
+          <SubscriptionPaywallScreen
+            onBack={() => setCurrentScreen(subscriptionReturnScreen)}
+          />
+        );
       case 'settings':
-        return <SettingsScreen onBack={() => setCurrentScreen('dashboard')} />;
+        return (
+          <SettingsScreen
+            onBack={() => setCurrentScreen('dashboard')}
+            onNavigateToSubscription={() => {
+              setSubscriptionReturnScreen('settings');
+              setCurrentScreen('subscription');
+            }}
+          />
+        );
       case 'journal':
         if (!user) {
           setCurrentScreen('signUp');
@@ -274,7 +287,10 @@ const MainApp: React.FC = () => {
               const targetScreen = journalParams.fromScreen === 'DayDetail' ? 'dayDetail' : 'dashboard';
               setCurrentScreen(targetScreen);
             }}
-            onPaywallRequired={() => setCurrentScreen('subscription')}
+            onPaywallRequired={() => {
+              setSubscriptionReturnScreen('dashboard');
+              setCurrentScreen('subscription');
+            }}
             mode={journalParams.mode}
             entryId={journalParams.entryId}
             fromScreen={journalParams.fromScreen}

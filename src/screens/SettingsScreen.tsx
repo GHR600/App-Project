@@ -17,21 +17,25 @@ import {
   CheckIcon,
   InfoIcon,
   ArrowRightIcon,
+  CrownIcon,
 } from '../components/icons/AppIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { supabase } from '../config/supabase';
 import { AnimatedButton } from '../components/AnimatedButton';
 
 interface SettingsScreenProps {
   onBack: () => void;
+  onNavigateToSubscription?: () => void;
 }
 
 type AIStyle = 'coach' | 'reflector';
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNavigateToSubscription }) => {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { user } = useAuth();
+  const { status: subscriptionStatus, isPremium } = useSubscription();
   const [aiStyle, setAIStyle] = useState<AIStyle>('reflector');
   const [loadingAIStyle, setLoadingAIStyle] = useState(true);
   const [updatingAIStyle, setUpdatingAIStyle] = useState(false);
@@ -121,6 +125,65 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* Subscription Section */}
+        {user && onNavigateToSubscription && (
+          <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+            <View style={styles.subscriptionHeader}>
+              <CrownIcon size={24} color={isPremium ? theme.warning : theme.primary} strokeWidth={2} />
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary, marginBottom: 0, marginLeft: 8 }]}>
+                Subscription
+              </Text>
+            </View>
+
+            <View style={styles.subscriptionStatus}>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: isPremium ? theme.success : theme.surface }
+              ]}>
+                {isPremium && (
+                  <View style={styles.statusBadgeIcon}>
+                    <CrownIcon size={14} color={theme.white} strokeWidth={2.5} />
+                  </View>
+                )}
+                <Text style={[
+                  styles.statusText,
+                  { color: isPremium ? theme.white : theme.textSecondary }
+                ]}>
+                  {isPremium ? 'Premium Active' : 'Free Plan'}
+                </Text>
+              </View>
+            </View>
+
+            <AnimatedButton
+              onPress={onNavigateToSubscription}
+              style={[
+                styles.subscriptionButton,
+                { backgroundColor: isPremium ? theme.surface : theme.primary }
+              ]}
+              hapticFeedback="medium"
+            >
+              <View style={styles.subscriptionButtonContent}>
+                {!isPremium && (
+                  <CrownIcon size={18} color={theme.white} strokeWidth={2.5} />
+                )}
+                <Text style={[
+                  styles.subscriptionButtonText,
+                  { color: isPremium ? theme.primary : theme.white }
+                ]}>
+                  {isPremium ? 'Manage Subscription' : 'Upgrade to Premium'}
+                </Text>
+              </View>
+              <ArrowRightIcon size={20} color={isPremium ? theme.primary : theme.white} strokeWidth={2} />
+            </AnimatedButton>
+
+            {!isPremium && (
+              <Text style={[styles.subscriptionSubtext, { color: theme.textSecondary }]}>
+                Get unlimited insights, advanced analytics, and more
+              </Text>
+            )}
+          </View>
+        )}
+
         {/* AI Response Style Section */}
         {user && (
           <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
@@ -426,5 +489,54 @@ const styles = StyleSheet.create({
   aiStyleDescription: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  subscriptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  subscriptionStatus: {
+    marginBottom: 16,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    gap: 6,
+  },
+  statusBadgeIcon: {
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  subscriptionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  subscriptionButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  subscriptionButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  subscriptionSubtext: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
   },
 });
