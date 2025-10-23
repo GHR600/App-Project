@@ -8,7 +8,11 @@
       "Bash(node \"C:\\App Project\\scripts\\generate-assets.js\")",
       "Bash(eas secret:create:*)",
       "Bash(eas env:create:*)",
-      "Bash(eas env:list:*)"
+      "Bash(eas env:list:*)",
+      "Bash(cd:*)",
+      "Bash(tree:*)",
+      "Bash(rm:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "ask": []

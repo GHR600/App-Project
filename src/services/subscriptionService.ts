@@ -23,20 +23,38 @@ export async function initializeRevenueCat(): Promise<void> {
   // Try to get API key from expo config first, then fall back to process.env
   const extra = Constants.expoConfig?.extra || {};
 
+  // ADD THESE DEBUG LINES HERE ⬇️
+  console.log('🔍 === RevenueCat Debug Start ===');
+  console.log('📱 Platform.OS:', Platform.OS);
+  console.log('📦 Extra keys available:', Object.keys(extra));
+  console.log('🔑 extra.revenuecatGoogleApiKey:', extra.revenuecatGoogleApiKey ? 'EXISTS ✅' : 'MISSING ❌');
+  console.log('🔑 extra.revenuecatAppleApiKey:', extra.revenuecatAppleApiKey ? 'EXISTS ✅' : 'MISSING ❌');
+  console.log('🔑 process.env GOOGLE:', process.env.REACT_APP_REVENUECAT_GOOGLE_API_KEY ? 'EXISTS ✅' : 'MISSING ❌');
+  console.log('🔑 process.env APPLE:', process.env.REACT_APP_REVENUECAT_APPLE_API_KEY ? 'EXISTS ✅' : 'MISSING ❌');
+  // END DEBUG LINES ⬆️
+
+
   // Select the appropriate API key based on platform
   let apiKey: string | undefined;
 
   if (Platform.OS === 'ios') {
     // iOS uses Apple App Store key
     apiKey = extra.revenuecatAppleApiKey || process.env.REACT_APP_REVENUECAT_APPLE_API_KEY;
+    console.log('🍎 iOS key selected:', apiKey ? 'YES ✅' : 'NO ❌'); // ADD THIS
   } else if (Platform.OS === 'android') {
     // Android uses Google Play key
     apiKey = extra.revenuecatGoogleApiKey || process.env.REACT_APP_REVENUECAT_GOOGLE_API_KEY;
+    console.log('🤖 Android key selected:', apiKey ? 'YES ✅' : 'NO ❌'); // ADD THIS
+    console.log('🤖 First 15 chars:', apiKey?.substring(0, 15)); // ADD THIS
   } else if (Platform.OS === 'web') {
     // Web uses Web Billing key
     apiKey = extra.revenuecatWebApiKey || process.env.REACT_APP_REVENUECAT_WEB_API_KEY;
+    console.log('🌐 Web key selected:', apiKey ? 'YES ✅' : 'NO ❌'); // ADD THIS
   }
-
+  
+  console.log('✅ Final apiKey exists?', !!apiKey); // ADD THIS
+  console.log('🔍 === RevenueCat Debug End ===\n'); // ADD THIS
+  
   if (!apiKey) {
     console.warn(`RevenueCat API key not configured for platform: ${Platform.OS}. Subscription features will not work.`);
     return;

@@ -2,12 +2,26 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
+import {
+  SparklesIcon,
+  FileTextIcon,
+  TrophyIcon,
+  CrownIcon,
+  FlameIcon,
+  ZapIcon,
+  StarIcon,
+  AwardIcon,
+  LockIcon,
+  CheckIcon,
+} from './icons/AppIcons';
+
+type IconType = 'sparkles' | 'fileText' | 'trophy' | 'crown' | 'flame' | 'zap' | 'star' | 'award';
 
 interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: IconType;
   requirement: number;
   currentProgress: number;
   type: 'streak' | 'entries' | 'words' | 'special';
@@ -36,7 +50,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'first-entry',
         title: 'First Steps',
         description: 'Write your first entry',
-        icon: '✨',
+        icon: 'sparkles',
         requirement: 1,
         currentProgress: totalEntries,
         type: 'special',
@@ -48,7 +62,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'entries-10',
         title: 'Getting Started',
         description: '10 entries',
-        icon: '📝',
+        icon: 'fileText',
         requirement: 10,
         currentProgress: totalEntries,
         type: 'entries',
@@ -58,7 +72,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'entries-50',
         title: 'Dedicated Writer',
         description: '50 entries',
-        icon: '📖',
+        icon: 'fileText',
         requirement: 50,
         currentProgress: totalEntries,
         type: 'entries',
@@ -68,7 +82,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'entries-100',
         title: 'Century Club',
         description: '100 entries',
-        icon: '💯',
+        icon: 'star',
         requirement: 100,
         currentProgress: totalEntries,
         type: 'entries',
@@ -78,7 +92,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'entries-250',
         title: 'Prolific Journaler',
         description: '250 entries',
-        icon: '🏅',
+        icon: 'award',
         requirement: 250,
         currentProgress: totalEntries,
         type: 'entries',
@@ -88,7 +102,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'entries-500',
         title: 'Master Chronicler',
         description: '500 entries',
-        icon: '🏆',
+        icon: 'trophy',
         requirement: 500,
         currentProgress: totalEntries,
         type: 'entries',
@@ -98,7 +112,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'entries-1000',
         title: 'Legend',
         description: '1000 entries',
-        icon: '👑',
+        icon: 'crown',
         requirement: 1000,
         currentProgress: totalEntries,
         type: 'entries',
@@ -110,7 +124,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-3',
         title: 'On a Roll',
         description: '3-day streak',
-        icon: '🔥',
+        icon: 'flame',
         requirement: 3,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -120,7 +134,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-7',
         title: 'Week Warrior',
         description: '7-day streak',
-        icon: '⚡',
+        icon: 'zap',
         requirement: 7,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -130,7 +144,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-14',
         title: 'Fortnight Focus',
         description: '14-day streak',
-        icon: '🌟',
+        icon: 'star',
         requirement: 14,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -140,7 +154,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-30',
         title: 'Monthly Master',
         description: '30-day streak',
-        icon: '💪',
+        icon: 'award',
         requirement: 30,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -150,7 +164,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-60',
         title: 'Unstoppable',
         description: '60-day streak',
-        icon: '🚀',
+        icon: 'zap',
         requirement: 60,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -160,7 +174,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-100',
         title: 'Centurion',
         description: '100-day streak',
-        icon: '💎',
+        icon: 'trophy',
         requirement: 100,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -170,7 +184,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'streak-365',
         title: 'Year of Reflection',
         description: '365-day streak',
-        icon: '🎯',
+        icon: 'crown',
         requirement: 365,
         currentProgress: Math.max(currentStreak, longestStreak),
         type: 'streak',
@@ -182,7 +196,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'words-10k',
         title: 'Wordsmith',
         description: '10,000 words',
-        icon: '✍️',
+        icon: 'fileText',
         requirement: 10000,
         currentProgress: totalWords,
         type: 'words',
@@ -192,7 +206,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'words-50k',
         title: 'Novelist',
         description: '50,000 words',
-        icon: '📚',
+        icon: 'fileText',
         requirement: 50000,
         currentProgress: totalWords,
         type: 'words',
@@ -202,7 +216,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'words-100k',
         title: 'Author',
         description: '100,000 words',
-        icon: '🎓',
+        icon: 'award',
         requirement: 100000,
         currentProgress: totalWords,
         type: 'words',
@@ -212,7 +226,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'words-250k',
         title: 'Epic Scribe',
         description: '250,000 words',
-        icon: '📜',
+        icon: 'trophy',
         requirement: 250000,
         currentProgress: totalWords,
         type: 'words',
@@ -222,7 +236,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         id: 'words-500k',
         title: 'Literary Legend',
         description: '500,000 words',
-        icon: '🌠',
+        icon: 'crown',
         requirement: 500000,
         currentProgress: totalWords,
         type: 'words',
@@ -240,6 +254,24 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
     });
   }, [totalEntries, totalWords, longestStreak, currentStreak]);
 
+  const renderIcon = (iconType: IconType, isUnlocked: boolean) => {
+    const iconSize = 32;
+    const iconColor = isUnlocked ? theme.primary : theme.textMuted;
+    const iconProps = { size: iconSize, color: iconColor, strokeWidth: 2 };
+
+    switch (iconType) {
+      case 'sparkles': return <SparklesIcon {...iconProps} />;
+      case 'fileText': return <FileTextIcon {...iconProps} />;
+      case 'trophy': return <TrophyIcon {...iconProps} />;
+      case 'crown': return <CrownIcon {...iconProps} />;
+      case 'flame': return <FlameIcon {...iconProps} fill={isUnlocked ? iconColor : undefined} />;
+      case 'zap': return <ZapIcon {...iconProps} />;
+      case 'star': return <StarIcon {...iconProps} />;
+      case 'award': return <AwardIcon {...iconProps} />;
+      default: return <FileTextIcon {...iconProps} />;
+    }
+  };
+
   const renderAchievement = (achievement: Achievement) => {
     const progress = Math.min(100, (achievement.currentProgress / achievement.requirement) * 100);
     const isUnlocked = achievement.unlocked;
@@ -251,13 +283,13 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
           styles.achievementCard,
           {
             backgroundColor: isUnlocked ? theme.primary + '15' : theme.surface,
-            borderColor: isUnlocked ? theme.primary + '40' : theme.surface,
+            borderColor: isUnlocked ? theme.primary + '40' : theme.cardBorder,
           },
         ]}
       >
-        <Text style={[styles.achievementIcon, { opacity: isUnlocked ? 1 : 0.3 }]}>
-          {isUnlocked ? achievement.icon : '🔒'}
-        </Text>
+        <View style={[styles.achievementIconContainer, { opacity: isUnlocked ? 1 : 0.4 }]}>
+          {isUnlocked ? renderIcon(achievement.icon, true) : <LockIcon size={32} color={theme.textMuted} strokeWidth={2} />}
+        </View>
         <Text
           style={[
             styles.achievementTitle,
@@ -277,7 +309,7 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
 
         {!isUnlocked && (
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.surface }]}>
+            <View style={[styles.progressBar, { backgroundColor: theme.backgroundSecondary }]}>
               <View
                 style={[
                   styles.progressFill,
@@ -295,9 +327,12 @@ export const AchievementsBanner: React.FC<AchievementsBannerProps> = ({
         )}
 
         {isUnlocked && (
-          <Text style={[styles.unlockedText, { color: theme.primary }]}>
-            Unlocked! ✓
-          </Text>
+          <View style={styles.unlockedContainer}>
+            <CheckIcon size={14} color={theme.primary} strokeWidth={2.5} />
+            <Text style={[styles.unlockedText, { color: theme.primary }]}>
+              Unlocked
+            </Text>
+          </View>
         )}
       </View>
     );
@@ -340,8 +375,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  achievementIcon: {
-    fontSize: 32,
+  achievementIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   achievementTitle: {
@@ -373,9 +412,14 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: 'center',
   },
+  unlockedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: spacing.xs,
+  },
   unlockedText: {
     fontSize: 11,
     fontWeight: '600',
-    marginTop: spacing.xs,
   },
 });

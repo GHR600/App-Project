@@ -29,7 +29,7 @@ export const saveAndShareFile = async (
       return { success: true };
     } else {
       // Mobile: Save and share
-      const fileUri = (FileSystem.documentDirectory || '') + filename;
+      const fileUri = ((FileSystem as any).documentDirectory || '') + filename;
       await FileSystem.writeAsStringAsync(fileUri, data);
 
       if (await Sharing.isAvailableAsync()) {

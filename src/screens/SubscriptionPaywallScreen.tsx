@@ -17,6 +17,7 @@ import {
   restorePurchases,
 } from '../services/subscriptionService';
 import type { PurchasesPackage } from 'react-native-purchases';
+import { CrownIcon, BrainIcon, TrendingUpIcon } from '../components/icons/AppIcons';
 
 interface SubscriptionPaywallScreenProps {
   onBack?: () => void;
@@ -158,7 +159,10 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>💎 Unlock Premium</Text>
+        <View style={styles.titleContainer}>
+          <CrownIcon size={32} color={theme.primary} strokeWidth={2.5} />
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Unlock Premium</Text>
+        </View>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Get unlimited access and advanced features
         </Text>
@@ -166,7 +170,9 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
         <View style={styles.featuresContainer}>
 
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>🧠</Text>
+            <View style={[styles.featureIconContainer, { backgroundColor: theme.primary + '15' }]}>
+              <BrainIcon size={24} color={theme.primary} strokeWidth={2} />
+            </View>
             <View style={styles.featureContent}>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Advanced Pattern Recognition</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
@@ -176,7 +182,9 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
           </View>
 
           <View style={[styles.feature, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={styles.featureIcon}>📊</Text>
+            <View style={[styles.featureIconContainer, { backgroundColor: theme.primary + '15' }]}>
+              <TrendingUpIcon size={24} color={theme.primary} strokeWidth={2} />
+            </View>
             <View style={styles.featureContent}>
               <Text style={[styles.featureTitle, { color: theme.textPrimary }]}>Detailed Analytics</Text>
               <Text style={[styles.featureDescription, { color: theme.textSecondary }]}>
@@ -298,11 +306,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -326,10 +340,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  featureIcon: {
-    fontSize: 24,
+  featureIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 16,
-    marginTop: 2,
   },
   featureContent: {
     flex: 1,

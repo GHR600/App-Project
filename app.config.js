@@ -17,7 +17,7 @@ export default {
       "**/*"
     ],
     ios: {
-      bundleIdentifier: "com.journaling",
+      bundleIdentifier: "com.solaslabs.journaling",
       supportsTablet: true,
       infoPlist: {
         SKAdNetworkItems: [
@@ -28,7 +28,7 @@ export default {
       }
     },
     android: {
-      package: "com.journaling",
+      package: "com.solaslabs.journaling",
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#0f172a"

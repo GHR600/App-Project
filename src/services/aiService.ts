@@ -12,9 +12,9 @@ const API_URL = API_CONFIG.baseUrl;
 /**
  * Get authorization headers with access token
  */
-async function getAuthHeaders(): Promise<HeadersInit> {
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 

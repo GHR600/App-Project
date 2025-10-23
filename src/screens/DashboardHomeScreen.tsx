@@ -568,6 +568,9 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     borderRadius: 8,
   },
+  loadingCard: {
+    minHeight: 60,
+  },
   statNumber: {
     fontSize: 18,
     fontWeight: 'bold',

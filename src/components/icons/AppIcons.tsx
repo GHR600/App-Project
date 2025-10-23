@@ -29,6 +29,13 @@ import {
   Tag,
   MessageSquare,
   Type,
+  Brain,
+  TrendingUp,
+  Sparkles,
+  Lock,
+  Zap,
+  Award,
+  Star,
 } from 'lucide-react-native';
 
 export interface IconProps {
@@ -145,6 +152,35 @@ export const MessageSquareIcon: React.FC<IconProps> = ({ size = 24, color = '#00
 
 export const TypeIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
   <Type size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+// Feature & Premium Icons
+export const BrainIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Brain size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const TrendingUpIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <TrendingUp size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const SparklesIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Sparkles size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const LockIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Lock size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const ZapIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Zap size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const AwardIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Award size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const StarIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Star size={size} color={color} strokeWidth={strokeWidth} />
 );
 
 // Mood Emojis - Keep as constants since emojis work well for emotions

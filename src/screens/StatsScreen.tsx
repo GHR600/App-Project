@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AnimatedButton } from '../components/AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
-import { QuickStatsBanner } from '../components/QuickStatsBanner';
 import { AnalyticsDashboard } from '../components/AnalyticsDashboard';
 import { supabase, DatabaseJournalEntry } from '../config/supabase';
 import { AnalyticsService, AdvancedAnalytics } from '../services/analyticsService';
@@ -105,14 +104,6 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
             />
           }
         >
-          {/* Quick Stats Banner - Always visible at top */}
-          <QuickStatsBanner
-            totalEntries={entries.length}
-            totalWords={analytics.contentAnalysis.totalWords}
-            avgWordsPerEntry={analytics.contentAnalysis.averageWordsPerEntry}
-            currentStreak={analytics.streakAnalysis.currentStreak}
-          />
-
           {/* Analytics Dashboard with tabs */}
           <AnalyticsDashboard userId={userId} />
         </ScrollView>
