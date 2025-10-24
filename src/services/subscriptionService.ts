@@ -32,6 +32,8 @@ export async function initializeRevenueCat(): Promise<void> {
   console.log('🔑 process.env GOOGLE:', process.env.REACT_APP_REVENUECAT_GOOGLE_API_KEY ? 'EXISTS ✅' : 'MISSING ❌');
   console.log('🔑 process.env APPLE:', process.env.REACT_APP_REVENUECAT_APPLE_API_KEY ? 'EXISTS ✅' : 'MISSING ❌');
   console.log('📦 App Package Name from Constants:', Constants.expoConfig?.android?.package);
+  console.log('🔑 Full key from extra:', extra.revenuecatGoogleApiKey);
+
   
   console.log('📦 Extra keys available:', Object.keys(extra));
   // END DEBUG LINES ⬆️
@@ -98,10 +100,18 @@ export async function loginRevenueCat(userId: string): Promise<void> {
  */
 export async function logoutRevenueCat(): Promise<void> {
   try {
+    // Check if SDK is configured before trying to logout
+    const isConfigured = await Purchases.isConfigured();
+    if (!isConfigured) {
+      console.log('⚠️ RevenueCat not configured yet, skipping logout');
+      return;
+    }
+    
     await Purchases.logOut();
-    console.log('RevenueCat logged out successfully');
+    console.log('✅ RevenueCat logged out successfully');
   } catch (error) {
-    console.error('Error logging out from RevenueCat:', error);
+    console.error('❌ Error logging out from RevenueCat:', error);
+    // Don't throw - allow app to continue logout process
   }
 }
 
