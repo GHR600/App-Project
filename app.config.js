@@ -3,7 +3,7 @@ import 'dotenv/config';
 export default {
   expo: {
     name: "Journaling",
-    slug: "journaling",
+    slug: "ai-journaling-app",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -17,7 +17,7 @@ export default {
       "**/*"
     ],
     ios: {
-      bundleIdentifier: "com.solaslabs.journaling",
+      bundleIdentifier: "com.aijournalingapp",
       supportsTablet: true,
       infoPlist: {
         SKAdNetworkItems: [
@@ -28,13 +28,18 @@ export default {
       }
     },
     android: {
-      package: "com.solaslabs.journaling",
+      package: "com.aijournalingapp",
+      versionCode: 2,  // ← ADD THIS (increment each upload)
+
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#0f172a"
       },
       permissions: [
         "com.android.vending.BILLING"
+      ], 
+      blockedPermissions: [  // ← ADD THIS
+        "android.permission.RECORD_AUDIO"
       ]
     },
     web: {

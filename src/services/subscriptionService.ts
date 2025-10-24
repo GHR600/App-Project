@@ -31,6 +31,9 @@ export async function initializeRevenueCat(): Promise<void> {
   console.log('🔑 extra.revenuecatAppleApiKey:', extra.revenuecatAppleApiKey ? 'EXISTS ✅' : 'MISSING ❌');
   console.log('🔑 process.env GOOGLE:', process.env.REACT_APP_REVENUECAT_GOOGLE_API_KEY ? 'EXISTS ✅' : 'MISSING ❌');
   console.log('🔑 process.env APPLE:', process.env.REACT_APP_REVENUECAT_APPLE_API_KEY ? 'EXISTS ✅' : 'MISSING ❌');
+  console.log('📦 App Package Name from Constants:', Constants.expoConfig?.android?.package);
+  
+  console.log('📦 Extra keys available:', Object.keys(extra));
   // END DEBUG LINES ⬆️
 
 
