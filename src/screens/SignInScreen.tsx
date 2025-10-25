@@ -8,6 +8,7 @@ import {
   Alert
 } from 'react-native';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { components } from '../styles/designSystem';
@@ -131,15 +132,17 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
             <AnimatedButton
               onPress={handleSubmit}
               disabled={isLoading}
-              style={[
-                styles.submitButton,
-                { backgroundColor: isLoading ? theme.textMuted : theme.primary }
-              ]}
+              style={styles.submitButton}
               hapticFeedback="medium"
             >
-              <Text style={[styles.submitButtonText, { color: theme.white }]}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </Text>
+              <GradientBackground
+                style={styles.gradientButton}
+                colors={isLoading ? [theme.textMuted, theme.textMuted, theme.textMuted] : undefined}
+              >
+                <Text style={[styles.submitButtonText, { color: theme.white }]}>
+                  {isLoading ? 'Signing In...' : 'Sign In'}
+                </Text>
+              </GradientBackground>
             </AnimatedButton>
           </View>
 
@@ -241,8 +244,12 @@ const styles = StyleSheet.create({
   submitButton: {
     borderRadius: components.button.borderRadius,
     height: components.button.height,
+    overflow: 'hidden',
+  },
+  gradientButton: {
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
   },
   submitButtonText: {
     fontSize: 16,

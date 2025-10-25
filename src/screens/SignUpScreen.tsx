@@ -9,6 +9,8 @@ import {
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import { components } from '../styles/designSystem';
 import { useAuth } from '../contexts/AuthContext';
@@ -148,18 +150,21 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
               />
             </View>
 
-            <TouchableOpacity
+            <AnimatedButton
               onPress={handleSubmit}
               disabled={isLoading}
-              style={[
-                styles.submitButton,
-                { backgroundColor: isLoading ? theme.textMuted : theme.primary }
-              ]}
+              style={styles.submitButton}
+              hapticFeedback="medium"
             >
-              <Text style={[styles.submitButtonText, { color: theme.white }]}>
-                {isLoading ? 'Creating Account...' : 'Create Account'}
-              </Text>
-            </TouchableOpacity>
+              <GradientBackground
+                style={styles.gradientButton}
+                colors={isLoading ? [theme.textMuted, theme.textMuted, theme.textMuted] : undefined}
+              >
+                <Text style={[styles.submitButtonText, { color: theme.white }]}>
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                </Text>
+              </GradientBackground>
+            </AnimatedButton>
           </View>
 
           <View style={styles.footer}>
@@ -275,8 +280,12 @@ const styles = StyleSheet.create({
   submitButton: {
     borderRadius: components.button.borderRadius,
     height: components.button.height,
+    overflow: 'hidden',
+  },
+  gradientButton: {
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
   },
   submitButtonText: {
     fontSize: 16,

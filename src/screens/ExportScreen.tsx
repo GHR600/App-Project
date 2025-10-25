@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MenuIcon } from '../components/icons/AppIcons';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../styles/designSystem';
 import { AnalyticsService } from '../services/analyticsService';
@@ -324,38 +325,50 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
               style={[
                 styles.formatButton,
                 {
-                  backgroundColor: entryFormat === 'txt' ? theme.primary : theme.backgroundSecondary,
+                  backgroundColor: entryFormat === 'txt' ? 'transparent' : theme.backgroundSecondary,
                   borderColor: entryFormat === 'txt' ? theme.primary : theme.cardBorder,
+                  overflow: entryFormat === 'txt' ? 'hidden' : 'visible',
                 }
               ]}
               onPress={() => setEntryFormat('txt')}
               hapticFeedback="light"
             >
-              <Text style={[
-                styles.formatButtonText,
-                { color: entryFormat === 'txt' ? theme.textInverse : theme.textPrimary }
-              ]}>
-                TXT
-              </Text>
+              {entryFormat === 'txt' ? (
+                <GradientBackground style={styles.formatGradient}>
+                  <Text style={[styles.formatButtonText, { color: theme.textInverse }]}>
+                    TXT
+                  </Text>
+                </GradientBackground>
+              ) : (
+                <Text style={[styles.formatButtonText, { color: theme.textPrimary }]}>
+                  TXT
+                </Text>
+              )}
             </AnimatedButton>
 
             <AnimatedButton
               style={[
                 styles.formatButton,
                 {
-                  backgroundColor: entryFormat === 'pdf' ? theme.primary : theme.backgroundSecondary,
+                  backgroundColor: entryFormat === 'pdf' ? 'transparent' : theme.backgroundSecondary,
                   borderColor: entryFormat === 'pdf' ? theme.primary : theme.cardBorder,
+                  overflow: entryFormat === 'pdf' ? 'hidden' : 'visible',
                 }
               ]}
               onPress={() => setEntryFormat('pdf')}
               hapticFeedback="light"
             >
-              <Text style={[
-                styles.formatButtonText,
-                { color: entryFormat === 'pdf' ? theme.textInverse : theme.textPrimary }
-              ]}>
-                PDF
-              </Text>
+              {entryFormat === 'pdf' ? (
+                <GradientBackground style={styles.formatGradient}>
+                  <Text style={[styles.formatButtonText, { color: theme.textInverse }]}>
+                    PDF
+                  </Text>
+                </GradientBackground>
+              ) : (
+                <Text style={[styles.formatButtonText, { color: theme.textPrimary }]}>
+                  PDF
+                </Text>
+              )}
             </AnimatedButton>
           </View>
         </View>
@@ -414,20 +427,19 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
 
       {/* Export Button */}
       <AnimatedButton
-        style={[
-          styles.exportButton,
-          {
-            backgroundColor: isExporting ? theme.textMuted : theme.primary,
-            opacity: isExporting ? 0.6 : 1,
-          }
-        ]}
+        style={styles.exportButton}
         onPress={handleExport}
         disabled={isExporting}
         hapticFeedback="medium"
       >
-        <Text style={[styles.exportButtonText, { color: theme.textInverse }]}>
-          {isExporting ? 'Exporting...' : 'Export Data'}
-        </Text>
+        <GradientBackground
+          style={styles.gradientButton}
+          colors={isExporting ? [theme.textMuted, theme.textMuted, theme.textMuted] : undefined}
+        >
+          <Text style={[styles.exportButtonText, { color: theme.textInverse }]}>
+            {isExporting ? 'Exporting...' : 'Export Data'}
+          </Text>
+        </GradientBackground>
       </AnimatedButton>
       </ScrollView>
     </SafeAreaView>
@@ -460,6 +472,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: spacing.lg,
+    paddingBottom: 120,
   },
   header: {
     marginBottom: spacing.lg,
@@ -566,6 +579,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  formatGradient: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
   checkboxOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -589,9 +608,14 @@ const styles = StyleSheet.create({
   },
   exportButton: {
     borderRadius: 12,
-    padding: spacing.md,
-    alignItems: 'center',
+    overflow: 'hidden',
     marginTop: spacing.sm,
+  },
+  gradientButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    padding: spacing.md,
   },
   exportButtonText: {
     fontSize: 16,

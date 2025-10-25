@@ -7,6 +7,7 @@ import {
   SafeAreaView
 } from 'react-native';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import { components } from '../styles/designSystem';
 
@@ -62,8 +63,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </View>
 
         <View style={styles.actions}>
-          <AnimatedButton onPress={onGetStarted} style={[styles.primaryButton, { backgroundColor: theme.primary }]} hapticFeedback="medium">
-            <Text style={[styles.primaryButtonText, { color: theme.white }]}>Get Started Free</Text>
+          <AnimatedButton onPress={onGetStarted} style={styles.primaryButton} hapticFeedback="medium">
+            <GradientBackground style={styles.gradientButton}>
+              <Text style={[styles.primaryButtonText, { color: theme.white }]}>Get Started Free</Text>
+            </GradientBackground>
           </AnimatedButton>
           <AnimatedButton onPress={onSignIn} style={[styles.secondaryButton, { borderColor: theme.primary, backgroundColor: theme.surface }]} hapticFeedback="light">
             <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>I Already Have an Account</Text>
@@ -148,10 +151,13 @@ const styles = StyleSheet.create({
   primaryButton: {
     borderRadius: components.button.borderRadius,
     height: components.button.height,
-    paddingHorizontal: 20,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  gradientButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    height: '100%',
   },
   primaryButtonText: {
     fontSize: 16,

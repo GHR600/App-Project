@@ -9,6 +9,7 @@ import {
   TextInput
 } from 'react-native';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -340,8 +341,10 @@ export const DashboardHomeScreen: React.FC<DashboardHomeScreenProps> = ({
               : 'Write your first journal entry to begin tracking your thoughts and growth.'}
           </Text>
           {!searchQuery && (
-            <AnimatedButton style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleNewEntry} hapticFeedback="medium">
-              <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create First Entry</Text>
+            <AnimatedButton style={styles.primaryButton} onPress={handleNewEntry} hapticFeedback="medium">
+              <GradientBackground style={styles.buttonGradient}>
+                <Text style={[styles.primaryButtonText, { color: theme.white }]}>Create First Entry</Text>
+              </GradientBackground>
             </AnimatedButton>
           )}
         </View>
@@ -738,8 +741,13 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     borderRadius: borderRadius.md,
+    overflow: 'hidden',
+  },
+  buttonGradient: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   primaryButtonText: {
     fontSize: 16,

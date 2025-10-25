@@ -24,6 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { supabase } from '../config/supabase';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -196,63 +197,102 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNaviga
               <ActivityIndicator color={theme.primary} style={{ marginTop: 20 }} />
             ) : (
               <View style={styles.aiStyleOptions}>
-                {aiStyleOptions.map((option) => (
-                  <AnimatedButton
-                    key={option.value}
-                    onPress={() => handleAIStyleChange(option.value)}
-                    disabled={updatingAIStyle}
-                    style={[
-                      styles.aiStyleOption,
-                      {
-                        backgroundColor: aiStyle === option.value ? theme.primary : theme.surface,
-                        borderColor: aiStyle === option.value ? theme.primary : theme.cardBorder,
-                        opacity: updatingAIStyle ? 0.6 : 1,
-                      }
-                    ]}
-                    hapticFeedback="medium"
-                  >
-                    <View style={styles.aiStyleIconContainer}>
-                      {option.iconType === 'target' ? (
-                        <TargetIcon
-                          size={32}
-                          color={aiStyle === option.value ? theme.white : theme.primary}
-                          strokeWidth={2}
-                        />
+                {aiStyleOptions.map((option) => {
+                  const isSelected = aiStyle === option.value;
+                  return (
+                    <AnimatedButton
+                      key={option.value}
+                      onPress={() => handleAIStyleChange(option.value)}
+                      disabled={updatingAIStyle}
+                      style={[
+                        styles.aiStyleOption,
+                        {
+                          backgroundColor: isSelected ? 'transparent' : theme.surface,
+                          borderColor: isSelected ? theme.primary : theme.cardBorder,
+                          opacity: updatingAIStyle ? 0.6 : 1,
+                          overflow: isSelected ? 'hidden' : 'visible',
+                          padding: isSelected ? 0 : 16,
+                        }
+                      ]}
+                      hapticFeedback="medium"
+                    >
+                      {isSelected ? (
+                        <GradientBackground style={styles.optionGradient}>
+                          <View style={styles.aiStyleIconContainer}>
+                            {option.iconType === 'target' ? (
+                              <TargetIcon
+                                size={32}
+                                color={theme.white}
+                                strokeWidth={2}
+                              />
+                            ) : (
+                              <UserIcon
+                                size={32}
+                                color={theme.white}
+                                strokeWidth={2}
+                              />
+                            )}
+                          </View>
+                          <View style={styles.aiStyleContent}>
+                            <Text
+                              style={[
+                                styles.aiStyleLabel,
+                                { color: theme.white }
+                              ]}
+                            >
+                              {option.label}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.aiStyleDescription,
+                                { color: theme.white }
+                              ]}
+                            >
+                              {option.description}
+                            </Text>
+                          </View>
+                          <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
+                        </GradientBackground>
                       ) : (
-                        <UserIcon
-                          size={32}
-                          color={aiStyle === option.value ? theme.white : theme.primary}
-                          strokeWidth={2}
-                        />
+                        <>
+                          <View style={styles.aiStyleIconContainer}>
+                            {option.iconType === 'target' ? (
+                              <TargetIcon
+                                size={32}
+                                color={theme.primary}
+                                strokeWidth={2}
+                              />
+                            ) : (
+                              <UserIcon
+                                size={32}
+                                color={theme.primary}
+                                strokeWidth={2}
+                              />
+                            )}
+                          </View>
+                          <View style={styles.aiStyleContent}>
+                            <Text
+                              style={[
+                                styles.aiStyleLabel,
+                                { color: theme.textPrimary }
+                              ]}
+                            >
+                              {option.label}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.aiStyleDescription,
+                                { color: theme.textSecondary }
+                              ]}
+                            >
+                              {option.description}
+                            </Text>
+                          </View>
+                        </>
                       )}
-                    </View>
-                    <View style={styles.aiStyleContent}>
-                      <Text
-                        style={[
-                          styles.aiStyleLabel,
-                          {
-                            color: aiStyle === option.value ? theme.white : theme.textPrimary,
-                          }
-                        ]}
-                      >
-                        {option.label}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.aiStyleDescription,
-                          {
-                            color: aiStyle === option.value ? theme.white : theme.textSecondary,
-                          }
-                        ]}
-                      >
-                        {option.description}
-                      </Text>
-                    </View>
-                    {aiStyle === option.value && (
-                      <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
-                    )}
-                  </AnimatedButton>
-                ))}
+                    </AnimatedButton>
+                  );
+                })}
               </View>
             )}
           </View>
@@ -266,57 +306,96 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNaviga
           </Text>
 
           <View style={styles.themeOptions}>
-            {themeOptions.map((option) => (
-              <AnimatedButton
-                key={option.value}
-                onPress={() => setThemeMode(option.value)}
-                style={[
-                  styles.themeOption,
-                  {
-                    backgroundColor: themeMode === option.value ? theme.primary : theme.surface,
-                    borderColor: themeMode === option.value ? theme.primary : theme.cardBorder,
-                  }
-                ]}
-                hapticFeedback="light"
-              >
-                <View style={styles.themeIconContainer}>
-                  {option.iconType === 'sun' && (
-                    <SunIcon
-                      size={24}
-                      color={themeMode === option.value ? theme.white : theme.primary}
-                      strokeWidth={2}
-                    />
-                  )}
-                  {option.iconType === 'moon' && (
-                    <MoonIcon
-                      size={24}
-                      color={themeMode === option.value ? theme.white : theme.primary}
-                      strokeWidth={2}
-                    />
-                  )}
-                  {option.iconType === 'settings' && (
-                    <SettingsIcon
-                      size={24}
-                      color={themeMode === option.value ? theme.white : theme.primary}
-                      strokeWidth={2}
-                    />
-                  )}
-                </View>
-                <Text
+            {themeOptions.map((option) => {
+              const isSelected = themeMode === option.value;
+              return (
+                <AnimatedButton
+                  key={option.value}
+                  onPress={() => setThemeMode(option.value)}
                   style={[
-                    styles.themeLabel,
+                    styles.themeOption,
                     {
-                      color: themeMode === option.value ? theme.white : theme.textPrimary,
+                      backgroundColor: isSelected ? 'transparent' : theme.surface,
+                      borderColor: isSelected ? theme.primary : theme.cardBorder,
+                      overflow: isSelected ? 'hidden' : 'visible',
+                      padding: isSelected ? 0 : 16,
                     }
                   ]}
+                  hapticFeedback="light"
                 >
-                  {option.label}
-                </Text>
-                {themeMode === option.value && (
-                  <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
-                )}
-              </AnimatedButton>
-            ))}
+                  {isSelected ? (
+                    <GradientBackground style={styles.optionGradient}>
+                      <View style={styles.themeIconContainer}>
+                        {option.iconType === 'sun' && (
+                          <SunIcon
+                            size={24}
+                            color={theme.white}
+                            strokeWidth={2}
+                          />
+                        )}
+                        {option.iconType === 'moon' && (
+                          <MoonIcon
+                            size={24}
+                            color={theme.white}
+                            strokeWidth={2}
+                          />
+                        )}
+                        {option.iconType === 'settings' && (
+                          <SettingsIcon
+                            size={24}
+                            color={theme.white}
+                            strokeWidth={2}
+                          />
+                        )}
+                      </View>
+                      <Text
+                        style={[
+                          styles.themeLabel,
+                          { color: theme.white }
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                      <CheckIcon size={20} color={theme.white} strokeWidth={2.5} />
+                    </GradientBackground>
+                  ) : (
+                    <>
+                      <View style={styles.themeIconContainer}>
+                        {option.iconType === 'sun' && (
+                          <SunIcon
+                            size={24}
+                            color={theme.primary}
+                            strokeWidth={2}
+                          />
+                        )}
+                        {option.iconType === 'moon' && (
+                          <MoonIcon
+                            size={24}
+                            color={theme.primary}
+                            strokeWidth={2}
+                          />
+                        )}
+                        {option.iconType === 'settings' && (
+                          <SettingsIcon
+                            size={24}
+                            color={theme.primary}
+                            strokeWidth={2}
+                          />
+                        )}
+                      </View>
+                      <Text
+                        style={[
+                          styles.themeLabel,
+                          { color: theme.textPrimary }
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </>
+                  )}
+                </AnimatedButton>
+              );
+            })}
           </View>
 
           {themeMode === 'system' && (
@@ -538,5 +617,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     textAlign: 'center',
+  },
+  optionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
   },
 });

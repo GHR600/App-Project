@@ -18,6 +18,8 @@ import {
 } from '../services/subscriptionService';
 import type { PurchasesPackage } from 'react-native-purchases';
 import { CrownIcon, BrainIcon, TrendingUpIcon } from '../components/icons/AppIcons';
+import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 
 interface SubscriptionPaywallScreenProps {
   onBack?: () => void;
@@ -205,27 +207,35 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
           <View style={styles.pricingContainer}>
             {packages.yearly && (
               <View style={[styles.planCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
-                <View style={[styles.popularBadge, { backgroundColor: theme.primary }]}>
-                  <Text style={[styles.popularText, { color: theme.white }]}>Best Value</Text>
+                <View style={styles.popularBadge}>
+                  <GradientBackground style={styles.badgeGradient}>
+                    <Text style={[styles.popularText, { color: theme.white }]}>Best Value</Text>
+                  </GradientBackground>
                 </View>
                 <Text style={[styles.planTitle, { color: theme.textPrimary }]}>Yearly Plan</Text>
                 <Text style={[styles.price, { color: theme.textPrimary }]}>
                   {formatPrice(packages.yearly)}
                 </Text>
                 <Text style={[styles.savings, { color: theme.success }]}>Best Deal</Text>
-                <TouchableOpacity
-                  style={[styles.primaryButton, { backgroundColor: theme.primary }]}
+                <AnimatedButton
+                  style={styles.primaryButton}
                   onPress={() => handlePurchase(packages.yearly!)}
                   disabled={purchasing}
+                  hapticFeedback="medium"
                 >
-                  {purchasing ? (
-                    <ActivityIndicator color={theme.white} />
-                  ) : (
-                    <Text style={[styles.primaryButtonText, { color: theme.white }]}>
-                      Start Yearly Plan
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                  <GradientBackground
+                    style={styles.gradientButton}
+                    colors={purchasing ? [theme.textMuted, theme.textMuted, theme.textMuted] : undefined}
+                  >
+                    {purchasing ? (
+                      <ActivityIndicator color={theme.white} />
+                    ) : (
+                      <Text style={[styles.primaryButtonText, { color: theme.white }]}>
+                        Start Yearly Plan
+                      </Text>
+                    )}
+                  </GradientBackground>
+                </AnimatedButton>
               </View>
             )}
 
@@ -379,9 +389,14 @@ const styles = StyleSheet.create({
   popularBadge: {
     position: 'absolute',
     top: -10,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  badgeGradient: {
     paddingVertical: 4,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   popularText: {
     fontWeight: 'bold',
@@ -405,9 +420,14 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     borderRadius: 12,
-    padding: 16,
     width: '100%',
+    overflow: 'hidden',
+  },
+  gradientButton: {
+    justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
+    padding: 16,
   },
   primaryButtonText: {
     fontSize: 16,

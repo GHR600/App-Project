@@ -1,8 +1,8 @@
 export const colors = {
-  // Primary Colors (Metallic Amber/Gold Theme)
-  primary: '#d97706',           // Main amber (buttons, links, accents) - amber-600
-  primaryDark: '#b45309',       // Darker amber (hover states) - amber-700
-  primaryLight: '#f59e0b',      // Lighter amber (highlights) - amber-500
+  // Primary Colors (Yellow Theme)
+  primary: '#ca8a04',           // Main yellow (buttons, links, accents) - yellow-600
+  primaryDark: '#a16207',       // Darker yellow (hover states) - yellow-700
+  primaryLight: '#eab308',      // Lighter yellow (highlights) - yellow-500
 
   // Background Colors (Dark Theme)
   background: '#1e1b4b',        // Main dark background
@@ -24,7 +24,7 @@ export const colors = {
   info: '#3b82f6',              // Info blue
 
   // Legacy/Fallback Colors
-  secondary: '#d97706',         // Keep for compatibility
+  secondary: '#ca8a04',         // Keep for compatibility
   white: '#ffffff',
   gray50: '#f8fafc',
   gray100: '#f1f5f9',
@@ -40,23 +40,22 @@ export const colors = {
   // Component-specific colors
   cardBackground: 'rgba(255,255,255,0.08)',
   cardBorder: 'rgba(255,255,255,0.12)',
-  buttonPrimary: '#d97706',
+  buttonPrimary: '#ca8a04',
   buttonSecondary: 'rgba(255,255,255,0.1)',
   inputBackground: 'rgba(255,255,255,0.1)',
   inputBorder: 'rgba(255,255,255,0.2)',
   placeholderText: '#9ca3af',
 
   // Floating Action Button
-  floatingButton: '#d97706',
-  floatingButtonShadow: 'rgba(180, 83, 9, 0.3)',
+  floatingButton: '#ca8a04',
+  floatingButtonShadow: 'rgba(161, 98, 7, 0.3)',
 
   // Additional colors for extended functionality
   green600: '#10b981',
   red600: '#ef4444',
-  amber500: '#f59e0b',
-  amber600: '#d97706',
-  amber700: '#b45309',
-  yellow800: '#a16207',
+  yellow500: '#eab308',
+  yellow600: '#ca8a04',
+  yellow700: '#a16207',
   blue600: '#3b82f6'
 };
 

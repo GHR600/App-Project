@@ -11,6 +11,8 @@ import {
   Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AnimatedButton } from '../components/AnimatedButton';
+import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { spacing } from '../styles/designSystem';
@@ -213,12 +215,15 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({ onBack, onMenuPress })
             <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
               Create your first note to get started
             </Text>
-            <TouchableOpacity
-              style={[styles.emptyButton, { backgroundColor: theme.primary }]}
+            <AnimatedButton
+              style={styles.emptyButton}
               onPress={handleNewNote}
+              hapticFeedback="medium"
             >
-              <Text style={[styles.emptyButtonText, { color: theme.white }]}>+ New Note</Text>
-            </TouchableOpacity>
+              <GradientBackground style={styles.gradientButton}>
+                <Text style={[styles.emptyButtonText, { color: theme.white }]}>+ New Note</Text>
+              </GradientBackground>
+            </AnimatedButton>
           </View>
         ) : (
           <View style={styles.notesList}>
@@ -242,15 +247,21 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({ onBack, onMenuPress })
             <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>
               {editingNote ? 'Edit Note' : 'New Note'}
             </Text>
-            <TouchableOpacity
+            <AnimatedButton
               onPress={handleSaveNote}
               disabled={isSaving}
-              style={[styles.modalSaveButton, { backgroundColor: theme.primary, opacity: isSaving ? 0.5 : 1 }]}
+              style={styles.modalSaveButton}
+              hapticFeedback="medium"
             >
-              <Text style={[styles.modalSaveText, { color: theme.white }]}>
-                {isSaving ? 'Saving...' : 'Save'}
-              </Text>
-            </TouchableOpacity>
+              <GradientBackground
+                style={styles.modalGradientButton}
+                colors={isSaving ? [theme.textMuted, theme.textMuted, theme.textMuted] : undefined}
+              >
+                <Text style={[styles.modalSaveText, { color: theme.white }]}>
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Text>
+              </GradientBackground>
+            </AnimatedButton>
           </View>
 
           <ScrollView style={styles.modalContent}>
@@ -343,9 +354,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   emptyButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  gradientButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
   },
   emptyButtonText: {
     fontSize: 16,
@@ -410,9 +427,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   modalSaveButton: {
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  modalGradientButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 6,
   },
   modalSaveText: {
     fontSize: 14,

@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, StyleSheet, View } from 'react-native';
 import { colors, shadows } from '../styles/designSystem';
 import { AnimatedButton } from './AnimatedButton';
+import { GradientBackground } from './GradientBackground';
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -43,16 +44,17 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       style={[
         styles.container,
         getSizeStyles(),
-        { backgroundColor: colors.floatingButton },
         shadows.medium,
         style
       ]}
       onPress={onPress}
       hapticFeedback="medium"
     >
-      <Text style={[styles.icon, { fontSize: getIconSize() }]}>
-        {icon}
-      </Text>
+      <GradientBackground style={[styles.gradientContainer, getSizeStyles()]}>
+        <Text style={[styles.icon, { fontSize: getIconSize() }]}>
+          {icon}
+        </Text>
+      </GradientBackground>
     </AnimatedButton>
   );
 };
@@ -62,9 +64,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     right: 24,
+    shadowColor: colors.floatingButtonShadow,
+    overflow: 'hidden',
+  },
+  gradientContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.floatingButtonShadow,
   },
   icon: {
     color: colors.white,
