@@ -32,14 +32,14 @@ All three external services have been tested and are fully operational:
 ```
 ✓ API key found and format is valid
 ✓ Connection successful
-✓ Model: claude-3-haiku-20240307
+✓ Model: claude-sonnet-4-5-20250929
 ✓ Response: "Connection successful"
 ```
 
 **Configuration:**
 - API Key: `sk-ant-api03-feJ0...` (configured)
-- Model Access: claude-3-haiku-20240307 ✓
-- Model Access: claude-3-5-sonnet-20241022 (available for premium users)
+- Model Access: claude-sonnet-4-5-20250929 ✓
+- Model Access: claude-sonnet-4-5-20250929 (available for premium users)
 
 **Status:** 🟢 Fully Operational
 

@@ -201,7 +201,7 @@ curl https://app-project-gkiplxfzp-glebs-projects-dd2e6b15.vercel.app/api/ai/ins
   "insight": "It sounds like you're having a positive day...",
   "followUpQuestion": "What made today particularly good for you?",
   "confidence": 0.85,
-  "model": "claude-3-haiku-20240307"
+  "model": "claude-sonnet-4-5-20250929"
 }
 ```
 

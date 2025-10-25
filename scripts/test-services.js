@@ -57,7 +57,7 @@ async function testAnthropic() {
 
   return new Promise((resolve) => {
     const data = JSON.stringify({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 50,
       messages: [{
         role: 'user',
