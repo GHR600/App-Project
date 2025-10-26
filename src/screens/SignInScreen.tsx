@@ -89,7 +89,7 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
           <View style={styles.hero}>
             <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome Back</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Sign in to continue your journaling journey
+              Sign in to continue journaling
             </Text>
           </View>
 

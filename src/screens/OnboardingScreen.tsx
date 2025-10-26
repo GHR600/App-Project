@@ -55,7 +55,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>How should I help you journal?</Text>
+        <Text style={styles.title}>Do you want a coach or a reflector?</Text>
         <Text style={styles.subtitle}>You can change this anytime in Settings</Text>
 
         <View style={styles.cardsContainer}>

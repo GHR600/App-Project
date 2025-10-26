@@ -138,9 +138,9 @@ const MainApp: React.FC = () => {
 
   const renderHomeScreen = () => (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.primary }]}>Journaling App</Text>
+      <Text style={[styles.title, { color: theme.primary }]}>Journaling</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-        {user ? `Welcome back, ${user.email}!` : 'Your personal journal'}
+        {user ? `Welcome back, ${user.email}!` : ''}
       </Text>
 
 
@@ -194,26 +194,9 @@ const MainApp: React.FC = () => {
         )}
       </View>
 
-      {!user && (
-        <View style={[styles.benefits, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-          <Text style={[styles.benefitsTitle, { color: theme.textPrimary }]}>What you get for free:</Text>
-          <View style={styles.benefitsList}>
-            <View style={styles.benefitItem}>
-              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Unlimited journal entries</Text>
-            </View>
-            <View style={styles.benefitItem}>
-              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Basic mood tracking</Text>
-            </View>
-            <View style={styles.benefitItem}>
-              <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Private and secure</Text>
-            </View>
-          </View>
-        </View>
-      )}
+      
 
-      <View style={[styles.successBadge, { backgroundColor: theme.success }]}>
-        <Text style={[styles.successText, { color: theme.white }]}>Mobile App Ready!</Text>
-      </View>
+      
     </View>
   );
 
@@ -408,7 +391,7 @@ const MainApp: React.FC = () => {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <Text style={[styles.title, { color: theme.primary }]}>Journaling App</Text>
+          <Text style={[styles.title, { color: theme.primary }]}>Journaling</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Loading...</Text>
         </View>
         <StatusBar style={isDark ? 'light' : 'dark'} />

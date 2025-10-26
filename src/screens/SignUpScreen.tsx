@@ -96,7 +96,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
           <View style={styles.hero}>
             <Text style={[styles.title, { color: theme.textPrimary }]}>Create Your Account</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Join thousands of people improving their mental wellbeing through mindful journaling
+              Join thousands of people improving themselves through journaling
             </Text>
           </View>
 
@@ -176,20 +176,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
             </Text>
           </View>
 
-          <View style={[styles.benefits, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.benefitsTitle, { color: theme.textPrimary }]}>What you get for free:</Text>
-            <View style={styles.benefitsList}>
-              <View style={styles.benefitItem}>
-                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Unlimited journal entries</Text>
-              </View>
-              <View style={styles.benefitItem}>
-                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Basic mood tracking</Text>
-              </View>
-              <View style={styles.benefitItem}>
-                <Text style={[styles.benefitText, { color: theme.textSecondary }]}>Private and secure</Text>
-              </View>
-            </View>
-          </View>
+          
         </View>
       </ScrollView>
     </SafeAreaView>
