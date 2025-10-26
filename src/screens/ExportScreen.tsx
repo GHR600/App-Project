@@ -130,15 +130,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
       >
-        {/* Page Title */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>
-            Export Data
-          </Text>
-          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Export your journal entries or statistics
-          </Text>
-        </View>
+        
 
       {/* Date Range Section */}
       <View style={[styles.section, { backgroundColor: theme.surface }]}>
