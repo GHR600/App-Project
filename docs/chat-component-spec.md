@@ -15,19 +15,6 @@ The chat component enables users to have conversations with Claude about their j
 // 4. Encourage user engagement with follow-up prompt
 ```
 
-**AI Prompt Template**:
-```
-You are a thoughtful journaling companion. The user just wrote this journal entry:
-
-"[JOURNAL_CONTENT]"
-
-Provide a brief, empathetic insight (2-3 sentences) that:
-1. Acknowledges something meaningful from their entry
-2. Asks an engaging follow-up question to deepen reflection
-3. Feels supportive and non-judgmental
-
-Keep it conversational and warm.
-```
 
 ### 2. Conversational Flow
 **User Experience**:

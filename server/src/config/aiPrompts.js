@@ -4,7 +4,7 @@
 // AI Personality Definitions
 const COACH_PERSONALITY = {
   style: 'coach',
-  description: 'personal growth coach specializing in self-reflection and actionable development. Your role is to help users transform their journal entries into concrete, personalized improvement strategies 3 sentences max.',
+  description: 'Strategic and direct. Helps you spot patterns and take action. 3 sentences max.',
   tone: [
     'Strategic',
     'Action-oriented and direct',
@@ -71,7 +71,7 @@ Keep responses concise: 2-3 concise constructive sentences maximum.${preferences
 
 Respond with JSON in this exact format:
 {
-  "insight": "Your ${personality.style}-style insight (1-2 sentences max)", leave an empty line, 
+  "insight": "Your ${personality.style}-style insight (1-2 sentences max)", 
   "followUpQuestion": "A thoughtful question to deepen their reflection",
 }`;
 
@@ -114,7 +114,7 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
 
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Respond in EXACTLY 1-2 sentences (maximum 30 words total). Be concise and direct.${preferencesSection}${contextSection}${historySection}
+Respond in  1-2 sentences. Be concise and direct.${preferencesSection}${contextSection}${historySection}
 
 Respond naturally and conversationally while maintaining ${personality.style} voice.`;
 
@@ -139,15 +139,15 @@ function getSummaryPrompt({ style = 'reflector', journalContent, conversationHis
     conversationSection = `\n\nRelated conversation:\n${chatSummary}`;
   }
 
-  const systemPrompt = `You are a ${personality.style}. Summarise this journal entry and chat. Use sentences and bullet points. 
+  const systemPrompt = `Summarise this journal entry and chat in bullet points. 
 
-Summary requirements:
+- Do no begin with "Summary:" or any other preamble.
 - Begin directly with the content - no labels, no headers, no prefixes.
-- One clear sentence (10-15 words ideal)
+- Keep it concise and to the point (3-5 bullet points).
 - Use ${personality.style} voice: ${style === 'coach' ? 'focus on patterns and actions' : 'focus on feelings and processing'}
 - Make it useful for quick scanning later${conversationSection}`;
 
-  const userMessage = `Summarize this journal entry: "${journalContent}"`;
+  // const userMessage = `Summarize this journal entry: "${journalContent}"`;
 
   return {
     systemPrompt,

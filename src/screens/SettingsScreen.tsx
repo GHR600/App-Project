@@ -190,7 +190,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNaviga
           <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
             <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>AI Response Style</Text>
             <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
-              Choose how your AI companion responds to your journaling
             </Text>
 
             {loadingAIStyle ? (

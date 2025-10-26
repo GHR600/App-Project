@@ -127,7 +127,7 @@
 ### 🌟 Advanced AI Capabilities
 - **Unlimited Insights**: No monthly limits on AI analysis
 - **Advanced Models**: Access to latest GPT models for better insights
-- **Custom AI Personalities**: Personalized AI companion styles
+- **Custom AI Personalities**: Personalized AI styles
 - **Trend Analysis**: Long-term pattern recognition and recommendations
 - **Goal Tracking**: AI-assisted goal setting and progress monitoring
 
@@ -154,7 +154,7 @@
 
 ### 📱 Mobile Enhancements
 - **Widget Support**: Home screen widgets for quick journaling
-- **Apple Watch App**: Companion app for quick voice notes
+- **Apple Watch App**:  app for quick voice notes
 - **Siri Integration**: Voice shortcuts for hands-free journaling
 - **Live Activities**: Dynamic island integration for mood tracking
 

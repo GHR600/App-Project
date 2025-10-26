@@ -8,9 +8,9 @@
     }
   },
   "functions": {
-    "api/health.js": {
-      "memory": 128
-    },
+   // "api/health.js": {
+     // "memory": 128
+    //},
     "api/ai/insights.js": {
       "memory": 128
     },

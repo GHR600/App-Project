@@ -140,8 +140,9 @@ const MainApp: React.FC = () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Text style={[styles.title, { color: theme.primary }]}>Journaling App</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-        {user ? `Welcome back, ${user.email}!` : 'Your personal journaling companion'}
+        {user ? `Welcome back, ${user.email}!` : 'Your personal journal'}
       </Text>
+
 
       <View style={styles.buttonContainer}>
         {user ? (
