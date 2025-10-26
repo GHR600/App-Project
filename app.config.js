@@ -9,11 +9,12 @@ export default {
     icon: "./Journaling App Logo.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "../assets/journaling-anim.gif",
+      image: "./journaling-anim.gif",
       resizeMode: "contain",
       backgroundColor: "#0f172a"
     },
     assetBundlePatterns: [
+      
       "**/*"
     ],
     plugins: [

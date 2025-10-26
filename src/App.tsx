@@ -417,7 +417,7 @@ const MainApp: React.FC = () => {
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={[styles.container, { backgroundColor: theme.background }]}>
           <Image
-            source={require('../Journaling anim.gif')}
+            source={require('../journaling-anim.gif')}
             style={styles.logoImage}
             resizeMode="contain"
           />
