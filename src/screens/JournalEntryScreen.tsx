@@ -590,7 +590,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
         <Text style={[styles.closeButtonText, { color: theme.textPrimary }]}>✕</Text>
       </AnimatedButton>
       <View style={styles.headerCenter}>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Journal Entry</Text>
+        <Text style={styles.headerTitle}>Journal Entry</Text>
       </View>
       <View style={styles.headerRight} />
     </View>
@@ -957,8 +957,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   headerRight: {
     width: 40,

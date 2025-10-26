@@ -4,7 +4,7 @@
     "slug": "Journaling",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./Journaling App Logo.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -28,7 +28,7 @@
     "android": {
       "package": "com.journaling",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./Journaling App Logo.png",
         "backgroundColor": "#2563eb"
       },
       "permissions": [

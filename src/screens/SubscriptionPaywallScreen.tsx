@@ -163,7 +163,7 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.titleContainer}>
           <CrownIcon size={32} color={theme.primary} strokeWidth={2.5} />
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Unlock Premium</Text>
+          <Text style={styles.title}>Unlock Premium</Text>
         </View>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Get unlimited access and advanced features
@@ -324,8 +324,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 42,
+    color: '#eab308',
+    lineHeight: 56,
+    paddingHorizontal: 8,
     textAlign: 'center',
   },
   subtitle: {

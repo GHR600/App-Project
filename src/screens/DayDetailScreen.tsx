@@ -230,7 +230,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   headerTitle: {
-    ...typography.h2,
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 36,
+    color: '#eab308',
+    lineHeight: 48,
+    paddingHorizontal: 4,
     textAlign: 'center',
     flex: 1,
   },

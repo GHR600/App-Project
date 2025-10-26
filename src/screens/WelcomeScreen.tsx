@@ -26,7 +26,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.hero}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome to Journaling</Text>
+          <Text style={styles.title}>Welcome to Journaling</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             A journal app that helps you understand your thoughts,
             track your mood, and discover patterns in your daily life.
@@ -100,8 +100,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 48,
+    color: '#eab308',
+    lineHeight: 64,
+    paddingHorizontal: 8,
     marginBottom: 16,
     textAlign: 'center',
   },

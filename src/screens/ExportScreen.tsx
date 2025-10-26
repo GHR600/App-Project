@@ -122,7 +122,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
         <AnimatedButton onPress={onMenuPress} style={styles.menuButton} hapticFeedback="light">
           <MenuIcon size={24} color={theme.textPrimary} strokeWidth={2.5} />
         </AnimatedButton>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Export</Text>
+        <Text style={styles.headerTitle}>Export</Text>
         <View style={styles.menuButton} />
       </View>
 
@@ -134,7 +134,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
 
       {/* Date Range Section */}
       <View style={[styles.section, { backgroundColor: theme.surface }]}>
-        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+        <Text style={styles.sectionTitle}>
           📅 Date Range
         </Text>
 
@@ -456,8 +456,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   scrollView: {
     flex: 1,
@@ -470,8 +473,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 42,
+    color: '#eab308',
+    lineHeight: 56,
+    paddingHorizontal: 4,
     marginBottom: spacing.xs,
   },
   subtitle: {
@@ -483,8 +489,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 24,
+    color: '#eab308',
+    lineHeight: 36,
+    paddingHorizontal: 4,
     marginBottom: spacing.md,
   },
   datePickerRow: {

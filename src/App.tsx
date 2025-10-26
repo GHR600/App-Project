@@ -4,12 +4,19 @@ import {
   StyleSheet,
   Text,
   View,
-  BackHandler
+  BackHandler,
+  Image
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AnimatedButton } from './components/AnimatedButton';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { useFonts, Yellowtail_400Regular } from '@expo-google-fonts/yellowtail';
+import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { useAndroidBackHandler } from './hooks/useAndroidBackHandler';
 import { initializeRevenueCat, loginRevenueCat, logoutRevenueCat } from './services/subscriptionService';
@@ -41,7 +48,21 @@ const MainApp: React.FC = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const { user, loading } = useAuth();
-  const { theme, isDark } = useTheme();
+  const { theme, typography, isDark } = useTheme();
+
+  // Load fonts
+  const [fontsLoaded, fontError] = useFonts({
+    Yellowtail_400Regular,
+    Inter_400Regular,
+    Inter_600SemiBold,
+  });
+
+  // Hide splash screen when fonts are loaded
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
 
   // Initialize RevenueCat when app mounts
   useEffect(() => {
@@ -138,7 +159,11 @@ const MainApp: React.FC = () => {
 
   const renderHomeScreen = () => (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.primary }]}>Journaling</Text>
+      <Image
+        source={require('../Journaling logo.png')}
+        style={styles.logoImage}
+        resizeMode="contain"
+      />
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
         {user ? `Welcome back, ${user.email}!` : ''}
       </Text>
@@ -387,12 +412,16 @@ const MainApp: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading || !fontsLoaded) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <Text style={[styles.title, { color: theme.primary }]}>Journaling</Text>
-          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Loading...</Text>
+          <Image
+            source={require('../Journaling anim.gif')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+
         </View>
         <StatusBar style={isDark ? 'light' : 'dark'} />
       </SafeAreaView>
@@ -459,12 +488,18 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 48,
     marginBottom: 16,
     textAlign: 'center',
   },
+  logoImage: {
+    width: 320,
+    height: 320,
+    marginBottom: 16,
+  },
   subtitle: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 18,
     textAlign: 'center',
     maxWidth: 300,
@@ -482,8 +517,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 18,
-    fontWeight: '600',
   },
   secondaryButton: {
     borderWidth: 2,
@@ -492,8 +527,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 18,
-    fontWeight: '600',
   },
   successBadge: {
     marginTop: 40,
@@ -502,8 +537,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   successText: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
-    fontWeight: '600',
   },
   benefits: {
     borderRadius: 12,
@@ -520,8 +555,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   benefitsTitle: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
-    fontWeight: 'bold',
     marginBottom: 12,
   },
   benefitsList: {
@@ -533,6 +568,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   benefitText: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 14,
     flex: 1,
   },

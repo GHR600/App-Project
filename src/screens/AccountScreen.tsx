@@ -24,13 +24,13 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onBack, onMenuPres
         >
           <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Account</Text>
+        <Text style={styles.headerTitle}>Account</Text>
         <View style={styles.menuButton} />
       </View>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 100 }]}>
         <Text style={[styles.icon, { color: theme.primary }]}>👤</Text>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>Your Account</Text>
+        <Text style={styles.title}>Your Account</Text>
         {user && (
           <Text style={[styles.email, { color: theme.textSecondary }]}>{user.email}</Text>
         )}
@@ -64,8 +64,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   content: {
     flexGrow: 1,
@@ -78,8 +81,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 36,
+    color: '#eab308',
+    lineHeight: 48,
+    paddingHorizontal: 4,
     marginBottom: spacing.sm,
   },
   email: {

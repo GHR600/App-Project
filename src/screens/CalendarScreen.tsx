@@ -242,7 +242,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
         <AnimatedButton onPress={onMenuPress} style={styles.backButton} hapticFeedback="light">
           <MenuIcon size={24} color={theme.textPrimary} strokeWidth={2.5} />
         </AnimatedButton>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Calendar</Text>
+        <Text style={styles.headerTitle}>Calendar</Text>
         <View style={styles.backButton} />
       </View>
 
@@ -425,8 +425,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   mediaViewButton: {
     paddingHorizontal: 8,

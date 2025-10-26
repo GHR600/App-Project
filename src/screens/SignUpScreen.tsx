@@ -94,7 +94,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 
         <View style={styles.content}>
           <View style={styles.hero}>
-            <Text style={[styles.title, { color: theme.textPrimary }]}>Create Your Account</Text>
+            <Text style={styles.title}>Create Your Account</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Join thousands of people improving themselves through journaling
             </Text>
@@ -212,8 +212,11 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   title: {
-    fontWeight: '700',
-    fontSize: 28,
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 42,
+    color: '#eab308',
+    lineHeight: 56,
+    paddingHorizontal: 8,
     marginBottom: 8,
     textAlign: 'center',
   },

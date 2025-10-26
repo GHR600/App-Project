@@ -14,7 +14,9 @@
       "Bash(rm:*)",
       "Bash(npm run typecheck:*)",
       "Bash(npx tsc:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npx expo install:*)",
+      "Bash(npm run start)"
     ],
     "deny": [],
     "ask": []

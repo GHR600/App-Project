@@ -87,7 +87,7 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({
 
         <View style={styles.content}>
           <View style={styles.hero}>
-            <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome Back</Text>
+            <Text style={styles.title}>Welcome Back</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Sign in to continue journaling
             </Text>
@@ -189,8 +189,11 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   title: {
-    fontWeight: '700',
-    fontSize: 28,
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 42,
+    color: '#eab308',
+    lineHeight: 56,
+    paddingHorizontal: 8,
     marginBottom: 8,
     textAlign: 'center',
   },

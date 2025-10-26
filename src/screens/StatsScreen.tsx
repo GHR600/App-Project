@@ -76,7 +76,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
         >
           <MenuIcon size={24} color={theme.primary} strokeWidth={2.5} />
         </AnimatedButton>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Statistics</Text>
+        <Text style={styles.headerTitle}>Statistics</Text>
         <View style={styles.menuButton} />
       </View>
 
@@ -112,7 +112,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
           <View style={styles.emptyIconContainer}>
             <StatsIcon size={64} color={theme.primary} strokeWidth={1.5} />
           </View>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>No Data Yet</Text>
+          <Text style={styles.title}>No Data Yet</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Start writing journal entries to see your stats!
           </Text>
@@ -140,8 +140,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   scrollView: {
     flex: 1,
@@ -165,8 +168,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 36,
+    color: '#eab308',
+    lineHeight: 48,
+    paddingHorizontal: 4,
     marginBottom: spacing.sm,
   },
   subtitle: {

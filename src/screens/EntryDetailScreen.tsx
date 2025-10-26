@@ -122,7 +122,7 @@ export const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Entry</Text>
+        <Text style={styles.headerTitle}>Entry</Text>
         {onEdit && (
           <TouchableOpacity onPress={onEdit} style={styles.editButton}>
             <Text style={[styles.editButtonText, { color: theme.primary }]}>Edit</Text>
@@ -248,8 +248,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   editButton: {
     padding: 8,

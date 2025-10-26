@@ -6,15 +6,18 @@ export default {
     slug: "ai-journaling-app",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./Journaling App Logo.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/splash.png",
+      image: "../assets/journaling-anim.gif",
       resizeMode: "contain",
       backgroundColor: "#0f172a"
     },
     assetBundlePatterns: [
       "**/*"
+    ],
+    plugins: [
+      "expo-font"
     ],
     ios: {
       bundleIdentifier: "com.aijournalingapp",
@@ -32,7 +35,7 @@ export default {
       versionCode: 2,  // ← ADD THIS (increment each upload)
 
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./Journaling App Logo.png",
         backgroundColor: "#0f172a"
       },
       permissions: [

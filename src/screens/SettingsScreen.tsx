@@ -121,7 +121,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNaviga
         <AnimatedButton onPress={onBack} style={styles.backButton} hapticFeedback="light">
           <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
         </AnimatedButton>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Settings</Text>
+        <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -463,8 +463,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   headerRight: {
     minWidth: 80,
@@ -482,8 +485,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 28,
+    color: '#eab308',
+    lineHeight: 40,
+    paddingHorizontal: 4,
     marginBottom: 8,
   },
   sectionDescription: {

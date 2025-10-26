@@ -182,7 +182,7 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({ onBack, onMenuPress })
         <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
           <Text style={[styles.menuIcon, { color: theme.primary }]}>☰</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Notes</Text>
+        <Text style={styles.headerTitle}>Notes</Text>
         <TouchableOpacity style={styles.menuButton} onPress={handleNewNote}>
           <Text style={[styles.addIcon, { color: theme.primary }]}>+</Text>
         </TouchableOpacity>
@@ -316,8 +316,11 @@ const styles = StyleSheet.create({
     fontWeight: '300',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
   },
   content: {
     flexGrow: 1,

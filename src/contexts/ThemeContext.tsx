@@ -4,6 +4,30 @@ import { Appearance } from 'react-native';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
+interface Typography {
+  // Font Families
+  fontFamily: {
+    heading: string;
+    body: string;
+  };
+
+  // Font Sizes
+  fontSize: {
+    h1: number;
+    h2: number;
+    h3: number;
+    body: number;
+    small: number;
+  };
+
+  // Font Weights
+  fontWeight: {
+    regular: '400';
+    semibold: '600';
+    bold: '700';
+  };
+}
+
 interface ThemeColors {
   // Primary Colors
   primary: string;
@@ -56,6 +80,7 @@ interface ThemeColors {
 
 interface ThemeContextType {
   theme: ThemeColors;
+  typography: Typography;
   themeMode: ThemeMode;
   isDark: boolean;
   setThemeMode: (mode: ThemeMode) => void;
@@ -117,12 +142,12 @@ const darkTheme: ThemeColors = {
   primaryDark: '#a16207',   // yellow-700
   primaryLight: '#eab308',  // yellow-500
 
-  // Background Colors (Dark Theme)
-  background: '#0f172a',
-  backgroundSecondary: '#1e293b',
-  backgroundTertiary: '#334155',
-  surface: 'rgba(255,255,255,0.05)',
-  surfaceElevated: 'rgba(255,255,255,0.1)',
+  // Background Colors - CHANGE THESE:
+  background: '#0a0a0a',              // Change from '#0f172a' to pure black
+  backgroundSecondary: '#0a0a0a',     // Change from '#1e293b' to pure black  
+  backgroundTertiary: '#1a1a1a',      // Change from '#334155' to dark gray
+  surface: 'rgba(255,255,255,0.05)',  // Keep as is (subtle overlay)
+  surfaceElevated: 'rgba(255,255,255,0.1)', // Keep as is
 
   // Text Colors (Light on Dark)
   textPrimary: '#e2e8f0',
@@ -159,6 +184,26 @@ const darkTheme: ThemeColors = {
   gray700: '#334155',
   gray800: '#1e293b',
   gray900: '#0f172a',
+};
+
+// Typography configuration
+const typography: Typography = {
+  fontFamily: {
+    heading: 'Yellowtail_400Regular',
+    body: 'Inter_400Regular',
+  },
+  fontSize: {
+    h1: 48,
+    h2: 36,
+    h3: 24,
+    body: 16,
+    small: 14,
+  },
+  fontWeight: {
+    regular: '400',
+    semibold: '600',
+    bold: '700',
+  },
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -211,7 +256,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const theme = isDark ? darkTheme : lightTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme, themeMode, isDark, setThemeMode }}>
+    <ThemeContext.Provider value={{ theme, typography, themeMode, isDark, setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
