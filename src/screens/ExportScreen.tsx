@@ -134,7 +134,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onMenuPress }) => {
 
       {/* Date Range Section */}
       <View style={[styles.section, { backgroundColor: theme.surface }]}>
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
           📅 Date Range
         </Text>
 
@@ -473,8 +473,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontFamily: 'Yellowtail_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 42,
+    fontWeight: '600',
     color: '#eab308',
     lineHeight: 56,
     paddingHorizontal: 4,
@@ -489,8 +490,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontFamily: 'Yellowtail_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 24,
+    fontWeight: '600',
     color: '#eab308',
     lineHeight: 36,
     paddingHorizontal: 4,

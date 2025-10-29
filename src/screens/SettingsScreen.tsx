@@ -485,8 +485,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   sectionTitle: {
-    fontFamily: 'Yellowtail_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 28,
+    fontWeight: '600',
     color: '#eab308',
     lineHeight: 40,
     paddingHorizontal: 4,

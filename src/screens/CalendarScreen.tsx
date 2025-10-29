@@ -317,7 +317,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
 
         {/* Selected Date Info */}
         <View style={[styles.dateInfoPanel, { backgroundColor: theme.surface }]}>
-          <Text style={[styles.selectedDateText, { color: theme.primaryLight }]}>{formatSelectedDate(selectedDate)}</Text>
+          <Text style={[styles.selectedDateText, { color: theme.textPrimary }]}>{formatSelectedDate(selectedDate)}</Text>
 
           {isLoading ? (
             <View style={styles.loadingContainer}>

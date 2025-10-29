@@ -81,8 +81,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontFamily: 'Yellowtail_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 36,
+    fontWeight: '600',
     color: '#eab308',
     lineHeight: 48,
     paddingHorizontal: 4,
