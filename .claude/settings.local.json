@@ -16,7 +16,8 @@
       "Bash(npx tsc:*)",
       "Bash(mkdir:*)",
       "Bash(npx expo install:*)",
-      "Bash(npm run start)"
+      "Bash(npm run start)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []

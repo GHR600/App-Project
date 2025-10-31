@@ -1,5 +1,6 @@
 // Centralized AI Prompt Configuration
 // Single source of truth for all AI personalities and prompt building
+// Cache-busting timestamp: 2025-10-31-16:55:00 UTC (added user stats)
 
 // AI Personality Definitions
 const COACH_PERSONALITY = {
@@ -23,7 +24,7 @@ const REFLECTOR_PERSONALITY = {
 
 // Model Selection Based on Subscription Tier
 function getModelForTier(isPremium) {
-  return isPremium ? 'claude-sonnet-4-5-20250929' : 'claude-sonnet-4-5-20250929';
+  return isPremium ? 'claude-sonnet-4-5' : 'claude-sonnet-4-5';
 }
 
 // Token Limits Based on Subscription Tier and Request Type
@@ -48,7 +49,7 @@ function getMaxTokens(isPremium, requestType) {
 }
 
 // Prompt Builder: Insight Generation
-function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntries, userPreferences, isPremium }) {
+function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntries, userPreferences, isPremium, userStats }) {
   const personality = style === 'coach' ? COACH_PERSONALITY : REFLECTOR_PERSONALITY;
 
   // Build context from recent entries if available
@@ -66,14 +67,25 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
     preferencesSection = `\n\nUser's focus areas: ${userPreferences.focus_areas.join(', ')}`;
   }
 
+  // Build user stats section
+  let statsSection = '';
+  if (userStats) {
+    const statsParts = [];
+    if (userStats.totalEntries > 0) statsParts.push(`${userStats.totalEntries} total entries`);
+    if (userStats.currentStreak > 0) statsParts.push(`${userStats.currentStreak}-day streak`);
+    if (userStats.avgMood !== null) statsParts.push(`avg mood: ${userStats.avgMood}/10`);
+    if (userStats.totalWords > 0) statsParts.push(`${userStats.totalWords.toLocaleString()} words written`);
+
+    if (statsParts.length > 0) {
+      statsSection = `\n\nUser's journaling stats: ${statsParts.join(', ')}`;
+    }
+  }
+
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${contextSection}
+Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${statsSection}${contextSection}
 
-Respond with JSON in this exact format:
-{
-  "insight": "Your ${personality.style}-style insight (1-2 sentences max)",
-  "followUpQuestion": "A thoughtful question to deepen their reflection",
+
 }`;
 
   const userMessage = `Journal entry: "${entry}"${moodRating ? `\nMood rating: ${moodRating}/10` : ''}
@@ -89,7 +101,7 @@ Provide a ${personality.style}-style insight.`;
 }
 
 // Prompt Builder: Chat Response
-function getChatPrompt({ style = 'reflector', message, journalContext, conversationHistory, userPreferences, isPremium }) {
+function getChatPrompt({ style = 'reflector', message, journalContext, conversationHistory, userPreferences, isPremium, userStats }) {
   const personality = style === 'coach' ? COACH_PERSONALITY : REFLECTOR_PERSONALITY;
 
   // Build conversation history
@@ -113,9 +125,23 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
     preferencesSection = `\n\nUser's focus areas: ${userPreferences.focus_areas.join(', ')}`;
   }
 
+  // Build user stats section
+  let statsSection = '';
+  if (userStats) {
+    const statsParts = [];
+    if (userStats.totalEntries > 0) statsParts.push(`${userStats.totalEntries} total entries`);
+    if (userStats.currentStreak > 0) statsParts.push(`${userStats.currentStreak}-day streak`);
+    if (userStats.avgMood !== null) statsParts.push(`avg mood: ${userStats.avgMood}/10`);
+    if (userStats.totalWords > 0) statsParts.push(`${userStats.totalWords.toLocaleString()} words written`);
+
+    if (statsParts.length > 0) {
+      statsSection = `\n\nUser's journaling stats: ${statsParts.join(', ')}`;
+    }
+  }
+
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Respond in  1-2 sentences. Be concise and direct.${preferencesSection}${contextSection}${historySection}
+Respond in  1-2 sentences. Be concise and direct.${preferencesSection}${statsSection}${contextSection}${historySection}
 
 Respond naturally and conversationally while maintaining ${personality.style} voice.`;
 

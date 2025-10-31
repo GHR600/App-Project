@@ -803,11 +803,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
             return true;
           });
 
-          return visibleMessages.length === 0 ? (
-            <Text style={[styles.emptyStateText, { color: theme.textSecondary }]}>
-              No messages yet. Start a conversation!
-            </Text>
-          ) : (
+          return visibleMessages.length === 0 ? null : (
             visibleMessages.map((message, index) => (
               <View
                 key={`${message.id}-${index}`}
@@ -829,6 +825,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
               </View>
             ))
           );
+          
         })()}
         {isChatLoading && (
           <View style={[styles.claudeBubble, { backgroundColor: theme.backgroundTertiary }]}>

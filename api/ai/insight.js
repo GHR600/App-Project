@@ -35,8 +35,9 @@ async function insightHandler(req, res) {
       });
     }
 
-    // Fetch user's AI style preference from database
+    // Fetch user's AI style preference and stats from database
     const aiStyle = await UserService.getUserAIStyle(userId);
+    const userStats = await UserService.getUserStats(userId);
 
     // Initialize AI service
     const aiService = new AIService();
@@ -48,7 +49,8 @@ async function insightHandler(req, res) {
       userPreferences: userPreferences || { focusAreas: ['general'], personalityType: 'supportive' },
       recentEntries: recentEntries || [],
       subscriptionStatus: subscriptionStatus || 'free',
-      aiStyle
+      aiStyle,
+      userStats
     });
 
     // Return insight in expected format

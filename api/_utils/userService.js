@@ -139,6 +139,96 @@ class UserService {
       throw error;
     }
   }
+
+  /**
+   * Get user statistics for AI context
+   * Fetches: totalEntries, currentStreak, avgMood, totalWords
+   */
+  static async getUserStats(userId) {
+    try {
+      const supabase = getSupabaseClient();
+
+      // Fetch all journal entries for stats calculation
+      const { data: entries, error } = await supabase
+        .from('journal_entries')
+        .select('content, mood_rating, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('Error fetching user stats:', error);
+        return {
+          totalEntries: 0,
+          currentStreak: 0,
+          avgMood: null,
+          totalWords: 0
+        };
+      }
+
+      const totalEntries = entries?.length || 0;
+
+      // Calculate total words
+      const totalWords = entries?.reduce((sum, entry) => {
+        return sum + (entry.content?.split(/\s+/).filter(w => w.length > 0).length || 0);
+      }, 0) || 0;
+
+      // Calculate average mood
+      const moodEntries = entries?.filter(e => e.mood_rating != null) || [];
+      const avgMood = moodEntries.length > 0
+        ? Math.round(moodEntries.reduce((sum, e) => sum + e.mood_rating, 0) / moodEntries.length * 10) / 10
+        : null;
+
+      // Calculate current streak
+      let currentStreak = 0;
+      if (entries && entries.length > 0) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let checkDate = new Date(today);
+        const entryDates = new Set(
+          entries.map(e => {
+            const d = new Date(e.created_at);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+          })
+        );
+
+        // Check if there's an entry today or yesterday (to allow for timezone differences)
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (!entryDates.has(today.getTime()) && !entryDates.has(yesterday.getTime())) {
+          currentStreak = 0;
+        } else {
+          // Start from yesterday if no entry today
+          if (!entryDates.has(today.getTime())) {
+            checkDate = yesterday;
+          }
+
+          // Count consecutive days backwards
+          while (entryDates.has(checkDate.getTime())) {
+            currentStreak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          }
+        }
+      }
+
+      return {
+        totalEntries,
+        currentStreak,
+        avgMood,
+        totalWords
+      };
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      return {
+        totalEntries: 0,
+        currentStreak: 0,
+        avgMood: null,
+        totalWords: 0
+      };
+    }
+  }
 }
 
 module.exports = UserService;

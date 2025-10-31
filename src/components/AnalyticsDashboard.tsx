@@ -5,7 +5,8 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { AnimatedButton } from './AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
@@ -274,8 +275,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
-        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Generating insights...</Text>
-      </View>
+        <Image 
+          source={require('../../journaling-anim.gif')} // or use .png
+          style={styles.loadingImage}
+    />
+    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+      Loading your stats...
+    </Text>
+  </View>
     );
   }
 
@@ -591,4 +598,11 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     paddingVertical: spacing.lg,
   },
+
+  loadingImage: {
+    width: 400,
+    height: 400,
+    marginBottom: 10,
+  },
+
 });

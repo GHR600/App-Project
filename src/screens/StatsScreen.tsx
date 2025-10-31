@@ -82,10 +82,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ userId, onBack, onMenu
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.primary} />
-          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
-            Loading your stats...
-          </Text>
+          
         </View>
       ) : analytics ? (
         <ScrollView

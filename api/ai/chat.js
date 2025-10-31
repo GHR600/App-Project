@@ -28,10 +28,11 @@ async function chatHandler(req, res) {
       });
     }
 
-    // Fetch user's AI style preference and subscription status
+    // Fetch user's AI style preference, subscription status, and stats
     const aiStyle = await UserService.getUserAIStyle(userId);
     const userTier = await UserService.getUserTier(userId);
     const userPreferences = await UserService.getUserPreferences(userId);
+    const userStats = await UserService.getUserStats(userId);
 
     // Get the last user message
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
@@ -55,7 +56,8 @@ async function chatHandler(req, res) {
       conversationHistory,
       userPreferences,
       subscriptionStatus: userTier.subscriptionStatus,
-      aiStyle
+      aiStyle,
+      userStats
     });
 
     return res.status(200).json({

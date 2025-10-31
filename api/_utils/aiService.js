@@ -26,7 +26,8 @@ class AIService {
     userPreferences,
     recentEntries,
     subscriptionStatus,
-    aiStyle = 'reflector'
+    aiStyle = 'reflector',
+    userStats
   }) {
     try {
       // Use real Claude API if available
@@ -37,7 +38,8 @@ class AIService {
           userPreferences,
           recentEntries,
           subscriptionStatus,
-          aiStyle
+          aiStyle,
+          userStats
         });
       }
 
@@ -70,7 +72,8 @@ class AIService {
     userPreferences,
     recentEntries,
     subscriptionStatus,
-    aiStyle = 'reflector'
+    aiStyle = 'reflector',
+    userStats
   }) {
     const startTime = Date.now();
     const isPremium = subscriptionStatus === 'premium';
@@ -81,7 +84,8 @@ class AIService {
       contentLength: content.length,
       moodRating,
       hasPreferences: !!userPreferences,
-      recentEntriesCount: recentEntries?.length || 0
+      recentEntriesCount: recentEntries?.length || 0,
+      hasUserStats: !!userStats
     });
 
     // Use centralized prompt builder
@@ -91,7 +95,8 @@ class AIService {
       moodRating,
       recentEntries,
       userPreferences,
-      isPremium
+      isPremium,
+      userStats
     });
 
     try {
@@ -191,7 +196,8 @@ class AIService {
     conversationHistory,
     userPreferences,
     subscriptionStatus,
-    aiStyle = 'reflector'
+    aiStyle = 'reflector',
+    userStats
   }) {
     try {
       // Use real Claude API if available
@@ -202,7 +208,8 @@ class AIService {
           conversationHistory,
           userPreferences,
           subscriptionStatus,
-          aiStyle
+          aiStyle,
+          userStats
         });
       }
 
@@ -225,7 +232,8 @@ class AIService {
     conversationHistory,
     userPreferences,
     subscriptionStatus,
-    aiStyle = 'reflector'
+    aiStyle = 'reflector',
+    userStats
   }) {
     const startTime = Date.now();
     const isPremium = subscriptionStatus === 'premium';
@@ -233,7 +241,8 @@ class AIService {
     console.log('🤖 Claude AI - Starting chat response generation:', {
       aiStyle,
       isPremium,
-      messageLength: message.length
+      messageLength: message.length,
+      hasUserStats: !!userStats
     });
 
     // Use centralized prompt builder
@@ -243,7 +252,8 @@ class AIService {
       journalContext,
       conversationHistory,
       userPreferences,
-      isPremium
+      isPremium,
+      userStats
     });
 
     try {

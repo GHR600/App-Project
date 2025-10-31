@@ -536,9 +536,9 @@ const styles = StyleSheet.create({
   streakBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: 12,
-    marginBottom: spacing.md,
+    padding: spacing.sm,
+    borderRadius: 16,
+    marginBottom: spacing.sm,
     borderWidth: 1,
   },
   streakIconContainer: {
