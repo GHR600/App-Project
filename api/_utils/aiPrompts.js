@@ -144,7 +144,7 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
 
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Respond in 1-2 sentences. Be concise and direct.${preferencesSection}${statsSection}${contextSection}${historySection}
+Respond in 1-2 sentences max. Be concise and direct.${preferencesSection}${statsSection}${contextSection}${historySection}
 
 Respond naturally and conversationally while maintaining ${personality.style} voice.`;
 
