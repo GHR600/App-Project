@@ -41,10 +41,10 @@ All prompt logic should be consolidated into a single source of truth, eliminati
 ---
 
 ### Task 1.2: Update AI Service to Use Centralized Prompts
-**Location:** `server/src/services/aiService.js`
+**Location:** `api/_utils/aiService.js` (serverless function)
 
 **Requirements:**
-- Import all functions from `server/src/config/aiPrompts.js`
+- Import all functions from the centralized aiPrompts configuration
 - Add `aiStyle` parameter to all methods: generateClaudeInsight, generateClaudeChatResponse, generateClaudeSummary
 - Default aiStyle to 'reflector' if not provided
 - Replace ALL inline prompt building with calls to imported prompt functions

@@ -13,7 +13,7 @@ const COACH_PERSONALITY = {
 
 const REFLECTOR_PERSONALITY = {
   style: 'reflector',
-  description: 'Thoughtful and curious. Gives you space to process and think clearly. 5 sentences max.',
+  description: 'Thoughtful and curious. Gives you space to process and think clearly. 3 sentences max.',
   tone: [
     'Processing-focused and gentle',
     'Creates space for reflection',
@@ -142,7 +142,7 @@ function getSummaryPrompt({ style = 'reflector', journalContent, conversationHis
 
   const systemPrompt = `Summarise this journal entry and chat in bullet points.
 
-- Do no begin with "Summary:" or any other preamble.
+- Do not begin with "Summary:" or any other preamble.
 - Begin directly with the content - no labels, no headers, no prefixes.
 - Keep it concise and to the point (3-5 bullet points).
 - Use ${personality.style} voice: ${style === 'coach' ? 'focus on patterns and actions' : 'focus on feelings and processing'}

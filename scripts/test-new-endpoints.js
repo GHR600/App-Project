@@ -1,5 +1,7 @@
 // Test script for the new chat and summarise endpoints
-const aiService = require('../server/src/services/aiService');
+// Note: This test script is obsolete as the server folder has been removed.
+// The AI service is now implemented as serverless functions in the api/ folder.
+// const aiService = require('../server/src/services/aiService');
 
 async function testEndpoints() {
   console.log('🧪 Testing New AI Endpoints\n');

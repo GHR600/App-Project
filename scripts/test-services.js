@@ -363,8 +363,7 @@ async function main() {
   printSummary();
 }
 
-// Load environment from server/.env
-require('dotenv').config({ path: require('path').join(__dirname, 'server', '.env') });
+// Load environment from .env
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 main().catch((error) => {
