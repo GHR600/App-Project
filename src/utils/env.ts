@@ -34,7 +34,7 @@ const getSupabaseConfig = () => {
 // API Base URL configuration for backend services
 const getApiConfig = () => {
   const extra = Constants.expoConfig?.extra || {};
-  const rawUrl = extra.apiBaseUrl || process.env.REACT_APP_API_BASE_URL || 'https://app-project-lac.vercel.app/';
+  const rawUrl = extra.apiBaseUrl || process.env.REACT_APP_API_BASE_URL || 'https://app-project-gkiplxfzp-glebs-projects-dd2e6b15.vercel.app';
   // Remove trailing slash to prevent double slashes in API calls
   const baseUrl = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
   return {
