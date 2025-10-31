@@ -1,6 +1,6 @@
 // Centralized AI Prompt Configuration
 // Single source of truth for all AI personalities and prompt building
-// Cache-busting timestamp: 2025-10-31-16:55:00 UTC (added user stats)
+// Cache-busting timestamp: 2025-10-31-17:30:00 UTC (FIXED: Removed stray brace)
 
 // AI Personality Definitions
 const COACH_PERSONALITY = {
@@ -24,7 +24,7 @@ const REFLECTOR_PERSONALITY = {
 
 // Model Selection Based on Subscription Tier
 function getModelForTier(isPremium) {
-  return isPremium ? 'claude-sonnet-4-5' : 'claude-sonnet-4-5';
+  return 'claude-sonnet-4-5-20250929';
 }
 
 // Token Limits Based on Subscription Tier and Request Type
@@ -85,7 +85,10 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
 
 Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${statsSection}${contextSection}
 
-
+Respond with JSON in this exact format:
+{
+  "insight": "Your ${personality.style}-style insight (1-2 sentences max)",
+  "followUpQuestion": "A thoughtful question to deepen their reflection"
 }`;
 
   const userMessage = `Journal entry: "${entry}"${moodRating ? `\nMood rating: ${moodRating}/10` : ''}
@@ -141,7 +144,7 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
 
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Respond in  1-2 sentences. Be concise and direct.${preferencesSection}${statsSection}${contextSection}${historySection}
+Respond in 1-2 sentences. Be concise and direct.${preferencesSection}${statsSection}${contextSection}${historySection}
 
 Respond naturally and conversationally while maintaining ${personality.style} voice.`;
 
