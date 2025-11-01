@@ -176,7 +176,7 @@ class UserService {
       const moodEntries = entries?.filter(e => e.mood_rating != null) || [];
       const avgMood = moodEntries.length > 0
         ? Math.round(moodEntries.reduce((sum, e) => sum + e.mood_rating, 0) / moodEntries.length * 10) / 10
-        : null;
+        : 0;  // ✅ Changed to 0
 
       // Calculate current streak
       let currentStreak = 0;
