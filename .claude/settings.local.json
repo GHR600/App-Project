@@ -1,25 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(eas build:configure)",
-      "Bash(npm install -g eas-cli)",
-      "Bash(npx expo config --type introspect)",
-      "Bash(npx expo install expo-image)",
-      "Bash(node \"C:\\App Project\\scripts\\generate-assets.js\")",
-      "Bash(eas secret:create:*)",
-      "Bash(eas env:create:*)",
-      "Bash(eas env:list:*)",
-      "Bash(cd:*)",
-      "Bash(tree:*)",
-      "Bash(rm:*)",
-      "Bash(npm run typecheck:*)",
-      "Bash(npx tsc:*)",
-      "Bash(mkdir:*)",
-      "Bash(npx expo install:*)",
-      "Bash(npm run start)",
-      "Bash(vercel:*)"
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "command": "bash .claude/scripts/validate-bash.sh"
+          }
+        ]
+      }
+    ]
   }
 }

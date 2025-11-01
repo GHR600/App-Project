@@ -36,6 +36,10 @@ import {
   Zap,
   Award,
   Star,
+  LogOut,
+  Trash2,
+  Upload,
+  Image,
 } from 'lucide-react-native';
 
 export interface IconProps {
@@ -181,6 +185,23 @@ export const AwardIcon: React.FC<IconProps> = ({ size = 24, color = '#000', stro
 
 export const StarIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
   <Star size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+// Account & Profile Icons
+export const LogOutIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <LogOut size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const Trash2Icon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Trash2 size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const UploadIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Upload size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const ImageIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Image size={size} color={color} strokeWidth={strokeWidth} />
 );
 
 // Mood Emojis - Keep as constants since emojis work well for emotions

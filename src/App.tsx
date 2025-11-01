@@ -400,7 +400,16 @@ const MainApp: React.FC = () => {
           setCurrentScreen('signUp');
           return renderHomeScreen();
         }
-        return <AccountScreen onBack={() => setCurrentScreen('dashboard')} onMenuPress={() => setMenuVisible(true)} />;
+        return (
+          <AccountScreen
+            onBack={() => setCurrentScreen('dashboard')}
+            onMenuPress={() => setMenuVisible(true)}
+            onManageSubscription={() => {
+              setSubscriptionReturnScreen('account');
+              setCurrentScreen('subscription');
+            }}
+          />
+        );
       case 'export':
         if (!user) {
           setCurrentScreen('signUp');
