@@ -474,12 +474,24 @@ export class AIInsightService {
     const startTime = Date.now();
     const requestId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // ADD THESE TWO LINES HERE:
+    const authToken = await this.getAuthToken();
+    console.log('🔐 Auth token:', authToken ? 'EXISTS' : 'MISSING');
+    console.log('📡 Full URL:', `${this.API_BASE_URL}/api/ai/insight`);
+
+
     console.log(`📱 [${requestId}] Generating AI insight with full context:`, {
       entryId: entry.id,
       contentLength: entry.content.length,
       moodRating: entry.moodRating,
       subscriptionStatus: userContext.subscriptionStatus
     });
+
+
+    // ADD THESE TWO LINES HERE:
+    //const authToken = await this.getAuthToken();
+    //console.log('🔐 Auth token:', authToken ? 'EXISTS' : 'MISSING');
+    //console.log('📡 Full URL:', `${this.API_BASE_URL}/api/ai/insight`);
 
     try {
       // Use new AI service with full context - send correct request format to backend
@@ -850,3 +862,4 @@ export class AIInsightService {
     return categoryPrompts[randomIndex];
   }
 }
+

@@ -52,6 +52,11 @@ export interface AIInsightRequest {
 export async function generateAIInsight(request: AIInsightRequest): Promise<AIInsightResponse> {
   try {
     const headers = await getAuthHeaders();
+
+     // ADD THESE LOGS:
+    console.log('🔐 Auth headers:', headers);
+    console.log('📡 API URL:', `${API_URL}/api/ai/insight`); 
+
     const response = await fetch(`${API_URL}/api/ai/insight`, {
       method: 'POST',
       headers,
