@@ -14,6 +14,11 @@ const API_URL = API_CONFIG.baseUrl;
  */
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
+
+  console.log('🔐 Session:', session ? 'EXISTS' : 'MISSING');
+  console.log('🔐 Token:', session?.access_token ? 'EXISTS' : 'MISSING');
+  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
