@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc:*)"
+      "Bash(powershell -ExecutionPolicy Bypass -File add-env-to-vercel.ps1)"
     ],
     "deny": [],
     "ask": []
