@@ -9,6 +9,11 @@ const UserService = require('../_utils/userService');
  */
 async function insightsHandler(req, res) {
   // Only allow POST requests
+
+  console.log('🔍 SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
+  console.log('🔍 SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  console.log('🔍 Auth header:', req.headers.authorization?.substring(0, 20) + '...');
+  
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: 'Method not allowed',
