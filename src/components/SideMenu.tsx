@@ -75,9 +75,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
 
   const mainMenuItems = [
     { key: 'export' as const, icon: '↓', label: 'Export', onPress: () => handleNavigate('export') },
-  ];
-
-  const accountMenuItems = [
+  
     { key: 'settings' as const, icon: '⚙', label: 'Settings', onPress: () => handleNavigate('settings') },
     { key: 'account' as const, icon: '◉', label: 'Account', onPress: () => handleNavigate('account') },
   ];
@@ -127,21 +125,9 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                   </AnimatedButton>
                 ))}
 
-                {/* Separator */}
-                <View style={[styles.separator, { backgroundColor: theme.cardBorder }]} />
+                
 
-                {/* Account Menu Section */}
-                {accountMenuItems.map((item) => (
-                  <AnimatedButton
-                    key={item.key}
-                    style={[styles.menuItem, { borderBottomColor: theme.cardBorder }]}
-                    onPress={item.onPress}
-                    hapticFeedback="light"
-                  >
-                    <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>{item.icon}</Text>
-                    <Text style={[styles.menuLabel, { color: theme.textPrimary }]}>{item.label}</Text>
-                  </AnimatedButton>
-                ))}
+                
               </View>
 
               {/* Sign Out */}

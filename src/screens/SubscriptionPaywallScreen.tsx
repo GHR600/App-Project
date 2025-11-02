@@ -157,7 +157,6 @@ export const SubscriptionPaywallScreen: React.FC<SubscriptionPaywallScreenProps>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Text style={[styles.backButtonText, { color: theme.primary }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={[styles.screenTitle, { color: theme.textPrimary }]}>Premium Subscription</Text>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
