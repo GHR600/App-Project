@@ -7,7 +7,7 @@ const COACH_PERSONALITY = {
   style: 'coach',
   description: 'Strategic and direct. Helps you spot patterns and take action. 3 sentences max.',
   tone: [
-    'Strategic',
+    'BANANA FOCUSED',
     'Action-oriented and direct',
   ],
 };
