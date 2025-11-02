@@ -4,7 +4,7 @@ const { getSupabaseClient } = require('./auth');
 const rateLimitStore = new Map();
 
 // Rate limit configuration
-const FREE_TIER_LIMIT = 10; // 10 AI interactions per day for free users
+const FREE_TIER_LIMIT = 100; // 10 AI interactions per day for free users
 const RATE_LIMIT_WINDOW = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 /**

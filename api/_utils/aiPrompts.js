@@ -31,21 +31,21 @@ function getModelForTier(isPremium) {
 function getMaxTokens(isPremium, requestType) {
   const limits = {
     insight: {
-      premium: 500,
-      free: 300
+      premium: 5000,
+      free: 3000
     },
     chat: {
-      premium: 400,
-      free: 250
+      premium: 4000,
+      free: 2500
     },
     summary: {
-      premium: 150,
-      free: 100
+      premium: 1500,
+      free: 1000
     }
   };
 
   const tier = isPremium ? 'premium' : 'free';
-  return limits[requestType]?.[tier] || 300;
+  return limits[requestType]?.[tier] || 3000;
 }
 
 // Prompt Builder: Insight Generation

@@ -104,14 +104,14 @@ async function handler(req, res) {
 
 
   // Apply rate limiting by wrapping the auth handler
-  /*
+  
   return new Promise((resolve) => {
     checkAIRateLimit(req, res, async () => {
       await authHandler(req, res);
       resolve();
     });
   });
-*/
+
   }
 
 // Export for Vercel serverless functions
