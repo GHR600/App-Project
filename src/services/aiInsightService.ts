@@ -709,7 +709,7 @@ export class AIInsightService {
               .upsert({
                 user_id: userId,
                 journal_entry_id: journalEntryId,
-                summary_content: result.summary.content,
+                summary_content: result.summary,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
               });
@@ -718,7 +718,7 @@ export class AIInsightService {
               console.warn('Failed to save summary to database:', saveError);
             }
 
-            return { summary: result.summary.content };
+            return { summary: result.summary };
           } else {
             console.error('Summary API error response:', {
               status: response.status,
