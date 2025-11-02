@@ -91,10 +91,9 @@ async function handler(req, res) {
 
   // Apply rate limiting by wrapping the auth handler
   return new Promise((resolve) => {
-    authHandler(req, res).then(() => {         // Auth FIRST
-      checkAIRateLimit(req, res, () => {       // Rate limiter SECOND
-        resolve();
-      });
+    checkAIRateLimit(req, res, async () => {
+      await authHandler(req, res);
+      resolve();
     });
   });
 }

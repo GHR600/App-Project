@@ -258,7 +258,7 @@ export class AIInsightService {
             hasAuthToken: !!authToken,
             messageLength: message.length,
             hasJournalContext: !!journalContext,
-            conversationHistoryLength: conversationHistory?.length || 0
+            messagesCount: (conversationHistory?.length || 0) + 1
           });
 
           const response = await fetch(`${this.API_BASE_URL}/api/ai/chat`, {
@@ -268,15 +268,14 @@ export class AIInsightService {
               'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
-              message: message,
-              journalContext: journalContext,
-              conversationHistory: conversationHistory
+              messages: [...conversationHistory, { role: 'user', content: message }],
+              journalContext: journalContext
             })
           });
 
           if (response.ok) {
             const result = await response.json();
-            aiResponseText = result.aiResponse.content;
+            aiResponseText = result.response;
           } else {
             console.error('Chat API error response:', {
               status: response.status,
