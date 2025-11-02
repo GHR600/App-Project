@@ -193,12 +193,12 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     return moodMap[emoji] || 3;
   };
 
-  // Load chat history and initial insight when saved entry changes
+  // Load chat history, initial insight, and summary when saved entry changes
   useEffect(() => {
     const loadChatHistory = async () => {
       if (savedEntry) {
         try {
-          console.log('📖 Loading chat history and insight for entry:', savedEntry.id);
+          console.log('📖 Loading chat history, insight, and summary for entry:', savedEntry.id);
 
           // Load initial insight from ai_insights table
           const { insights, error: insightsError } = await AIInsightService.getInsightsForEntry(userId, savedEntry.id);
@@ -219,6 +219,15 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
           } else {
             console.log('✅ Loaded chat messages:', messages.length);
             setChatMessages(messages);
+          }
+
+          // Load saved summary
+          const { summary: savedSummary, error: summaryError } = await AIInsightService.getSummary(userId, savedEntry.id);
+          if (!summaryError && savedSummary) {
+            console.log('✅ Loaded saved summary');
+            setSummary(savedSummary);
+          } else {
+            console.log('ℹ️ No summary found for this entry');
           }
         } catch (error) {
           console.error('❌ Error loading chat history:', error);

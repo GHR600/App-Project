@@ -762,6 +762,41 @@ export class AIInsightService {
   }
 
   /**
+   * Get saved summary for a journal entry
+   */
+  static async getSummary(
+    userId: string,
+    journalEntryId: string
+  ): Promise<{ summary: string | null; error?: any }> {
+    try {
+      console.log('📖 Loading summary from database:', { userId, journalEntryId });
+
+      const { data, error } = await supabase
+        .from('entry_summaries')
+        .select('summary_content')
+        .eq('user_id', userId)
+        .eq('journal_entry_id', journalEntryId)
+        .single();
+
+      if (error) {
+        // If no summary found, that's okay - just return null
+        if (error.code === 'PGRST116') {
+          console.log('ℹ️ No summary found for this entry');
+          return { summary: null };
+        }
+        console.error('❌ Error loading summary:', error);
+        return { summary: null, error };
+      }
+
+      console.log('✅ Summary loaded from database');
+      return { summary: data.summary_content };
+    } catch (error) {
+      console.error('❌ Unexpected error loading summary:', error);
+      return { summary: null, error };
+    }
+  }
+
+  /**
    * Generate mock summary for fallback
    */
   private static generateMockSummary(journalContent: string, conversationHistory?: ChatMessage[]): string {
