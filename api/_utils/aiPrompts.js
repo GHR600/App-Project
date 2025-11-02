@@ -5,10 +5,10 @@
 // AI Personality Definitions
 const COACH_PERSONALITY = {
   style: 'coach',
-  description: 'BANANA FOCUSED',
+  description: 'Strategic and direct. Helps you spot patterns and take action. 3 sentences max.',
   tone: [
-    'BANANA FOCUSED',
-    'BANANA FOCUSED',
+    'Strategic and direct',
+    'Action-oriented and direct',
   ],
 };
 
@@ -76,6 +76,13 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
     if (userStats.avgMood !== null) statsParts.push(`avg mood: ${userStats.avgMood}/10`);
     if (userStats.totalWords > 0) statsParts.push(`${userStats.totalWords.toLocaleString()} words written`);
 
+    if (userStats.writingPatterns?.favoriteDay) statsParts.push(`most active on ${userStats.writingPatterns.favoriteDay}s`);
+    if (userStats.writingPatterns?.averageWordsPerEntry) statsParts.push(`${userStats.writingPatterns.averageWordsPerEntry} avg words per entry`);
+    if (userStats.writingPatterns?.bestWritingTime) statsParts.push(`usually writes at ${userStats.writingPatterns.bestWritingTime}`);
+    if (userStats.topWords?.length > 0) statsParts.push(`most mentioned: ${userStats.topWords.slice(0, 3).join(', ')}`);
+    if (userStats.moodTrends?.recent) statsParts.push(`recent mood trend: ${userStats.moodTrends.recent}`);
+
+
     if (statsParts.length > 0) {
       statsSection = `\n\nUser's journaling stats: ${statsParts.join(', ')}`;
     }
@@ -128,7 +135,7 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
     const statsParts = [];
     if (userStats.totalEntries > 0) statsParts.push(`${userStats.totalEntries} total entries`);
     if (userStats.currentStreak > 0) statsParts.push(`${userStats.currentStreak}-day streak`);
-    if (userStats.avgMood !== null) statsParts.push(`avg mood: ${userStats.avgMood}/10`);
+    if (userStats.avgMood !== null) statsParts.push(`avg mood: ${userStats.avgMood}/5`);
     if (userStats.totalWords > 0) statsParts.push(`${userStats.totalWords.toLocaleString()} words written`);
 
     if (statsParts.length > 0) {
