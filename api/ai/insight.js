@@ -8,6 +8,9 @@ const UserService = require('../_utils/userService');
  * POST /api/ai/insight (singular endpoint for client compatibility)
  */
 async function insightHandler(req, res) {
+  console.log('🔥 INSIGHT ENDPOINT HIT - Method:', req.method, 'Time:', new Date().toISOString());
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({
