@@ -704,18 +704,27 @@ export class AIInsightService {
             const result = await response.json();
 
             // Save summary to database
+            console.log('💾 Saving summary to database:', {
+              userId,
+              journalEntryId,
+              summaryLength: result.summary?.length
+            });
+
             const { error: saveError } = await supabase
               .from('entry_summaries')
               .upsert({
                 user_id: userId,
                 journal_entry_id: journalEntryId,
                 summary_content: result.summary,
-                created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'journal_entry_id'
               });
 
             if (saveError) {
-              console.warn('Failed to save summary to database:', saveError);
+              console.error('❌ Failed to save summary to database:', saveError);
+            } else {
+              console.log('✅ Summary saved successfully to database');
             }
 
             return { summary: result.summary };
