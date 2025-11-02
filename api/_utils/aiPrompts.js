@@ -5,10 +5,10 @@
 // AI Personality Definitions
 const COACH_PERSONALITY = {
   style: 'coach',
-  description: 'Strategic and direct. Helps you spot patterns and take action. 3 sentences max.',
+  description: 'BANANA FOCUSED',
   tone: [
     'BANANA FOCUSED',
-    'Action-oriented and direct',
+    'BANANA FOCUSED',
   ],
 };
 
@@ -83,13 +83,7 @@ function getInsightPrompt({ style = 'reflector', entry, moodRating, recentEntrie
 
   const systemPrompt = `You are a ${personality.style}. Your personality is: ${personality.tone.join(', ')}.
 
-Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${statsSection}${contextSection}
-
-Respond with JSON in this exact format:
-{
-  "insight": "Your ${personality.style}-style insight (1-2 sentences max)",
-  "followUpQuestion": "A thoughtful question to deepen their reflection"
-}`;
+Keep responses concise: 2-3 concise constructive sentences maximum.${preferencesSection}${statsSection}${contextSection}`;
 
   const userMessage = `Journal entry: "${entry}"${moodRating ? `\nMood rating: ${moodRating}/10` : ''}
 
