@@ -64,6 +64,10 @@ function incrementRateLimit(userId) {
  * Checks user's subscription status and enforces rate limits for free tier
  */
 async function checkAIRateLimit(req, res, next) {
+  console.log('🚦 Rate limiter function entered');
+  console.log('🚦 Rate limiter - req.user exists:', !!req.user);
+  console.log('🚦 Rate limiter - userId:', req.user?.id);
+
   try {
     const userId = req.user?.id;
 
