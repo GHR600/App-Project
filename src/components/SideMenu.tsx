@@ -11,6 +11,7 @@ import {
 import { AnimatedButton } from './AnimatedButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { AccountService, UserProfile } from '../services/accountService';
 
 const { width } = Dimensions.get('window');
 const MENU_WIDTH = Math.min(280, width * 0.8);
@@ -29,6 +30,21 @@ export const SideMenu: React.FC<SideMenuProps> = ({
   const { theme } = useTheme();
   const { user, signOut } = useAuth();
   const [slideAnim] = React.useState(new Animated.Value(-MENU_WIDTH));
+  const [profile, setProfile] = React.useState<UserProfile | null>(null);
+
+  // Load profile data when menu becomes visible
+  React.useEffect(() => {
+    if (visible && user) {
+      loadProfile();
+    }
+  }, [visible, user]);
+
+  const loadProfile = async () => {
+    const { data } = await AccountService.getUserProfile();
+    if (data) {
+      setProfile(data);
+    }
+  };
 
   React.useEffect(() => {
     if (visible) {
@@ -88,10 +104,10 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             >
               {/* Header */}
               <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
-                <Text style={[styles.appTitle, { color: theme.primary }]}>✎ Journal</Text>
+                <Text style={styles.appTitle}>Journaling</Text>
                 {user && (
                   <Text style={[styles.userEmail, { color: theme.textSecondary }]} numberOfLines={1}>
-                    {user.email}
+                    {profile?.display_name || user.email}'s Journal
                   </Text>
                 )}
               </View>
@@ -172,8 +188,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   appTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Yellowtail_400Regular',
+    fontSize: 32,
+    color: '#eab308',
+    lineHeight: 44,
+    paddingHorizontal: 4,
     marginBottom: 4,
   },
   userEmail: {

@@ -299,9 +299,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.cardBorder }]}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>Analytics Dashboard</Text>
-      </View>
+      
 
       <View style={[styles.tabBar, { backgroundColor: theme.surface, borderBottomColor: theme.cardBorder }]}>
         {[
@@ -364,7 +362,7 @@ const styles = StyleSheet.create({
   tab: {
     flex: 1,
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 13,
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',

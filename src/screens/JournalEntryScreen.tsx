@@ -601,7 +601,7 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     <View style={styles.dateMoodRow}>
       <AnimatedButton style={styles.dateSelector} hapticFeedback="light">
         <Text style={[styles.dateSelectorText, { color: theme.primaryLight }]}>
-          {formatDate(selectedDate)} ▼
+          {formatDate(selectedDate)}
         </Text>
       </AnimatedButton>
       <AnimatedButton

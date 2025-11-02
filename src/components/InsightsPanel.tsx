@@ -210,10 +210,10 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ entries }) => {
   return (
     <View style={[styles.container, { backgroundColor: theme.surface }]}>
       <Text style={[styles.title, { color: theme.textPrimary }]}>
-        💡 Insights
+        💡 Patterns
       </Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-        Patterns discovered from your journaling
+        Behavioural patterns discovered from your journaling
       </Text>
 
       <View style={styles.insightsList}>

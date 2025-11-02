@@ -253,12 +253,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({
               <UserIcon size={48} color={theme.primary} strokeWidth={2} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleProfilePictureUpload} style={styles.uploadButtonContainer}>
-            <UploadIcon size={16} color={theme.primary} strokeWidth={2} />
-            <Text style={[styles.uploadButton, { color: theme.primary }]}>
-              Upload Photo
-            </Text>
-          </TouchableOpacity>
+          
 
           {/* Email */}
           <View style={styles.profileRow}>

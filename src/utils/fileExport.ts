@@ -1,5 +1,5 @@
-import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 
 export const saveAndShareFile = async (
@@ -28,17 +28,25 @@ export const saveAndShareFile = async (
       URL.revokeObjectURL(url);
       return { success: true };
     } else {
-      // Mobile: Save and share
-      const fileUri = ((FileSystem as any).documentDirectory || '') + filename;
-      await FileSystem.writeAsStringAsync(fileUri, data);
+      // Mobile: Use new File API to save to cache and share
+      // Create a file in the cache directory
+      const file = new File(Paths.cache, filename);
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, {
-          mimeType: filename.endsWith('.csv') ? 'text/csv' : 'text/plain',
-          dialogTitle: 'Export Data',
-          UTI: filename.endsWith('.csv') ? 'public.comma-separated-values-text' : 'public.plain-text',
-        });
+      // Write the data to the file
+      await file.create();
+      await file.write(data);
+
+      // Check if sharing is available
+      if (!(await Sharing.isAvailableAsync())) {
+        throw new Error('Sharing is not available on this device');
       }
+
+      // Share the file using its URI
+      await Sharing.shareAsync(file.uri, {
+        mimeType: filename.endsWith('.csv') ? 'text/csv' : 'text/plain',
+        dialogTitle: 'Export Data',
+        UTI: filename.endsWith('.csv') ? 'public.comma-separated-values-text' : 'public.plain-text',
+      });
 
       return { success: true };
     }

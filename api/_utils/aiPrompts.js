@@ -94,7 +94,7 @@ Keep responses concise: 2-3 concise constructive sentences maximum.${preferences
 
   const userMessage = `Journal entry: "${entry}"${moodRating ? `\nMood rating: ${moodRating}/5` : ''}
 
-Provide a ${personality.style}-style insight.`;
+Provide a ${personality.style}-style insight. Focus on stats only if relevant or you see a pattern.`;
 
   return {
     systemPrompt,
@@ -137,6 +137,12 @@ function getChatPrompt({ style = 'reflector', message, journalContext, conversat
     if (userStats.currentStreak > 0) statsParts.push(`${userStats.currentStreak}-day streak`);
     if (userStats.avgMood !== null) statsParts.push(`avg mood: ${userStats.avgMood}/5`);
     if (userStats.totalWords > 0) statsParts.push(`${userStats.totalWords.toLocaleString()} words written`);
+
+    if (userStats.writingPatterns?.favoriteDay) statsParts.push(`most active on ${userStats.writingPatterns.favoriteDay}s`);
+    if (userStats.writingPatterns?.averageWordsPerEntry) statsParts.push(`${userStats.writingPatterns.averageWordsPerEntry} avg words per entry`);
+    if (userStats.writingPatterns?.bestWritingTime) statsParts.push(`usually writes at ${userStats.writingPatterns.bestWritingTime}`);
+    if (userStats.topWords?.length > 0) statsParts.push(`most mentioned: ${userStats.topWords.slice(0, 3).join(', ')}`);
+    if (userStats.moodTrends?.recent) statsParts.push(`recent mood trend: ${userStats.moodTrends.recent}`);
 
     if (statsParts.length > 0) {
       statsSection = `\n\nUser's journaling stats: ${statsParts.join(', ')}`;

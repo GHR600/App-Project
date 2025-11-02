@@ -211,7 +211,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = '@theme_mode';
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('dark');
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
   );
@@ -223,6 +223,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY);
         if (saved && (saved === 'light' || saved === 'dark' || saved === 'system')) {
           setThemeModeState(saved as ThemeMode);
+        } else {
+          // Set dark mode as default for first-time users
+          setThemeModeState('dark');
+          await AsyncStorage.setItem(THEME_STORAGE_KEY, 'dark');
         }
       } catch (error) {
         console.error('Failed to load theme preference:', error);

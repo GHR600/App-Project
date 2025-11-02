@@ -1,0 +1,35 @@
+Fix my journal export feature that's broken due to deprecated Expo FileSystem API. Replace the current filesystem-based export with Expo Sharing API.
+
+**Current broken code uses:**
+- `expo-file-system` with `writeAsStringAsync` (deprecated)
+- Saves file then shares it
+
+**Requirements:**
+- Use `expo-sharing` instead
+- Export journal entries as plain text
+- Format: Date, Mood, Title, Content for each entry
+- Handle errors gracefully
+- Show loading state during export
+- No filesystem operations needed
+
+**Data structure:**
+```typescript
+interface JournalEntry {
+  id: string;
+  content: string;
+  mood_rating: number;
+  title?: string;
+  created_at: string;
+  // other fields...
+}
+```
+
+**Replace my current export function with:**
+1. Format entries into readable text
+2. Convert to base64 data URI
+3. Use Sharing.shareAsync() directly
+4. Add proper error handling
+
+**Expected behavior:** User taps export → loading → native share dialog opens → user chooses app/location to save.
+
+Please write the complete replacement export function using expo-sharing.
