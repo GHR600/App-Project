@@ -186,35 +186,7 @@ function getSummaryPrompt({ style = 'reflector', journalContent, conversationHis
   };
 }
 
-// ADD THIS NEW FUNCTION HERE:
-// Prompt Builder: Stats Analysis
-function getStatsAnalysisPrompt({ userStats, question, entries }) {
-  const personality = REFLECTOR_PERSONALITY; // or get from user preference
-  
-  // Build comprehensive stats context
-  const statsContext = `
-User's journaling data:
-- ${userStats.totalEntries} total entries over time
-- Current ${userStats.currentStreak}-day writing streak
-- Average mood: ${userStats.avgMood}/5
-- ${userStats.totalWords} total words written
-${entries ? `\nRecent entries context: ${entries.slice(0, 3).map(e => `"${e.content?.substring(0, 100)}..."`).join(', ')}` : ''}`;
 
-  const systemPrompt = `You are a ${personality.style}. ${personality.description}
-
-Analyze the user's journaling patterns and provide insights based on their question. Use the specific data provided to give concrete, personalized observations.
-
-${statsContext}
-
-Be specific and reference actual numbers/patterns from their data. ${personality.tone.join(', ')}.`;
-
-  return {
-    systemPrompt,
-    userMessage: question,
-    model: getModelForTier(false), // or get from user's subscription
-    maxTokens: getMaxTokens(false, 'chat')
-  };
-}
 
 // Export all functions and personalities
 module.exports = {
@@ -225,5 +197,4 @@ module.exports = {
   getInsightPrompt,
   getChatPrompt,
   getSummaryPrompt,
-  getStatsAnalysisPrompt  // ADD THIS TO THE EXPORTS
 };

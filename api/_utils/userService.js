@@ -213,11 +213,23 @@ class UserService {
         }
       }
 
+      // Calculate writing patterns
+      const writingPatterns = this._calculateWritingPatterns(entries);
+
+      // Calculate top words
+      const topWords = this._calculateTopWords(entries);
+
+      // Calculate mood trends
+      const moodTrends = this._calculateMoodTrends(entries);
+
       return {
         totalEntries,
         currentStreak,
         avgMood,
-        totalWords
+        totalWords,
+        writingPatterns,
+        topWords,
+        moodTrends
       };
     } catch (error) {
       console.error('Error getting user stats:', error);
@@ -225,9 +237,157 @@ class UserService {
         totalEntries: 0,
         currentStreak: 0,
         avgMood: null,
-        totalWords: 0
+        totalWords: 0,
+        writingPatterns: {
+          favoriteDay: null,
+          averageWordsPerEntry: 0,
+          bestWritingTime: null
+        },
+        topWords: [],
+        moodTrends: {
+          recent: 'stable'
+        }
       };
     }
+  }
+
+  /**
+   * Calculate writing patterns from journal entries
+   * @private
+   */
+  static _calculateWritingPatterns(entries) {
+    if (!entries || entries.length === 0) {
+      return {
+        favoriteDay: null,
+        averageWordsPerEntry: 0,
+        bestWritingTime: null
+      };
+    }
+
+    // Calculate favorite day of week
+    const dayCount = {};
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    entries.forEach(entry => {
+      const date = new Date(entry.created_at);
+      const dayName = daysOfWeek[date.getDay()];
+      dayCount[dayName] = (dayCount[dayName] || 0) + 1;
+    });
+
+    const favoriteDay = Object.keys(dayCount).length > 0
+      ? Object.entries(dayCount).sort((a, b) => b[1] - a[1])[0][0]
+      : null;
+
+    // Calculate average words per entry
+    const totalWords = entries.reduce((sum, entry) => {
+      return sum + (entry.content?.split(/\s+/).filter(w => w.length > 0).length || 0);
+    }, 0);
+    const averageWordsPerEntry = entries.length > 0
+      ? Math.round(totalWords / entries.length)
+      : 0;
+
+    // Calculate best writing time
+    const timeCount = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+
+    entries.forEach(entry => {
+      const date = new Date(entry.created_at);
+      const hour = date.getHours();
+
+      if (hour >= 5 && hour < 12) timeCount.morning++;
+      else if (hour >= 12 && hour < 17) timeCount.afternoon++;
+      else if (hour >= 17 && hour < 21) timeCount.evening++;
+      else timeCount.night++;
+    });
+
+    const bestWritingTime = Object.entries(timeCount)
+      .sort((a, b) => b[1] - a[1])[0][0];
+
+    return {
+      favoriteDay,
+      averageWordsPerEntry,
+      bestWritingTime
+    };
+  }
+
+  /**
+   * Calculate top frequently used words (excluding common words)
+   * @private
+   */
+  static _calculateTopWords(entries) {
+    if (!entries || entries.length === 0) {
+      return [];
+    }
+
+    // Common words to exclude
+    const stopWords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+      'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during',
+      'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'you', 'your', 'yours',
+      'he', 'him', 'his', 'she', 'her', 'hers', 'it', 'its', 'they', 'them',
+      'their', 'theirs', 'what', 'which', 'who', 'when', 'where', 'why', 'how',
+      'is', 'am', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has',
+      'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may',
+      'might', 'must', 'can', 'this', 'that', 'these', 'those', 'as', 'if',
+      'so', 'than', 'too', 'very', 'just', 'now', 'then', 'there', 'here'
+    ]);
+
+    const wordCount = {};
+
+    entries.forEach(entry => {
+      if (!entry.content) return;
+
+      const words = entry.content
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '') // Remove punctuation
+        .split(/\s+/)
+        .filter(word => word.length > 3 && !stopWords.has(word));
+
+      words.forEach(word => {
+        wordCount[word] = (wordCount[word] || 0) + 1;
+      });
+    });
+
+    // Return top 3 words
+    return Object.entries(wordCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([word]) => word);
+  }
+
+  /**
+   * Calculate mood trends (recent vs historical)
+   * @private
+   */
+  static _calculateMoodTrends(entries) {
+    if (!entries || entries.length === 0) {
+      return { recent: 'stable' };
+    }
+
+    const moodEntries = entries.filter(e => e.mood_rating != null);
+
+    if (moodEntries.length < 2) {
+      return { recent: 'stable' };
+    }
+
+    // Split into recent (last 25%) and older entries
+    const splitPoint = Math.ceil(moodEntries.length * 0.25);
+    const recentEntries = moodEntries.slice(0, splitPoint);
+    const olderEntries = moodEntries.slice(splitPoint);
+
+    if (olderEntries.length === 0) {
+      return { recent: 'stable' };
+    }
+
+    // Calculate average moods
+    const recentAvg = recentEntries.reduce((sum, e) => sum + e.mood_rating, 0) / recentEntries.length;
+    const olderAvg = olderEntries.reduce((sum, e) => sum + e.mood_rating, 0) / olderEntries.length;
+
+    const difference = recentAvg - olderAvg;
+
+    // Determine trend (threshold of 0.3 to avoid noise)
+    if (difference > 0.3) return { recent: 'improving' };
+    if (difference < -0.3) return { recent: 'declining' };
+    return { recent: 'stable' };
   }
 }
 
