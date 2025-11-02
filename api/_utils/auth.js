@@ -43,14 +43,24 @@ async function verifyAuth(req) {
       };
     }
 
-    // Verify token with Supabase
+    // FIXED: Use the correct method for server-side JWT validation
     const supabase = getSupabaseClient();
+    
+    // Method 1: Use getUser with the token (this should work)
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
-    if (error || !user) {
+    if (error) {
+      console.error('Token validation error:', error.message);
       return {
         authenticated: false,
         error: error?.message || 'Invalid authentication token'
+      };
+    }
+
+    if (!user) {
+      return {
+        authenticated: false,
+        error: 'Invalid authentication token - no user found'
       };
     }
 
@@ -77,17 +87,23 @@ async function verifyAuth(req) {
  */
 function requireAuth(handler) {
   return async (req, res) => {
+    console.log('🔐 Auth middleware called');
+    console.log('🔐 Headers:', req.headers.authorization ? 'Auth header present' : 'No auth header');
+    
     const auth = await verifyAuth(req);
+
+    console.log('🔐 Auth result:', auth.authenticated ? 'SUCCESS' : `FAILED: ${auth.error}`);
 
     if (!auth.authenticated) {
       return res.status(401).json({
         error: 'Unauthorized',
-        message: auth.error || 'Authentication required'
+        message: auth.error || 'User authentication required'
       });
     }
 
     // Attach user to request object
     req.user = auth.user;
+    console.log('🔐 User attached:', req.user.id);
 
     // Call the actual handler
     return handler(req, res);
