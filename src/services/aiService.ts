@@ -57,8 +57,10 @@ export async function generateAIInsight(request: AIInsightRequest): Promise<AIIn
   try {
     const headers = await getAuthHeaders();
 
+    // ADD THESE DEBUG LOGS:
+    console.log('🔗 API URL being used:', `${API_URL}/api/ai/insight`);
     console.log('🔐 Auth headers:', headers);
-    console.log('📡 API URL:', `${API_URL}/api/ai/insight`);
+    console.log('📤 Request body:', JSON.stringify(request, null, 2));
 
     const response = await fetch(`${API_URL}/api/ai/insight`, {
       method: 'POST',
@@ -66,12 +68,18 @@ export async function generateAIInsight(request: AIInsightRequest): Promise<AIIn
       body: JSON.stringify(request),
     });
 
+    // ADD THIS DEBUG LOG:
+    console.log('📥 Response status:', response.status, response.statusText);
+    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Request failed: ${response.status}`);
+      const errorText = await response.text();
+      console.log('❌ Error response body:', errorText);
+      throw new Error(`Request failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('✅ Success response:', data);
 
     return {
       insight: data.insight,
@@ -81,7 +89,7 @@ export async function generateAIInsight(request: AIInsightRequest): Promise<AIIn
       model: data.model,
     };
   } catch (error: any) {
-    console.error('Error generating AI insight:', error);
+    console.error('❌ Error generating AI insight:', error);
     return {
       insight: '',
       error: error.message || 'Failed to generate AI insights. Please try again.',

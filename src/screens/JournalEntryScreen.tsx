@@ -1,4 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../config/supabase';
+
+// Add this debug function right after your imports:
+const debugAuth = async () => {
+  console.log('=== DEBUGGING AUTHENTICATION ===');
+
+  // Check session
+  const { data: { session }, error } = await supabase.auth.getSession();
+  console.log('Session exists:', !!session);
+  console.log('Session error:', error);
+  
+  if (session) {
+    console.log('User ID:', session.user?.id);
+    console.log('User email:', session.user?.email);
+    console.log('Access token exists:', !!session.access_token);
+    console.log('Access token preview:', session.access_token?.substring(0, 20) + '...');
+  }
+
+  // Check current user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  console.log('Current user:', user?.id);
+  console.log('User error:', userError);
+  
+  console.log('=== END DEBUG ===');
+};
+
+
+
 import {
   StyleSheet,
   Text,
@@ -248,6 +276,9 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
   };
 
   const handleSaveEntry = async () => {
+    console.log('🐛 About to save - debugging auth first...');
+    await debugAuth();
+
     if (!entryText.trim()) {
       Alert.alert('Empty Entry', 'Please write something before saving your entry.');
       return;
