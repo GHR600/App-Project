@@ -10,6 +10,7 @@ const UserService = require('../_utils/userService');
  * POST /api/ai/insight (singular endpoint for client compatibility)
  */
 async function insightHandler(req, res) {
+    console.log('🎯 INSIGHT HANDLER CALLED - This means auth passed!');
 
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -95,7 +96,12 @@ async function handler(req, res) {
   }
 
   // Apply authentication
+  console.log('🔗 About to apply requireAuth middleware...');
+
   const authHandler = requireAuth(insightHandler);
+
+  console.log('🔗 Auth handler created, calling rate limiter...');
+
 
   // Apply rate limiting by wrapping the auth handler
   return new Promise((resolve) => {
