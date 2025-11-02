@@ -8,8 +8,6 @@ const UserService = require('../_utils/userService');
  * POST /api/ai/insight (singular endpoint for client compatibility)
  */
 async function insightHandler(req, res) {
-  console.log('🔥 INSIGHT ENDPOINT HIT - Method:', req.method, 'Time:', new Date().toISOString());
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -78,6 +76,8 @@ async function insightHandler(req, res) {
 
 // Apply authentication and rate limiting middleware
 async function handler(req, res) {
+    console.log('🔥 INSIGHT ENDPOINT HIT - Method:', req.method, 'Time:', new Date().toISOString());
+
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
