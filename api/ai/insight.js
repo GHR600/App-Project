@@ -1,3 +1,5 @@
+console.log('🚀 INSIGHT.JS FILE LOADED AT:', new Date().toISOString());
+
 const { requireAuth } = require('../_utils/auth');
 const { checkAIRateLimit } = require('../_utils/rateLimiter');
 const AIService = require('../_utils/aiService');
