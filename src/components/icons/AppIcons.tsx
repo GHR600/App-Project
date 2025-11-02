@@ -31,6 +31,7 @@ import {
   Type,
   Brain,
   TrendingUp,
+  TrendingDown,
   Sparkles,
   Lock,
   Zap,
@@ -40,6 +41,8 @@ import {
   Trash2,
   Upload,
   Image,
+  Smile,
+  PenTool,
 } from 'lucide-react-native';
 
 export interface IconProps {
@@ -165,6 +168,18 @@ export const BrainIcon: React.FC<IconProps> = ({ size = 24, color = '#000', stro
 
 export const TrendingUpIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
   <TrendingUp size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const TrendingDownIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <TrendingDown size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const SmileIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <Smile size={size} color={color} strokeWidth={strokeWidth} />
+);
+
+export const PenToolIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (
+  <PenTool size={size} color={color} strokeWidth={strokeWidth} />
 );
 
 export const SparklesIcon: React.FC<IconProps> = ({ size = 24, color = '#000', strokeWidth = 2 }) => (

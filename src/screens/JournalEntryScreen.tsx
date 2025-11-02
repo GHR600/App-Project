@@ -718,14 +718,14 @@ export const JournalEntryScreen: React.FC<JournalEntryScreenProps> = ({
     const buttonText = isSaving
       ? 'SAVING...'
       : isNewEntry
-        ? 'SAVE ENTRY'
-        : 'UPDATE ENTRY';
+        ? 'SAVE & REVIEW ENTRY'
+        : 'UPDATE';
 
     return (
       <View style={[styles.journalSection, { backgroundColor: theme.surface }]}>
         <TextInput
           style={[styles.titleInput, { color: theme.textPrimary, borderBottomColor: theme.cardBorder }]}
-          placeholder="What's on your mind?"
+          placeholder="Title (optional)"
           placeholderTextColor={theme.textMuted}
           value={title}
           onChangeText={setTitle}

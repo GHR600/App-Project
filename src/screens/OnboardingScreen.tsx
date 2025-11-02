@@ -10,6 +10,9 @@ import { AnimatedButton } from '../components/AnimatedButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../config/supabase';
+import { BrainIcon, SparklesIcon, TargetIcon, UserIcon } from '../components/icons/AppIcons';
+import { HeartIcon } from 'lucide-react-native';
+
 
 interface OnboardingScreenProps {
   userId: string;
@@ -55,7 +58,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Do you want a coach or a reflector?</Text>
+        <Text style={styles.title}>Style</Text>
         <Text style={styles.subtitle}>You can change this anytime in Settings</Text>
 
         <View style={styles.cardsContainer}>
@@ -69,9 +72,21 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
             disabled={loading}
             hapticFeedback="medium"
           >
-            <Text style={styles.cardEmoji}>🎯</Text>
-            <Text style={styles.cardTitle}>Coach</Text>
-            <Text style={styles.cardDescription}>
+            <View style={styles.iconContainer}>
+              <TargetIcon
+                size={48}
+                color={selectedStyle === 'coach' ? theme.white : theme.primary}
+                strokeWidth={2}
+              />
+            </View>
+            <Text style={[
+              styles.cardTitle,
+              selectedStyle === 'coach' && styles.cardTitleSelected
+            ]}>Coach</Text>
+            <Text style={[
+              styles.cardDescription,
+              selectedStyle === 'coach' && styles.cardDescriptionSelected
+            ]}>
               Strategic and direct. Helps you spot patterns and take action.
             </Text>
             <View style={styles.exampleContainer}>
@@ -95,9 +110,21 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userId, onCo
             disabled={loading}
             hapticFeedback="medium"
           >
-            <Text style={styles.cardEmoji}>🧘</Text>
-            <Text style={styles.cardTitle}>Reflector</Text>
-            <Text style={styles.cardDescription}>
+            <View style={styles.iconContainer}>
+              <HeartIcon 
+                size={48}
+                color={selectedStyle === 'reflector' ? theme.white : theme.primary}
+                strokeWidth={2}
+              />
+            </View>
+            <Text style={[
+              styles.cardTitle,
+              selectedStyle === 'reflector' && styles.cardTitleSelected
+            ]}>Reflector</Text>
+            <Text style={[
+              styles.cardDescription,
+              selectedStyle === 'reflector' && styles.cardDescriptionSelected
+            ]}>
               Thoughtful and curious. Gives you space to process and think clearly.
             </Text>
             <View style={styles.exampleContainer}>
@@ -124,8 +151,8 @@ const createStyles = (theme: any) =>
     },
     content: {
       flex: 1,
-      padding: 20,
-      justifyContent: 'center',
+      padding: 10,
+      // justifyContent: 'center',
     },
     title: {
       fontFamily: 'Yellowtail_400Regular',
@@ -148,7 +175,7 @@ const createStyles = (theme: any) =>
     card: {
       backgroundColor: theme.cardBackground,
       borderRadius: 16,
-      padding: 24,
+      padding: 10,
       borderWidth: 3,
       borderColor: theme.cardBorder,
       shadowColor: '#000',
@@ -161,9 +188,9 @@ const createStyles = (theme: any) =>
       borderColor: theme.primary,
       backgroundColor: theme.primary,
     },
-    cardEmoji: {
-      fontSize: 48,
-      textAlign: 'center',
+    iconContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 16,
     },
     cardTitle: {
@@ -173,6 +200,9 @@ const createStyles = (theme: any) =>
       textAlign: 'center',
       marginBottom: 12,
     },
+    cardTitleSelected: {
+      color: theme.white,
+    },
     cardDescription: {
       fontSize: 16,
       color: theme.textSecondary,
@@ -180,10 +210,13 @@ const createStyles = (theme: any) =>
       lineHeight: 24,
       marginBottom: 16,
     },
+    cardDescriptionSelected: {
+      color: theme.white,
+    },
     exampleContainer: {
       backgroundColor: theme.surface,
       borderRadius: 12,
-      padding: 16,
+      padding: 8,
       borderLeftWidth: 3,
       borderLeftColor: theme.primary,
     },

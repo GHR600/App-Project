@@ -29,11 +29,12 @@ import { GradientBackground } from '../components/GradientBackground';
 interface SettingsScreenProps {
   onBack: () => void;
   onNavigateToSubscription?: () => void;
+  onNavigateToOnboarding?: () => void;
 }
 
 type AIStyle = 'coach' | 'reflector';
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNavigateToSubscription }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNavigateToSubscription, onNavigateToOnboarding }) => {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { user } = useAuth();
   const { status: subscriptionStatus, isPremium } = useSubscription();
@@ -422,6 +423,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNaviga
           </View>
         </View>
 
+        {/*}
         <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Support</Text>
           <AnimatedButton style={styles.settingItem} hapticFeedback="light">
@@ -437,6 +439,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNaviga
             <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
           </AnimatedButton>
         </View>
+        */}
+
+        {/*}
+        {onNavigateToOnboarding && (
+          <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>AI Setup</Text>
+            <AnimatedButton
+              style={[styles.settingItem, { borderBottomWidth: 0 }]}
+              onPress={onNavigateToOnboarding}
+              hapticFeedback="light"
+            >
+              <Text style={[styles.settingLabel, { color: theme.textSecondary }]}>Restart AI Style Setup</Text>
+              <ArrowRightIcon size={18} color={theme.primary} strokeWidth={2} />
+            </AnimatedButton>
+          </View>
+        )}*/}
+        
+
       </ScrollView>
     </SafeAreaView>
   );

@@ -368,12 +368,8 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({
           {!isPremium && usageStats && (
             <View style={styles.usageContainer}>
               <View style={styles.usageHeader}>
-                <Text style={[styles.usageLabel, { color: theme.textSecondary }]}>
-                  AI Insights Used
-                </Text>
-                <Text style={[styles.usageCount, { color: theme.textPrimary }]}>
-                  {usageStats.free_insights_used} / {usageStats.free_insights_limit}
-                </Text>
+              
+
               </View>
               <View style={[styles.progressBarBackground, { backgroundColor: theme.backgroundTertiary }]}>
                 <View
@@ -389,7 +385,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({
               <Text style={[styles.usageHint, { color: theme.textMuted }]}>
                 {usagePercentage >= 100
                   ? 'Upgrade to premium for unlimited insights'
-                  : `${usageStats.free_insights_limit - usageStats.free_insights_used} insights remaining`}
+                  : `${Math.round(((usageStats.free_insights_limit - usageStats.free_insights_used) / usageStats.free_insights_limit) * 100)}% AI Usage Remaining`}
               </Text>
             </View>
           )}

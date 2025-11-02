@@ -3,6 +3,15 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { DatabaseJournalEntry } from '../config/supabase';
 import { spacing } from '../styles/designSystem';
+import {
+  CalendarIcon,
+  PenToolIcon,
+  SmileIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  ArrowRightIcon,
+  FlameIcon,
+} from './icons/AppIcons';
 
 interface MonthSummaryCardProps {
   entries: DatabaseJournalEntry[];
@@ -92,10 +101,11 @@ export const MonthSummaryCard: React.FC<MonthSummaryCardProps> = ({ entries }) =
     return theme.textSecondary;
   };
 
-  const getComparisonIcon = (comparison: number) => {
-    if (comparison > 0) return '📈';
-    if (comparison < 0) return '📉';
-    return '➡️';
+  const renderComparisonIcon = (comparison: number, color: string) => {
+    const iconProps = { size: 20, color, strokeWidth: 2 };
+    if (comparison > 0) return <TrendingUpIcon {...iconProps} />;
+    if (comparison < 0) return <TrendingDownIcon {...iconProps} />;
+    return <ArrowRightIcon {...iconProps} />;
   };
 
   return (
@@ -109,7 +119,7 @@ export const MonthSummaryCard: React.FC<MonthSummaryCardProps> = ({ entries }) =
       ]}
     >
       <View style={styles.header}>
-        <Text style={styles.headerIcon}>📅</Text>
+        <CalendarIcon size={24} color={theme.primary} strokeWidth={2} />
         <Text style={[styles.headerText, { color: theme.textPrimary }]}>
           {monthStats.month} {monthStats.year}
         </Text>
@@ -117,7 +127,9 @@ export const MonthSummaryCard: React.FC<MonthSummaryCardProps> = ({ entries }) =
 
       <View style={styles.statsGrid}>
         <View style={styles.statRow}>
-          <Text style={styles.statIcon}>✍️</Text>
+          <View style={styles.iconContainer}>
+            <PenToolIcon size={20} color={theme.primary} strokeWidth={2} />
+          </View>
           <View style={styles.statInfo}>
             <Text style={[styles.statValue, { color: theme.textPrimary }]}>
               {monthStats.entryCount} {monthStats.entryCount === 1 ? 'entry' : 'entries'}
@@ -130,7 +142,9 @@ export const MonthSummaryCard: React.FC<MonthSummaryCardProps> = ({ entries }) =
 
         {monthStats.avgMood > 0 && (
           <View style={styles.statRow}>
-            <Text style={styles.statIcon}>😊</Text>
+            <View style={styles.iconContainer}>
+              <SmileIcon size={20} color={theme.primary} strokeWidth={2} />
+            </View>
             <View style={styles.statInfo}>
               <Text style={[styles.statValue, { color: theme.textPrimary }]}>
                 {monthStats.avgMood.toFixed(1)}/5
@@ -143,7 +157,9 @@ export const MonthSummaryCard: React.FC<MonthSummaryCardProps> = ({ entries }) =
         )}
 
         <View style={styles.statRow}>
-          <Text style={styles.statIcon}>{getComparisonIcon(monthStats.comparisonToPrevious)}</Text>
+          <View style={styles.iconContainer}>
+            {renderComparisonIcon(monthStats.comparisonToPrevious, getComparisonColor(monthStats.comparisonToPrevious))}
+          </View>
           <View style={styles.statInfo}>
             <Text style={[styles.statValue, { color: getComparisonColor(monthStats.comparisonToPrevious) }]}>
               {monthStats.comparisonToPrevious > 0 ? '+' : ''}
@@ -157,7 +173,9 @@ export const MonthSummaryCard: React.FC<MonthSummaryCardProps> = ({ entries }) =
 
         {monthStats.longestStreak > 1 && (
           <View style={styles.statRow}>
-            <Text style={styles.statIcon}>🔥</Text>
+            <View style={styles.iconContainer}>
+              <FlameIcon size={20} color={theme.warning} strokeWidth={2} fill={theme.warning} />
+            </View>
             <View style={styles.statInfo}>
               <Text style={[styles.statValue, { color: theme.textPrimary }]}>
                 {monthStats.longestStreak} days
@@ -186,9 +204,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     gap: spacing.sm,
   },
-  headerIcon: {
-    fontSize: 24,
-  },
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -201,9 +216,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  statIcon: {
-    fontSize: 20,
+  iconContainer: {
     width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statInfo: {
     flex: 1,

@@ -35,7 +35,7 @@ class UserService {
   /**
    * Get user's recent journal entries for context
    */
-  static async getRecentEntries(userId, limit = 3) {
+  static async getRecentEntries(userId, limit = 10) {
     try {
       const supabase = getSupabaseClient();
       const { data: entries, error } = await supabase

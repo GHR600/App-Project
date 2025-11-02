@@ -274,6 +274,9 @@ const MainApp: React.FC = () => {
               setSubscriptionReturnScreen('settings');
               setCurrentScreen('subscription');
             }}
+            onNavigateToOnboarding={() => {
+              setNeedsOnboarding(true);
+            }}
           />
         );
       case 'journal':
