@@ -33,11 +33,11 @@ export default {
     },
     android: {
       package: "com.aijournalingapp",
-      versionCode: 6,  // ← ADD THIS (increment each upload)
+      versionCode: 7,  // ← ADD THIS (increment each upload)
 
       adaptiveIcon: {
         foregroundImage: "./Journaling App Logo.png",
-        backgroundColor: "#0f172a"
+        backgroundColor: "#000000ff"
       },
       permissions: [
         "com.android.vending.BILLING"
@@ -47,7 +47,7 @@ export default {
       ]
     },
     web: {
-      favicon: "./assets/favicon.png",
+      favicon: "./Journaling App Logo.png",
       bundler: "metro"
     },
     extra: {

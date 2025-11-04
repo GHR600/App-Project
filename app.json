@@ -31,8 +31,12 @@
         "foregroundImage": "./Journaling App Logo.png",
         "backgroundColor": "#2563eb"
       },
+      "usesCleartextTraffic": true,
       "permissions": [
-        "com.android.vending.BILLING"
+        "com.android.vending.BILLING",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE"
       ]
     },
     "web": {
