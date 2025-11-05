@@ -373,7 +373,10 @@ const MainApp: React.FC = () => {
         return (
           <DashboardHomeScreen
             userId={user.id}
-            onNewEntry={() => setCurrentScreen('journal')}
+            onNewEntry={() => {         
+              setJournalEntryParams(null);  // ← ADD THIS LINE
+              setCurrentScreen('journal');
+            }}
             onEntryPress={(entry) => {
               setSelectedEntry(entry);
               setCurrentScreen('entryDetail');
