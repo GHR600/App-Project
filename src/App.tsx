@@ -78,6 +78,48 @@ const MainApp: React.FC = () => {
     initRevenueCat();
   }, []);
 
+  // ADD THIS NEW useEffect RIGHT HERE 👇
+  useEffect(() => {
+    const testNetwork = async () => {
+      console.log('🌐 ========== NETWORK DEBUG TEST ==========');
+      
+      // Import at runtime to avoid issues
+      const { API_CONFIG } = await import('./utils/env');
+      console.log('🌐 API Base URL:', API_CONFIG.baseUrl);
+      
+      try {
+        console.log('🌐 Attempting fetch to Vercel...');
+        const response = await fetch(`${API_CONFIG.baseUrl}/api/test`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('✅ NETWORK TEST SUCCESS!', {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText
+        });
+        
+        const data = await response.text();
+        console.log('📦 Response data:', data.substring(0, 100));
+      } catch (error: any) {
+        console.error('❌ NETWORK TEST FAILED!');
+        console.error('Error type:', error?.constructor?.name);
+        console.error('Error message:', error?.message);
+        console.error('Full error:', JSON.stringify(error, null, 2));
+      }
+      
+      console.log('🌐 ========== END NETWORK DEBUG TEST ==========');
+    };
+    
+    // Run test 2 seconds after app loads
+    const timer = setTimeout(testNetwork, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+
   // Log in/out RevenueCat user when auth changes
   useEffect(() => {
     const handleRevenueCatAuth = async () => {

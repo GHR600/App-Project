@@ -33,14 +33,16 @@ export default {
     },
     android: {
       package: "com.aijournalingapp",
-      versionCode: 7,  // ← ADD THIS (increment each upload)
+      versionCode: 9,  // ← ADD THIS (increment each upload)
 
       adaptiveIcon: {
         foregroundImage: "./Journaling App Logo.png",
         backgroundColor: "#000000ff"
       },
       permissions: [
-        "com.android.vending.BILLING"
+        "com.android.vending.BILLING",  
+        "android.permission.INTERNET",           // ADD THIS
+        "android.permission.ACCESS_NETWORK_STATE" // ADD THIS
       ], 
       blockedPermissions: [  // ← ADD THIS
         "android.permission.RECORD_AUDIO"

@@ -39,7 +39,7 @@ import { supabase } from '../config/supabase';
 import { generateAIInsightWithRetry } from './aiService';
 
 export class AIInsightService {
-  private static readonly API_BASE_URL = API_CONFIG.baseUrl;
+  private static readonly API_BASE_URL = 'https://journaling-two.vercel.app';
 
   /**
    * Save AI insight to database

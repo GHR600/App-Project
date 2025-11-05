@@ -7,7 +7,7 @@
 import { API_CONFIG } from '../utils/env';
 import { supabase } from '../config/supabase';
 
-const API_URL = API_CONFIG.baseUrl;
+const API_URL = 'https://journaling-two.vercel.app';
 
 /**
  * Get authorization headers with access token
