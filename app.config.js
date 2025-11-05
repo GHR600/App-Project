@@ -18,7 +18,9 @@ export default {
       "**/*"
     ],
     plugins: [
-      "expo-font"
+      "expo-font",
+      "./plugins/withDisableProguard"  // ← ADD THIS LINE
+
     ],
     ios: {
       bundleIdentifier: "com.aijournalingapp",
@@ -33,7 +35,7 @@ export default {
     },
     android: {
       package: "com.aijournalingapp",
-      versionCode: 12,  // ← ADD THIS (increment each upload)
+      versionCode: 13,  // ← ADD THIS (increment each upload)
 
       adaptiveIcon: {
         foregroundImage: "./Journaling App Logo.png",
