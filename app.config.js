@@ -33,7 +33,7 @@ export default {
     },
     android: {
       package: "com.aijournalingapp",
-      versionCode: 11,  // ← ADD THIS (increment each upload)
+      versionCode: 12,  // ← ADD THIS (increment each upload)
 
       adaptiveIcon: {
         foregroundImage: "./Journaling App Logo.png",
@@ -47,9 +47,7 @@ export default {
       blockedPermissions: [  // ← ADD THIS
         "android.permission.RECORD_AUDIO"
       ],
-      // ADD THESE THREE LINES:
-        enableProguardInReleaseBuilds: false,
-        
+      // ADD THESE THREE LINES:        
     },
     web: {
       favicon: "./Journaling App Logo.png",
