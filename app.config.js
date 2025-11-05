@@ -49,8 +49,7 @@ export default {
       ],
       // ADD THESE THREE LINES:
         enableProguardInReleaseBuilds: false,
-        enableShrinkResourcesInReleaseBuilds: false,
-        usesCleartextTraffic: false
+        
     },
     web: {
       favicon: "./Journaling App Logo.png",
