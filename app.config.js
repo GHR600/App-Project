@@ -19,8 +19,7 @@ export default {
     ],
     plugins: [
       "expo-font",
-      "./plugins/withDisableProguard"  // ← ADD THIS LINE
-
+      "./plugins/withProguardRules"  // ← ADD THIS
     ],
     ios: {
       bundleIdentifier: "com.aijournalingapp",
