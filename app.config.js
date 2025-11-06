@@ -11,7 +11,7 @@ export default {
     splash: {
       image: "./journaling-anim.gif",
       resizeMode: "contain",
-      backgroundColor: "#0f172a"
+      backgroundColor: "#000000ff"
     },
     assetBundlePatterns: [
       
