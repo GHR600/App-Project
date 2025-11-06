@@ -1,46 +1,25 @@
-const { withDangerousMod, withPlugins } = require('@expo/config-plugins');
+const { withDangerousMod } = require('@expo/config-plugins');
 const fs = require('fs');
 const path = require('path');
 
 const proguardRules = `
-# Keep all React Native classes
--keep class com.facebook.react.** { *; }
--keep class com.facebook.hermes.** { *; }
+# Don't obfuscate anything - aggressive approach
+-dontobfuscate
+-dontoptimize
 
-# Keep Expo modules
--keep class expo.modules.** { *; }
+# Keep everything
+-keepattributes *
 
-# Keep Supabase
--keep class io.supabase.** { *; }
--dontwarn io.supabase.**
+# Keep all classes
+-keep class ** { *; }
 
-# Keep RevenueCat
--keep class com.revenuecat.purchases.** { *; }
-
-# Keep JavaScript interface
--keepattributes JavascriptInterface
--keepattributes *Annotation*
-
-# Keep source file names and line numbers for stack traces
--keepattributes SourceFile,LineNumberTable
-
-# Don't obfuscate native methods
--keepclasseswithmembernames class * {
-    native <methods>;
-}
-
-# Keep React Native module classes
--keep,allowobfuscation @interface com.facebook.proguard.annotations.DoNotStrip
--keep @com.facebook.proguard.annotations.DoNotStrip class *
+# Keep all methods
 -keepclassmembers class * {
-    @com.facebook.proguard.annotations.DoNotStrip *;
+    <methods>;
 }
 
-# AsyncStorage
--keep class com.reactnativecommunity.asyncstorage.** { *; }
-
-# Keep enums
--keepclassmembers enum * { *; }
+# Keep source file and line numbers for debugging
+-keepattributes SourceFile,LineNumberTable
 `;
 
 module.exports = function withProguardRules(config) {
@@ -56,7 +35,7 @@ module.exports = function withProguardRules(config) {
       // Create or append to proguard-rules.pro
       if (fs.existsSync(proguardPath)) {
         const existing = fs.readFileSync(proguardPath, 'utf8');
-        if (!existing.includes('Keep all React Native')) {
+        if (!existing.includes('Don\'t obfuscate anything')) {
           fs.appendFileSync(proguardPath, '\n' + proguardRules);
         }
       } else {
