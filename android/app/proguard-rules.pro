@@ -7,27 +7,27 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# react-native-reanimated
--keep class com.swmansion.reanimated.** { *; }
--keep class com.facebook.react.turbomodule.** { *; }
-
-# Add any project specific keep options here:
-
-
-# Don't obfuscate anything - aggressive approach
+# Don't obfuscate anything
 -dontobfuscate
--dontoptimize
+
+# Don't remove any code
+-dontshrink
 
 # Keep everything
 -keepattributes *
-
-# Keep all classes
 -keep class ** { *; }
-
-# Keep all methods
 -keepclassmembers class * {
-    <methods>;
+    *;
 }
 
-# Keep source file and line numbers for debugging
+# Keep all native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep source file and line numbers
 -keepattributes SourceFile,LineNumberTable
+
+# Suppress warnings
+-dontwarn **
+-ignorewarnings

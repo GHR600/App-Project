@@ -104,18 +104,26 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            // ADD THIS SECTION
+            def keystorePropertiesFile = rootProject.file("gradle.properties")
+            storeFile file("@glebhermann__ai-journaling-app.jks")
+            storePassword "3ea355415082f59ded6f0ed0b134329f"
+            keyAlias "edeb5b19100e4dbedf7c34d0f1243592"
+            keyPassword "44e62f3443f2988e5d67b78fdb5eb724"
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
-            def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
-            shrinkResources enableShrinkResources.toBoolean()
-            minifyEnabled enableMinifyInReleaseBuilds
+            signingConfig signingConfigs.release
+
+            // KEEP MINIFICATION BUT USE OUR PROGUARD RULES
+            minifyEnabled true  // ← Keep as true
+            shrinkResources true  // ← Keep as true
+
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()

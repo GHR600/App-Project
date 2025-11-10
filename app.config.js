@@ -34,7 +34,7 @@ export default {
     },
     android: {
       package: "com.aijournalingapp",
-      versionCode: 15,  // ← ADD THIS (increment each upload)
+      versionCode: 16,  // ← ADD THIS (increment each upload)
 
       adaptiveIcon: {
         foregroundImage: "./Journaling App Logo.png",
